@@ -1,0 +1,31 @@
+#+TITLE: Containers for Idris
+
+This packages provides containers not defined in the =Idris= base for use in =Idris= programmes. The are built primarily with existence in mind rather than a dependently typed construction. The latter will come later.
+
+The ordered motivation behind these data structures are:
+
+1. My work requires the use of data structures that may not already be in the =Idris= base package.
+2. I do not like the implementation of a certain container and am providing an alternate construction.
+3. An exercise in implementing different data structures using functional programming..
+4. An exercise in using dependent types to implement different data structures.
+
+
+* Provided Containers
+
++ AVL Tree implementations of:
+  + Tree
+  + Dictionary
+  + Set.
++ Graphs using Adjacency Lists.
++ Stack Based Queue
+
+* Sought After Containers
++ Trees
+  + 2-3 Trees
+  + Finger Trees
+  + Rose Trees.
+  + Relaxed Radix Balanced (RRB) Trees
++ Sequence using Finger Trees
++ Immutable Arrays using RRB Trees
++ Non-Integer-or-Nat Indexed Data Structures
++ Inductive Graphs
