@@ -1,0 +1,8 @@
+package test
+
+opts = "-p containers -p effects"
+
+modules = Main, TestRunner,
+
+executable = a.out
+main = Main
