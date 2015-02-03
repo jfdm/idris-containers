@@ -11,13 +11,14 @@ mkStack : Stack a
 mkStack = Nil
 
 pushS : a -> Stack a -> Stack a
-pushS e xs = e::xs
+pushS e Nil = [e]
+pushS e xs  = e::xs
 
 initS : a -> Stack a
 initS a = pushS a $ mkStack
 
 pushSThings : List a -> Stack a -> Stack a
-pushSThings xs q = foldl (flip pushS) q xs
+pushSThings xs s = xs ++ s
 
 popS : Stack a -> (a, Stack a)
 popS (x::xs) = (x,xs)
