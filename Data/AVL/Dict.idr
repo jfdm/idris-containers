@@ -111,14 +111,23 @@ merge l    Empty = l
 merge Empty r    = r
 merge l    r     = let (l', (k,v)) = (splitMax l) in balance k v l' r
 
+lookupUsing : Ord k => (k -> Ordering) -> Dict k v -> Maybe v
+lookupUsing _ Empty        	 = Nothing
+lookupUsing f (Node d (y,v) l r) =
+  case f y of
+    LT => lookupUsing f l
+    GT => lookupUsing f r
+    EQ => Just v 
 
 lookup : Ord k => k -> Dict k v -> Maybe v
-lookup _ Empty              = Nothing
-lookup x (Node d (y,v) l r) =
-    case compare x y of
-      LT => lookup x l
-      GT => lookup x r
-      EQ => Just v
+lookup k d = lookupUsing (compare k) d
+
+-- lookup _ Empty              = Nothing
+-- lookup x (Node d (y,v) l r) =
+--     case compare x y of
+--       LT => lookup x l
+--       GT => lookup x r
+--       EQ => Just v
 
 isKey : Ord k => k -> Dict k v -> Bool
 isKey k d = isJust $ lookup k d
@@ -126,10 +135,10 @@ isKey k d = isJust $ lookup k d
 insert : Ord k => k -> v -> Dict k v -> Dict k v
 insert k v Empty              = mkNode k v Empty Empty
 insert x a (Node d (y,b) l r) =
-     case compare x y of
-     LT => balance y b (insert x a l) r
-     GT => balance y b l (insert x a r)
-     EQ => Node d (x,a) l r
+  case compare x y of
+    LT => balance y b (insert x a l) r
+    GT => balance y b l (insert x a r)
+    EQ => Node d (x,a) l r
 
 remove : Ord k => k -> Dict k v -> Dict k v
 remove _ Empty              = Empty
@@ -139,13 +148,26 @@ remove x (Node d (y,v) l r) =
     GT => balance y v l (remove x r)
     EQ => merge l r
 
+||| Update the dictionary selecting a node using a custom ordering
+||| function.
+updateUsing : Ord k => (k -> Ordering) -> (v -> v) -> Dict k v -> Dict k v
+updateUsing _ _ Empty              = Empty
+updateUsing f u (Node d (y,v) l r) =
+  case f y of
+    LT => balance y v (updateUsing f u l) r
+    GT => balance y v l (updateUsing f u r)
+    EQ => Node d (y, (u v)) l r
+
 update : Ord k => k -> (v -> v) -> Dict k v -> Dict k v
-update _ _ Empty              = Empty
-update x f (Node d (y,v) l r) =
-  case compare x y of
-    LT => Node d (y,v) (update x f l) r
-    GT => Node d (y,v) l (update x f r)
-    EQ => Node d (y,(f v)) l r
+update x f d = updateUsing (compare x) f d
+
+-- update _ _ Empty              = Empty
+-- update x f (Node d (y,v) l r) =
+--   case compare x y of
+--     LT => Node d (y,v) (update x f l) r
+--     GT => Node d (y,v) l (update x f r)
+--     EQ => Node d (y,(f v)) l r
+
 
 ||| Note this is not the classical split
 split : Ord k => k -> Dict k v -> Maybe $ (Dict k v, (k,v))
