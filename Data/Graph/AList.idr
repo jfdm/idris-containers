@@ -6,5 +6,6 @@
 module Data.Graph.AList
 
 import public Data.Graph.AList.Implementation
+import public Data.Graph.AList.Query
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -14,7 +14,7 @@ pushS : a -> Stack a -> Stack a
 pushS e xs = e::xs
 
 initS : a -> Stack a
-initS a = push a $ mkStack
+initS a = pushS a $ mkStack
 
 pushSThings : List a -> Stack a -> Stack a
 pushSThings xs q = foldl (flip pushS) q xs
