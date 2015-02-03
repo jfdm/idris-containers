@@ -16,14 +16,14 @@ pushQ : a -> Queue a -> Queue a
 pushQ e (MkQ inq outq) = MkQ (e::inq) outq
 
 initQ : a -> Queue a
-initQ a = push a $ mkQueue
+initQ a = pushQ a $ mkQueue
 
 pushQThings : List a -> Queue a -> Queue a
-pushQThings xs q = foldl (flip push) q xs
+pushQThings xs q = foldl (flip pushQ) q xs
 
 popQ : Queue a -> (a, Queue a)
 popQ (MkQ inq (x::outq)) = (x, MkQ inq outq)
-popQ (MkQ inq Nil      ) = pop (MkQ Nil (reverse inq))
+popQ (MkQ inq Nil      ) = popQ (MkQ Nil (reverse inq))
 
 clearQ : Queue a -> Queue a
 clearQ _ = mkQueue
