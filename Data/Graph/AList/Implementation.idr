@@ -13,62 +13,79 @@ import public Data.Graph.Common
 ||| structure, access to a node will be `O(log n)`. Constant time
 ||| access to elements in the graph is not guaranteed.
 |||
+||| The dictionary is indexed using a *Node Identifier* (`Int`). The
+||| dictionary stores a node value, successor list pairing as the value.
+|||
 ||| @vTy The type of the value associated with the vertex.
 ||| @eTy The type of the label used on edges.
 Graph : (vTy : Type) -> (eTy : Type) -> Type
-Graph n e = Dict (LNode n) (AList e)
+Graph n e = Dict (Node) (n, AList e)
 
-verticies : Graph v e -> List (LNode v)
+||| Return the a list of node identifiers used in the graph.
+verticies : Graph v e -> List Node
 verticies Empty = Nil
 verticies (Node _ (k,as) l r) = verticies l ++ [k] ++ verticies r
 
+||| Return the list of edges (unlabelled) with in the graph.
 edges : Graph v e -> List Edge
 edges Empty = Nil
-edges (Node _ ((i,v),(as)) l r) = foldEdge i as ++ edges l ++ edges r
-  where
-    foldEdge : Node -> AList e -> List (Node, Node)
-    foldEdge v Nil         = Nil
-    foldEdge v ((i,l)::es) = (v,i) :: foldEdge v es
+edges (Node _ (id,(val,as)) l r) =
+    foldl (\xs, (id',_) => (id,id')::xs) Nil as ++ edges l ++ edges r
 
-private
-selectNode : Node -> LNode v -> Ordering
-selectNode x (y,_) = compare x y
+||| Return the list of edges within the graph, complete with labels.
+edgesL : Graph v e -> List (LEdge e)
+edgesL Empty = Nil
+edgesL (Node _ (id,(val,as)) l r) =
+    foldl (\xs,(id',l) => (id,id',l)::xs) Nil as ++ edgesL l ++ edgesL r
 
+||| Add an orphan node to the graph.
+|||
+||| To insert a connected node use `insert` instead.
 addNode : Ord v => LNode v -> Graph v e -> Graph v e
-addNode n g = insert n (Nil) g
+addNode (id,val) g = insert id (val,Nil) g
 
+||| Add many orphan nodes to the graph.
+|||
+||| To insert a connected node use `insert` instead.
 addNodes : Ord v => List (LNode v) -> Graph v e -> Graph v e
 addNodes ns g = foldl (flip $ addNode) g ns
 
+||| Add a labelled edge to the Graph.
 addEdge : Ord v => LEdge e -> Graph v e -> Graph v e
-addEdge (f,t,l) g = updateUsing (selectNode f) (\as => (t,l)::as) g
+addEdge (f,t,l) g = update f (\(val,as) => (val,(t,l)::as)) g
 
+||| Add multiple labelled edges to the Graph.
 addEdges : Ord v => List (LEdge e) -> Graph v e -> Graph v e
 addEdges es g = foldl (flip $ addEdge) g es
 
+||| Insert a node, complete with predefined adjacency list to the graph.
 insertNode : Ord v => LNode v -> AList e -> Graph v e -> Graph v e
-insertNode n es g = insert n es g
+insertNode (id,val) es g = insert id (val,es) g
 
+||| Construct a graph using a list of nodes and a list of edges.
 buildG : Ord v => List (LNode v) -> List (LEdge e) -> Graph v e
 buildG Nil _    = Empty
 buildG xs  Nil  = addNodes xs Empty
 buildG ns  es   = addEdges es (addNodes ns Empty)
 
+||| Alternate build using a list of nodes and the node's adjacency list.
 buildG' : Ord v => List (LNode v, AList e) -> Graph v e
-buildG' gs = fromList gs
+buildG' gs = foldl (\g,(n,as) => insertNode n as g) Empty gs
 
-lookupNode : Ord v => Node -> Graph v e -> Maybe $ AList e
-lookupNode n g = lookupUsing (selectNode n) g
+||| Extract the node value and adjacency list from the graph.
+lookupNode : Ord v => Node -> Graph v e -> Maybe $ (v, AList e)
+lookupNode n g = lookup n g
 
-getSuccsUsing : Ord v => (LNode v -> Ordering) -> Graph v e -> Maybe $ List Node
-getSuccsUsing f g = case lookupUsing f g of
-    Just as => Just $ map fst as
-    Nothing => Nothing
+||| Get a nodes value
+getValue : Ord v => Node -> Graph v e -> Maybe v
+getValue n g = case lookup id g of
+    Just (val,_as) => Just val
+    Nothing        => Nothing
 
-getSuccsByID : Ord v => Node -> Graph v e -> Maybe $ List Node
-getSuccsByID n g = getSuccsUsing (selectNode n) g
-
-getSuccsByLabel : Ord v => v -> Graph v e -> Maybe $ List Node
-getSuccsByLabel x g = getSuccsUsing (\(i,y) => compare x y) g
+||| Get a nodes successors.
+getSuccs : Ord v => Node -> Graph v e -> Maybe $ List Node
+getSuccs id g = case lookup id g of
+    Just (_,as) => Just $ map fst as
+    Nothing       => Nothing
 
 -- --------------------------------------------------------------------- [ EOF ]

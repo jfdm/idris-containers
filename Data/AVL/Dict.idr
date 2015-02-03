@@ -28,7 +28,7 @@ data Dict : (k : Type) -> (v : Type) -> Type where
 
 private
 height : Ord k => Dict k v -> Nat
-height Empty             = Z
+height Empty              = Z
 height (Node d (k,v) l r) = d
 
 private
@@ -45,7 +45,7 @@ mkNode k v l r = Node (1+h) (k,v) l r
 private
 bias : Ord k => Dict k v -> Nat
 bias (Node _ _ l r) = height l - height r
-bias Empty             = 0
+bias Empty          = 0
 
 private
 data ROTDIR = RotRL | RotRLB | RotLR | RotLRB | NOUT
@@ -103,7 +103,7 @@ isEmpty _    = False
 ||| Note this is not the classical split.
 splitMax : Ord k => Dict k v -> (Dict k v, (k,v))
 splitMax (Node _ (k,v) l Empty) = (l, (k,v))
-splitMax (Node _ (k,v) l r)    = let (r', (k',v')) = (splitMax r) in (balance k v l r', (k',v'))
+splitMax (Node _ (k,v) l r)     = let (r', (k',v')) = (splitMax r) in (balance k v l r', (k',v'))
 
 
 merge : Ord k => Dict k v -> Dict k v -> Dict k v
@@ -117,17 +117,10 @@ lookupUsing f (Node d (y,v) l r) =
   case f y of
     LT => lookupUsing f l
     GT => lookupUsing f r
-    EQ => Just v 
+    EQ => Just v
 
 lookup : Ord k => k -> Dict k v -> Maybe v
 lookup k d = lookupUsing (compare k) d
-
--- lookup _ Empty              = Nothing
--- lookup x (Node d (y,v) l r) =
---     case compare x y of
---       LT => lookup x l
---       GT => lookup x r
---       EQ => Just v
 
 isKey : Ord k => k -> Dict k v -> Bool
 isKey k d = isJust $ lookup k d
@@ -160,14 +153,6 @@ updateUsing f u (Node d (y,v) l r) =
 
 update : Ord k => k -> (v -> v) -> Dict k v -> Dict k v
 update x f d = updateUsing (compare x) f d
-
--- update _ _ Empty              = Empty
--- update x f (Node d (y,v) l r) =
---   case compare x y of
---     LT => Node d (y,v) (update x f l) r
---     GT => Node d (y,v) l (update x f r)
---     EQ => Node d (y,(f v)) l r
-
 
 ||| Note this is not the classical split
 split : Ord k => k -> Dict k v -> Maybe $ (Dict k v, (k,v))
@@ -203,7 +188,6 @@ toList (Node d (k,v) l r) = (k,v) :: toList l ++ toList r
 
 fromList : Ord k => List (k,v) -> Dict k v
 fromList xs = foldl (\d, (k,v)=> insert k v d) Empty xs
-
 
 -- ---------------------------------------------------------------- [ Instance ]
 instance (Show k, Show v) => Show (Dict k v) where
