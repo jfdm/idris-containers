@@ -9,6 +9,7 @@ import Data.Graph.AList.Implementation
 
 import Data.Queue
 
+%access public
 
 -- --------------------------------------------------------------------- [ BFS ]
 ||| The effects used in a BFS search.
