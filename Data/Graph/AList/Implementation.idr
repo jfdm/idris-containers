@@ -78,9 +78,9 @@ lookupNode n g = lookup n g
 
 ||| Get a nodes value
 getValue : Ord v => Node -> Graph v e -> Maybe v
-getValue n g = case lookup id g of
-    Just (val,_as) => Just val
-    Nothing        => Nothing
+getValue id g = case lookup id g of
+    Just (val,_) => Just val
+    Nothing      => Nothing
 
 ||| Get a nodes successors.
 getSuccs : Ord v => Node -> Graph v e -> Maybe $ List Node
