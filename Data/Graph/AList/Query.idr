@@ -1,4 +1,6 @@
 ||| Example Queries over AList implemented graphs.
+|||
+||| TODO make query higher-order.
 module Data.Graph.AList.Query
 
 import Effects
