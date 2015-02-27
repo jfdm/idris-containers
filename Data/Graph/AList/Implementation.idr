@@ -41,49 +41,49 @@ edgesL (Node _ (id,(val,as)) l r) =
 ||| Add an orphan node to the graph.
 |||
 ||| To insert a connected node use `insert` instead.
-addNode : Ord v => LNode v -> Graph v e -> Graph v e
+addNode : LNode v -> Graph v e -> Graph v e
 addNode (id,val) g = insert id (val,Nil) g
 
 ||| Add many orphan nodes to the graph.
 |||
 ||| To insert a connected node use `insert` instead.
-addNodes : Ord v => List (LNode v) -> Graph v e -> Graph v e
+addNodes : List (LNode v) -> Graph v e -> Graph v e
 addNodes ns g = foldl (flip $ addNode) g ns
 
 ||| Add a labelled edge to the Graph.
-addEdge : Ord v => LEdge e -> Graph v e -> Graph v e
+addEdge : LEdge e -> Graph v e -> Graph v e
 addEdge (f,t,l) g = update f (\(val,as) => (val,(t,l)::as)) g
 
 ||| Add multiple labelled edges to the Graph.
-addEdges : Ord v => List (LEdge e) -> Graph v e -> Graph v e
+addEdges : List (LEdge e) -> Graph v e -> Graph v e
 addEdges es g = foldl (flip $ addEdge) g es
 
 ||| Insert a node, complete with predefined adjacency list to the graph.
-insertNode : Ord v => LNode v -> AList e -> Graph v e -> Graph v e
+insertNode : LNode v -> AList e -> Graph v e -> Graph v e
 insertNode (id,val) es g = insert id (val,es) g
 
 ||| Construct a graph using a list of nodes and a list of edges.
-buildG : Ord v => List (LNode v) -> List (LEdge e) -> Graph v e
+buildG : List (LNode v) -> List (LEdge e) -> Graph v e
 buildG Nil _    = Empty
 buildG xs  Nil  = addNodes xs Empty
 buildG ns  es   = addEdges es (addNodes ns Empty)
 
 ||| Alternate build using a list of nodes and the node's adjacency list.
-buildG' : Ord v => List (LNode v, AList e) -> Graph v e
+buildG' : List (LNode v, AList e) -> Graph v e
 buildG' gs = foldl (\g,(n,as) => insertNode n as g) Empty gs
 
 ||| Extract the node value and adjacency list from the graph.
-lookupNode : Ord v => Node -> Graph v e -> Maybe $ (v, AList e)
+lookupNode : Node -> Graph v e -> Maybe $ (v, AList e)
 lookupNode n g = lookup n g
 
 ||| Get a nodes value
-getValue : Ord v => Node -> Graph v e -> Maybe v
+getValue : Node -> Graph v e -> Maybe v
 getValue id g = case lookup id g of
     Just (val,_) => Just val
     Nothing      => Nothing
 
 ||| Get a nodes successors.
-getSuccs : Ord v => Node -> Graph v e -> Maybe $ List Node
+getSuccs : Node -> Graph v e -> Maybe $ List Node
 getSuccs id g = case lookup id g of
     Just (_,as) => Just $ map fst as
     Nothing       => Nothing

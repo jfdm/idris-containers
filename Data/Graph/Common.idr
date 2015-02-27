@@ -4,7 +4,7 @@ module Data.Graph.Common
 -- ------------------------------------------------------------------- [ Nodes ]
 ||| Node Identifier
 Node : Type
-Node = Int
+Node = Nat
 
 ||| Labelled Nodes
 LNode : Type -> Type
