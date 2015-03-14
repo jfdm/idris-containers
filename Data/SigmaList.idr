@@ -121,19 +121,7 @@ last (x::y::ys) {ok=p}    = last (y::ys) {ok=Refl}
 -- TODO
 
 -- -------------------------------------------------------------------- [ Show ]
-
-showElem : ((aTy -> Type) -> String) -> (aTy -> Type) -> String
-showElem showE e = showE e
-
-using (aTy : Type, eTy : aTy -> Type, xs : List aTy)
-
-  showSList : SigmaList aTy eTy xs -> List String
-  showSList Nil     = [""]
-  showSList (x::xs) = showElem show x :: showSList xs
-
-  instance (ShowSigmaList aTy eTy ys) => Show (SigmaList aTy eTy ys) where
-     show xs = unwords ["[", concat (intersperse "," (showSList xs)), "]"]
-
+-- TODO
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
 -- TODO
 
