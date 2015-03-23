@@ -133,14 +133,10 @@ avlRemove x (Node d y l r) =
     GT => balance y l (avlRemove x r)
     EQ => avlMerge l r
 
+{- Add proper version of update.
 public
 avlUpdate : Ord a => a -> (a -> a) -> AVLTree a -> AVLTree a
-avlUpdate _ _ Empty          = Empty
-avlUpdate x f (Node d y l r) =
-  case compare x y of
-    LT => Node d x (avlUpdate x f l) r
-    GT => Node d x l (avlUpdate x f r)
-    EQ => Node d (f y) l r
+-}
 
 public
 avlSplit : Ord a => a -> AVLTree a -> Maybe $ (AVLTree a, a)
