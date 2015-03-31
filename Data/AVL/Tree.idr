@@ -173,13 +173,16 @@ avlFromList Nil = Empty
 avlFromList xs  = foldl (flip avlInsert) Empty xs
 
 public
-avlPPrint : Show a => AVLTree a -> String
-avlPPrint Empty          = ""
-avlPPrint (Node d n l r) = unwords ["(", show n, avlPPrint l, avlPPrint r, ")"]
+avlShow : Show a => AVLTree a -> String
+avlShow Empty          = ""
+avlShow (Node d n l r) = unwords ["(", show n, avlShow l, avlShow r, ")"]
 
 -- --------------------------------------------------------------- [ Instances ]
 instance Functor (AVLTree) where
   map f Empty          = Empty
   map f (Node d e l r) = Node d (f e) (map f l) (map f r)
+
+instance Show a => Show (AVLTree a) where
+  show = avlShow
 
 -- --------------------------------------------------------------------- [ EOF ]
