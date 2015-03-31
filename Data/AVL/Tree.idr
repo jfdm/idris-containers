@@ -139,6 +139,10 @@ avlUpdate : Ord a => a -> (a -> a) -> AVLTree a -> AVLTree a
 -}
 
 public
+avlUpdate : Ord a => a -> (a -> a) -> AVLTree a -> AVLTree a
+avlUpdate x f orig = avlInsert (f x) $ avlRemove x orig
+
+public
 avlSplit : Ord a => a -> AVLTree a -> Maybe $ (AVLTree a, a)
 avlSplit _ Empty          = Nothing
 avlSplit x (Node d y l r) =
@@ -158,11 +162,20 @@ avlIsElem k t = case avlLookup k t of
    otherwise => True
 
 -- -------------------------------------------------------------------- [ List ]
-
 public
 avlToList : AVLTree a -> List a
 avlToList Empty          = Nil
 avlToList (Node d e l r) = e :: avlToList l ++ avlToList r
+
+public
+avlFromList : Ord a => List a -> AVLTree a
+avlFromList Nil = Empty
+avlFromList xs  = foldl (flip avlInsert) Empty xs
+
+public
+avlPPrint : Show a => AVLTree a -> String
+avlPPrint Empty          = ""
+avlPPrint (Node d n l r) = unwords ["(", show n, avlPPrint l, avlPPrint r, ")"]
 
 -- --------------------------------------------------------------- [ Instances ]
 instance Functor (AVLTree) where
