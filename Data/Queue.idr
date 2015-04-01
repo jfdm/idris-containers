@@ -9,7 +9,7 @@ module Data.Queue
 -- TODO Make popQ total
 
 %access public
---%default total
+%default total
 
 ||| A Queue of items of type `ty`.
 |||
@@ -39,6 +39,7 @@ pushQThings xs q = foldl (flip pushQ) q xs
 
 ||| Remove an element from the queue, returning the pair (head, tail)
 ||| @q The Q
+partial
 popQ : (q : Queue ty) -> Maybe (ty, Queue ty)
 popQ (MkQ Nil Nil)  = Nothing
 popQ (MkQ inq xs)   with (xs)
