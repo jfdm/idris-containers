@@ -1,32 +1,53 @@
+||| Helper functions to treat lists like a stack.
+|||
 ||| A collection of aliases so that working on `List` which is used
 ||| like a stack, actually feels like working on a stack.
 |||
 ||| This module is here as a convince than anything else.
 module Data.Stack
 
-Stack : Type -> Type
-Stack a = List a
+-- TODO Make popS and peekS 'safe' using the magic of proofs
 
-mkStack : Stack a
+%access public
+%default total
+
+||| A Stack containing items of type `ty`.
+|||
+||| @ty The type of elements in the stack.
+Stack : (ty : Type) -> Type
+Stack ty = List ty
+
+||| Create an empty stack.
+mkStack : Stack ty
 mkStack = Nil
 
-pushS : a -> Stack a -> Stack a
+||| Push an element on the stack.
+pushS : ty -> Stack ty -> Stack ty
 pushS e Nil = [e]
 pushS e xs  = e::xs
 
-initS : a -> Stack a
-initS a = pushS a $ mkStack
+||| Initialise the stack with the given element.
+initS : ty -> Stack ty
+initS e = pushS e $ mkStack
 
-pushSThings : List a -> Stack a -> Stack a
+||| Mass push the list of elements onto the stack.
+pushSThings : List ty -> Stack ty -> Stack ty
 pushSThings xs s = xs ++ s
 
-popS : Stack a -> (a, Stack a)
-popS (x::xs) = (x,xs)
+||| Remove an element from the stack, returning the pair (head, tail).
+popS : (s : Stack ty) -> Maybe (ty, Stack ty)
+popS Nil     = Nothing
+popS (x::xs) = Just (x,xs)
 
-clear : Stack a -> Stack a
+||| See what is at the top of the stack.
+peekS : (s : Stack ty) -> Maybe ty
+peekS Nil     = Nothing
+peekS (x::xs) = Just x
+
+clear : Stack ty -> Stack ty
 clear _ = mkStack
 
-isSEmpty : Stack a -> Bool
+isSEmpty : Stack ty -> Bool
 isSEmpty xs = isNil xs
 
 -- --------------------------------------------------------------------- [ EOF ]

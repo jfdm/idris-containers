@@ -27,10 +27,9 @@ private
 doTraceBFS : (Ord n, Show n) => Graph n e -> {BfsEffs} Eff ()
 doTraceBFS g = do
    q <- 'next :- get
-   if isQEmpty q
-     then pure () -- Stop if all nodes have been traversed.
-     else do
-       let (curr, q') = popQ q
+   case popQ q of
+     Nothing         => pure () -- Stop if all nodes have been traversed.
+     Just (curr, q') => do
        'next :- put q'
        -- Do the thing we do at the nodes.
        putStrLn $ show curr
@@ -68,20 +67,19 @@ DfsEffs = [ 'next ::: STATE (Stack Node),
 doTraceDFS : (Ord n, Show n) => Graph n e -> {DfsEffs} Eff ()
 doTraceDFS g = do
     s <- 'next :- get
-    if isSEmpty s
-    then pure ()
-    else do
-      let (curr, s') = popS s
-      'next :- put s'
-      visited <- 'seen :- get
-      if elem curr visited
-        then pure ()
-        else do
-          putStrLn $ show curr
-          let es = getSuccs curr g
-          'seen :- update (\xs => [curr] ++ xs)
-          'next :- update (\xs => pushSThings (fromMaybe Nil es) s)
-      doTraceDFS g
+    case popS s of
+      Nothing         => pure ()
+      Just (curr, s') => do
+        'next :- put s'
+        visited <- 'seen :- get
+        if elem curr visited
+          then pure ()
+          else do
+            putStrLn $ show curr
+            let es = getSuccs curr g
+            'seen :- update (\xs => [curr] ++ xs)
+            'next :- update (\xs => pushSThings (fromMaybe Nil es) s)
+        doTraceDFS g
 
 ||| Traverse the given graph using a DFS, printing the visited nodes
 ||| in order of visit.
