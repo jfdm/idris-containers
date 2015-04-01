@@ -9,7 +9,7 @@ module Data.Queue
 -- TODO Make popQ total
 
 %access public
---%default total
+%default total
 
 ||| A Queue of items of type `ty`.
 |||
@@ -41,8 +41,8 @@ pushQThings xs q = foldl (flip pushQ) q xs
 ||| @q The Q
 popQ : (q : Queue ty) -> Maybe (ty, Queue ty)
 popQ (MkQ Nil Nil)  = Nothing
-popQ (MkQ inq xs)   with (xs)
-  | Nil       = popQ (MkQ Nil (reverse inq))
+popQ q@(MkQ inq xs)   with (xs)
+  | Nil       = popQ (assert_smaller (MkQ Nil (reverse inq)) q)
   | (x::outq) = Just (x, MkQ inq outq)
 
 ||| See what is at the top of the Queue
