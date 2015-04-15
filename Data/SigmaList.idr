@@ -120,7 +120,7 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
--- ------------------------------------------------------------ [ Transforming ]
+-- ---------------------------------------------- [ To List of Dependent Pairs ]
 
 toLDP : SigmaList aTy eTy as -> List (x : aTy ** eTy x)
 toLDP Nil     = Nil
@@ -129,11 +129,26 @@ toLDP (x::xs) = (_**x) :: toLDP xs
 -- -------------------------------------------------------------------- [ Show ]
 -- TODO
 
-%names h, t
+showSigList : (elemTy ty -> String) -> SigmaList aTy elemTy as -> List String
+showSigList _ Nil = List.Nil
+showSigList sf es with (es)
+    | Nil     = List.Nil
+    | (x::xs) = ?mvar -- sf x :: showSigList xs
 
-toShow : (eTy x -> String) -> SigmaList aTy eTy as -> List String
-toShow _ Nil = Nil
-toShow f (x::xs) = f x :: toShow xs
+instance Show (SigmaList aTy elemTy as) where
+  show {as} xs with as
+    | Nil = ""
+    | (x::xs) = show x :: show xs
+
+showSigList : (x : aTy ** (elemTy x -> String) ) -> SigmaList aTy elemTy xs -> List String
+showSigList _ Nil = Nil
+showSigList (_ ** f) (x::xs) = ?am -- :: showSigList f xs
+
+
+instance Show (SigmaList aTy elemTy xs) where
+  show Nil     = ""
+  show (x::xs) = showElem x ++ ", " ++ show xs
+
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
 -- TODO
