@@ -96,11 +96,13 @@ balance e l r = case rotDIR l r of
 
 -- --------------------------------------------------------------------- [ API ]
 public
+partial
 splitMax : AVLTree a -> (AVLTree a, a)
 splitMax (Node _ e l Empty) = (l, e)
-splitMax (Node _ e l r)    = let (r', e') = (splitMax r) in (balance e l r', e')
+splitMax (Node _ e l r)     = let (r', e') = (splitMax r) in (balance e l r', e')
 
 public
+partial
 avlMerge : AVLTree a -> AVLTree a -> AVLTree a
 avlMerge l    Empty = l
 avlMerge Empty r    = r
@@ -125,6 +127,7 @@ avlInsert x (Node d y l r) =
     EQ => Node d x l r
 
 public
+partial
 avlRemove : Ord a => a -> AVLTree a -> AVLTree a
 avlRemove _ Empty          = Empty
 avlRemove x (Node d y l r) =
@@ -139,10 +142,12 @@ avlUpdate : Ord a => a -> (a -> a) -> AVLTree a -> AVLTree a
 -}
 
 public
+partial
 avlUpdate : Ord a => a -> (a -> a) -> AVLTree a -> AVLTree a
 avlUpdate x f orig = avlInsert (f x) $ avlRemove x orig
 
 public
+partial
 avlSplit : Ord a => a -> AVLTree a -> Maybe $ (AVLTree a, a)
 avlSplit _ Empty          = Nothing
 avlSplit x (Node d y l r) =

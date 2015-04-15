@@ -24,6 +24,7 @@ insert : Ord a => a -> Set a -> Set a
 insert a (MkSet m) = MkSet (avlInsert a m)
 
 ||| Remove an element from the set.
+partial
 delete : Ord a => a -> Set a -> Set a
 delete a (MkSet m) = MkSet (avlRemove a m)
 

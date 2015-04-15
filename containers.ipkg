@@ -1,6 +1,6 @@
 package containers
 
-opts = "-p effects --total"
+opts = "-p effects"
 
 modules = Data.AVL.Tree
         , Data.AVL.Dict

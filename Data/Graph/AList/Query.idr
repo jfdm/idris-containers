@@ -24,7 +24,7 @@ BfsEffs = [ 'next ::: STATE (Queue Node),
 ||| Traverse the given graph using a BFS, printing the visited nodes
 ||| in order of visit.
 private
-doTraceBFS : (Ord n, Show n) => Graph n e -> {BfsEffs} Eff ()
+doTraceBFS : (Ord n, Show n) => Graph n e -> Eff () BfsEffs
 doTraceBFS g = do
    q <- 'next :- get
    case popQ q of
@@ -36,12 +36,12 @@ doTraceBFS g = do
 
        -- Move on
        let es = getSuccs curr g
-       mapE doMove $ fromMaybe Nil es
+       doMoves es
 
        -- Repeat
        doTraceBFS g
   where
-    doMove : Node -> {BfsEffs} Eff ()
+    doMove : Node -> Eff () BfsEffs
     doMove n = do
       visited <- 'seen :- get
       case elem n visited of
@@ -49,6 +49,13 @@ doTraceBFS g = do
         False => do
           'seen :- update (\xs => [n] ++ xs)
           'next :- update (\xs => pushQ n xs)
+
+    doMoves : Maybe (List Node) -> Eff () BfsEffs
+    doMoves Nothing = pure ()
+    doMoves (Just Nil) = pure ()
+    doMoves (Just (e::es)) = do
+       doMove e
+       doMoves (Just es)
 
 ||| Traverse the given graph using a BFS, printing the visited nodes
 ||| in order of visit.
@@ -64,7 +71,7 @@ DfsEffs = [ 'next ::: STATE (Stack Node),
 
 ||| Traverse the given graph using a DFS, printing the visited nodes
 ||| in order of visit.
-doTraceDFS : (Ord n, Show n) => Graph n e -> {DfsEffs} Eff ()
+doTraceDFS : (Ord n, Show n) => Graph n e -> Eff () DfsEffs
 doTraceDFS g = do
     s <- 'next :- get
     case popS s of

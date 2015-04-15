@@ -78,9 +78,9 @@ tail (x::xs) {ok=p}    = xs
 
 
 last : (l : SigmaList aTy eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
-last Nil        {ok=Refl}   impossible
-last [x]        {ok=p}    = (_ ** x)
-last (x::y::ys) {ok=p}    = last (y::ys) {ok=Refl}
+last Nil           {ok=Refl}  impossible
+last [x]           {ok=p}     = (_ ** x)
+last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 
 -- TODO init
 

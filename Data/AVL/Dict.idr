@@ -68,6 +68,7 @@ rotDIR l r = if (hr + 1 < hl) && (bias l < 0)
     hr = height r
 
 private
+partial
 rotr : Ord k => Dict k v -> Dict k v
 rotr Empty             = Empty
 rotr (Node _ (k,v) l r) with (l)
@@ -75,6 +76,7 @@ rotr (Node _ (k,v) l r) with (l)
 -- 'missing case' Empty might cause jip
 
 private
+partial
 rotl : Ord k => Dict k v -> Dict k v
 rotl Empty             = Empty
 rotl (Node _ (k,v) l r) with (r)
@@ -83,6 +85,7 @@ rotl (Node _ (k,v) l r) with (r)
 
 -- --------------------------------------------------------------- [ Balancing ]
 private
+partial
 balance : Ord k => k -> v -> Dict k v -> Dict k v -> Dict k v
 balance k v l r = case rotDIR l r of
      RotRLB => rotr $ mkNode k v (rotl l) r
@@ -101,11 +104,12 @@ isEmpty Empty = True
 isEmpty _    = False
 
 ||| Note this is not the classical split.
+partial
 splitMax : Ord k => Dict k v -> (Dict k v, (k,v))
 splitMax (Node _ (k,v) l Empty) = (l, (k,v))
 splitMax (Node _ (k,v) l r)     = let (r', (k',v')) = (splitMax r) in (balance k v l r', (k',v'))
 
-
+partial
 merge : Ord k => Dict k v -> Dict k v -> Dict k v
 merge l    Empty = l
 merge Empty r    = r
@@ -125,6 +129,7 @@ lookup k d = lookupUsing (compare k) d
 isKey : Ord k => k -> Dict k v -> Bool
 isKey k d = isJust $ lookup k d
 
+partial
 insert : Ord k => k -> v -> Dict k v -> Dict k v
 insert k v Empty              = mkNode k v Empty Empty
 insert x a (Node d (y,b) l r) =
@@ -133,6 +138,7 @@ insert x a (Node d (y,b) l r) =
     GT => balance y b l (insert x a r)
     EQ => Node d (x,a) l r
 
+partial
 remove : Ord k => k -> Dict k v -> Dict k v
 remove _ Empty              = Empty
 remove x (Node d (y,v) l r) =
@@ -143,6 +149,7 @@ remove x (Node d (y,v) l r) =
 
 ||| Update the dictionary selecting a node using a custom ordering
 ||| function.
+partial
 updateUsing : Ord k => (k -> Ordering) -> (v -> v) -> Dict k v -> Dict k v
 updateUsing _ _ Empty              = Empty
 updateUsing f u (Node d (y,v) l r) =
@@ -151,10 +158,12 @@ updateUsing f u (Node d (y,v) l r) =
     GT => balance y v l (updateUsing f u r)
     EQ => Node d (y, (u v)) l r
 
+partial
 update : Ord k => k -> (v -> v) -> Dict k v -> Dict k v
 update x f d = updateUsing (compare x) f d
 
 ||| Note this is not the classical split
+partial
 split : Ord k => k -> Dict k v -> Maybe $ (Dict k v, (k,v))
 split _ Empty = Nothing
 split x (Node d (y,v) l r) =
@@ -186,6 +195,7 @@ toList : Dict k v -> List (k,v)
 toList Empty              = Nil
 toList (Node d (k,v) l r) = (k,v) :: toList l ++ toList r
 
+partial
 fromList : Ord k => List (k,v) -> Dict k v
 fromList xs = foldl (\d, (k,v)=> insert k v d) Empty xs
 
