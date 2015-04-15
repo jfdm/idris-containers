@@ -120,8 +120,20 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
+-- ------------------------------------------------------------ [ Transforming ]
+
+toLDP : SigmaList aTy eTy as -> List (x : aTy ** eTy x)
+toLDP Nil     = Nil
+toLDP (x::xs) = (_**x) :: toLDP xs
+
 -- -------------------------------------------------------------------- [ Show ]
 -- TODO
+
+%names h, t
+
+toShow : (eTy x -> String) -> SigmaList aTy eTy as -> List String
+toShow _ Nil = Nil
+toShow f (x::xs) = f x :: toShow xs
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
 -- TODO
