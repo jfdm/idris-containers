@@ -131,23 +131,11 @@ toLDP (x::xs) = (_**x) :: toLDP xs
 
 showSigList : (elemTy ty -> String) -> SigmaList aTy elemTy as -> List String
 showSigList _ Nil = List.Nil
-showSigList sf es with (es)
+showSigList showFunc es with (es)
     | Nil     = List.Nil
-    | (x::xs) = ?mvar -- sf x :: showSigList xs
+    | (a::as) = ?mv -- (showFunc x) :: showSigList showFunc xs
 
-instance Show (SigmaList aTy elemTy as) where
-  show {as} xs with as
-    | Nil = ""
-    | (x::xs) = show x :: show xs
-
-showSigList : (x : aTy ** (elemTy x -> String) ) -> SigmaList aTy elemTy xs -> List String
-showSigList _ Nil = Nil
-showSigList (_ ** f) (x::xs) = ?am -- :: showSigList f xs
-
-
-instance Show (SigmaList aTy elemTy xs) where
-  show Nil     = ""
-  show (x::xs) = showElem x ++ ", " ++ show xs
+-- instance Show (SigmaList aTy elemTy as) where
 
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
