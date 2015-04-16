@@ -127,15 +127,30 @@ toLDP Nil     = Nil
 toLDP (x::xs) = (_**x) :: toLDP xs
 
 -- -------------------------------------------------------------------- [ Show ]
--- TODO
+-- A way of doing show, a little nasty but worth it.
 
-showSigList : (elemTy ty -> String) -> SigmaList aTy elemTy as -> List String
-showSigList _ Nil = List.Nil
-showSigList showFunc es with (es)
-    | Nil     = List.Nil
-    | (a::as) = ?mv -- (showFunc x) :: showSigList showFunc xs
+using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
--- instance Show (SigmaList aTy elemTy as) where
+  showSigList : ({a : aTy} -> elemTy a -> String)
+              -> SigmaList aTy elemTy as
+              -> List String
+  showSigList _    Nil    = Nil
+  showSigList showFunc es with (es)
+              | Nil      = Nil
+              | (b::bs)  = (showFunc b) :: showSigList showFunc bs
+
+-- data Foobar : Nat -> Type where
+--   MkFoo : String -> Foobar Z
+--   MkBar : Nat    -> Foobar (S (S Z))
+
+-- instance Show (Foobar n) where
+--   show (MkFoo s) = show s
+--   show (MkBar n) = show n
+
+-- fs : SigmaList Nat Foobar ?as
+-- fs = [MkFoo "A", MkBar Z]
+
+-- as = proof search
 
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
