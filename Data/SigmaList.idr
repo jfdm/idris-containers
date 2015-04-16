@@ -139,24 +139,39 @@ showSigList showFunc es with (es)
             | Nil      = Nil
             | (b::bs)  = (showFunc b) :: showSigList showFunc bs
 
-showSigmaList : ({a : aTy} -> elemTy a -> String)
-              -> SigmaList aTy elemTy as
+||| Function to show a `SigmaList`.
+|||
+||| Due to limitations in idris wrt to class instances on dependent
+||| types a generic show instance cannot be defined for
+||| sigmalist. This will cause minor annoyances in its use.
+|||
+||| Example Usage is:
+|||
+||| ```
+||| data Foobar : Nat -> Type where
+|||   MkFoo : String -> Foobar Z
+|||   MkBar : Nat    -> Foobar (S (S Z))
+|||
+||| instance Show (Foobar n) where
+|||   show (MkFoo s) = show s
+|||   show (MkBar n) = show n
+|||
+||| fs : SigmaList Nat Foobar [Z,2]
+||| fs = [MkFoo "A", MkBar Z]
+|||
+||| x : String
+||| x = showSigmaList (show) fs
+||| ```
+|||
+|||
+||| @showFunc A function to show the elements
+||| @l       The list to be Shown.
+showSigmaList : (showFunc : {a : aTy} -> elemTy a -> String)
+              -> (l : SigmaList aTy elemTy as)
               -> String
 showSigmaList sF xs = "[" ++ unwords (intersperse "," (showSigList sF xs)) ++ "]"
 
 -- Example usage
--- data Foobar : Nat -> Type where
---   MkFoo : String -> Foobar Z
---   MkBar : Nat    -> Foobar (S (S Z))
-
--- instance Show (Foobar n) where
---   show (MkFoo s) = show s
---   show (MkBar n) = show n
-
--- fs : SigmaList Nat Foobar ?as
--- fs = [MkFoo "A", MkBar Z]
-
--- as = proof search
 
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
