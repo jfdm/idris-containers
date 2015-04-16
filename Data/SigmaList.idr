@@ -6,6 +6,7 @@
 ||| be used as it requires all elements to have the same type.
 module Data.SigmaList
 
+%access public
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
@@ -129,16 +130,22 @@ toLDP (x::xs) = (_**x) :: toLDP xs
 -- -------------------------------------------------------------------- [ Show ]
 -- A way of doing show, a little nasty but worth it.
 
-using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
+private
+showSigList : ({a : aTy} -> elemTy a -> String)
+            -> SigmaList aTy elemTy as
+            -> List String
+showSigList _    Nil    = Nil
+showSigList showFunc es with (es)
+            | Nil      = Nil
+            | (b::bs)  = (showFunc b) :: showSigList showFunc bs
 
-  showSigList : ({a : aTy} -> elemTy a -> String)
+
+showSigmaList : ({a : aTy} -> elemTy a -> String)
               -> SigmaList aTy elemTy as
-              -> List String
-  showSigList _    Nil    = Nil
-  showSigList showFunc es with (es)
-              | Nil      = Nil
-              | (b::bs)  = (showFunc b) :: showSigList showFunc bs
+              -> String
+showSigmaList sF xs = "[" ++ unwords (intersperse "," (showSigList sF xs)) ++ "]"
 
+-- Example usage
 -- data Foobar : Nat -> Type where
 --   MkFoo : String -> Foobar Z
 --   MkBar : Nat    -> Foobar (S (S Z))
