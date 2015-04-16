@@ -139,7 +139,6 @@ showSigList showFunc es with (es)
             | Nil      = Nil
             | (b::bs)  = (showFunc b) :: showSigList showFunc bs
 
-
 showSigmaList : ({a : aTy} -> elemTy a -> String)
               -> SigmaList aTy elemTy as
               -> String
