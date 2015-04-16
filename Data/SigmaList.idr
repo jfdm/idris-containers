@@ -7,6 +7,7 @@
 module Data.SigmaList
 
 %access public
+--%default total
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
@@ -145,25 +146,6 @@ showSigList showFunc es with (es)
 ||| types a generic show instance cannot be defined for
 ||| sigmalist. This will cause minor annoyances in its use.
 |||
-||| Example Usage is:
-|||
-||| ```
-||| data Foobar : Nat -> Type where
-|||   MkFoo : String -> Foobar Z
-|||   MkBar : Nat    -> Foobar (S (S Z))
-|||
-||| instance Show (Foobar n) where
-|||   show (MkFoo s) = show s
-|||   show (MkBar n) = show n
-|||
-||| fs : SigmaList Nat Foobar [Z,2]
-||| fs = [MkFoo "A", MkBar Z]
-|||
-||| x : String
-||| x = showSigmaList (show) fs
-||| ```
-|||
-|||
 ||| @showFunc A function to show the elements
 ||| @l       The list to be Shown.
 showSigmaList : (showFunc : {a : aTy} -> elemTy a -> String)
@@ -171,7 +153,14 @@ showSigmaList : (showFunc : {a : aTy} -> elemTy a -> String)
               -> String
 showSigmaList sF xs = "[" ++ unwords (intersperse "," (showSigList sF xs)) ++ "]"
 
--- Example usage
+-- ---------------------------------------------------------------------- [ Eq ]
+
+eqSigmaList : (eqFunc : {a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+           -> (x : SigmaList aTy elemTy xs)
+           -> (y : SigmaList aTy elemTy ys)
+           -> Bool
+eqSigmaList _  Nil     Nil     = True
+eqSigmaList eF (x::xs) (y::ys) = if eF x y then eqSigmaList eF xs ys else False
 
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
