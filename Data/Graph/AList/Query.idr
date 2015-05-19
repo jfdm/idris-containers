@@ -60,7 +60,7 @@ doTraceBFS g = do
 ||| Traverse the given graph using a BFS, printing the visited nodes
 ||| in order of visit.
 traceBfsIO : (Ord v, Show v) => Node -> Graph v e -> IO ()
-traceBfsIO n g = runInit ['next := initQ n, 'seen := Nil, ()] $ doTraceBFS g
+traceBfsIO n g = runInit ['next := initQ n, 'seen := List.Nil, ()] $ doTraceBFS g
 
 -- --------------------------------------------------------------------- [ DFS ]
 ||| The Effects used in a DFS.
@@ -79,17 +79,17 @@ doTraceDFS g = do
       Just (curr, s') => do
         'next :- put s'
         visited <- 'seen :- get
-        if elem curr visited
-          then pure ()
-          else do
+        case elem curr visited of
+          True  => pure ()
+          False => do
             putStrLn $ show curr
             let es = getSuccs curr g
             'seen :- update (\xs => [curr] ++ xs)
             'next :- update (\xs => pushSThings (fromMaybe Nil es) s)
-        doTraceDFS g
+            doTraceDFS g
 
 ||| Traverse the given graph using a DFS, printing the visited nodes
 ||| in order of visit.
 traceDfsIO : (Ord v, Show v) => Node -> Graph v e -> IO ()
-traceDfsIO n g = runInit ['next := initS n, 'seen := Nil, ()] $ doTraceDFS g
+traceDfsIO n g = runInit ['next := initS n, 'seen := List.Nil, ()] $ doTraceDFS g
 -- --------------------------------------------------------------------- [ EOF ]
