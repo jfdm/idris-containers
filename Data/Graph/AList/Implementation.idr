@@ -19,12 +19,12 @@ import public Data.Graph.Common
 ||| @vTy The type of the value associated with the vertex.
 ||| @eTy The type of the label used on edges.
 Graph : (vTy : Type) -> (eTy : Type) -> Type
-Graph n e = Dict (Node) (n, AList e)
+Graph vTy eTy = Dict (Node) (vTy, AList eTy)
 
 ||| Return the a list of node identifiers used in the graph.
-verticies : Graph v e -> List Node
-verticies Empty = Nil
-verticies (Node _ (k,as) l r) = verticies l ++ [k] ++ verticies r
+vertices : Graph v e -> List Node
+vertices Empty = Nil
+vertices (Node _ (k,as) l r) = vertices l ++ [k] ++ vertices r
 
 ||| Return the list of edges (unlabelled) with in the graph.
 edges : Graph v e -> List Edge
@@ -83,6 +83,14 @@ buildG' gs = foldl (\g,(n,as) => insertNode n as g) Empty gs
 lookupNode : Node -> Graph v e -> Maybe $ (v, AList e)
 lookupNode n g = lookup n g
 
+||| Does the graph contain a node with a specific value.
+hasValue : Eq v => v -> Graph v e -> Maybe v
+hasValue val g =
+    case find (\(x,_) => x == val) (values g) of
+      Just (a,b) => Just a
+      Nothing    => Nothing
+
+
 ||| Get a nodes value
 getValue : Node -> Graph v e -> Maybe v
 getValue id g = case lookup id g of
@@ -95,4 +103,8 @@ getSuccs id g = case lookup id g of
     Just (_,as) => Just $ map fst as
     Nothing       => Nothing
 
+getEdge : Node -> Graph v e -> Maybe $ List (Nat, e)
+getEdge id g = case lookup id g of
+    Nothing     => Nothing
+    Just (_,as) => Just as
 -- --------------------------------------------------------------------- [ EOF ]
