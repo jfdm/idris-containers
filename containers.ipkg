@@ -12,7 +12,5 @@ modules = Data.AVL.Tree
 
         , Data.Graph.Common
         , Data.Graph.AList
-        , Data.Graph.AList.Implementation
-        , Data.Graph.AList.Query
 
         , Data.SigmaList

@@ -7,7 +7,7 @@ import Effects
 import Effect.State
 import Effect.StdIO
 
-import Data.Graph.AList.Implementation
+import Data.Graph.AList
 
 import Data.Queue
 import Data.Stack
