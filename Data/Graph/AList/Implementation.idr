@@ -83,6 +83,12 @@ buildG' gs = foldl (\g,(n,as) => insertNode n as g) Empty gs
 lookupNode : Node -> Graph v e -> Maybe $ (v, AList e)
 lookupNode n g = lookup n g
 
+hasValueBy : Eq v => ((v,AList e) -> Bool) -> Graph v e -> Maybe v
+hasValueBy f g =
+  case find f (values g) of
+    Just (a,_) => Just a
+    Nothing    => Nothing
+
 ||| Does the graph contain a node with a specific value.
 hasValue : Eq v => v -> Graph v e -> Maybe v
 hasValue val g =
