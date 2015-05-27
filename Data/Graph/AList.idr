@@ -33,6 +33,10 @@ record Graph (vTy : Type) (eTy : Type) where
 GraphRep : (vTy : Type) -> (eTy : Type) -> Type
 GraphRep vTy eTy = Dict (Node) (vTy, AList eTy)
 
+instance (Show v, Show e) => Show (Graph v e) where
+  show (MkGraph _ Empty) = "[Empty Graph]"
+  show (MkGraph _ g)     = show g
+
 mkEmptyGraph : Graph v e
 mkEmptyGraph = MkGraph Z Empty
 
