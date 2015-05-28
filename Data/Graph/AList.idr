@@ -120,7 +120,6 @@ getEdge id g = case lookup id (graph g) of
     Nothing     => Nothing
     Just (_,as) => Just as
 
-
 findMaxID : Graph v e -> Node
 findMaxID g = dofindMaxID 0 (toList (graph g))
   where
