@@ -189,8 +189,16 @@ length : Dict k v -> Nat
 length Empty = Z
 length (Node _ _ l r) = 1 + length l + length r
 
--- -------------------------------------------------------------------- [ List ]
+hasValueUsing : (v -> Bool) -> Dict k v -> Bool
+hasValueUsing f Empty              = False
+hasValueUsing f (Node _ (k,v) l r) = f v
+  || (hasValueUsing f l)
+  || (hasValueUsing f r)
 
+hasValue : Eq v => v -> Dict k v -> Bool
+hasValue v d = hasValueUsing (\x => v == x) d
+
+-- -------------------------------------------------------------------- [ List ]
 toList : Dict k v -> List (k,v)
 toList Empty              = Nil
 toList (Node d (k,v) l r) = (k,v) :: toList l ++ toList r
@@ -199,7 +207,21 @@ partial
 fromList : Ord k => List (k,v) -> Dict k v
 fromList xs = foldl (\d, (k,v)=> insert k v d) Empty xs
 
+-- -------------------------------------------------------------------- [ misc ]
+getKeyUsing : (v -> Bool) -> Dict k v -> Maybe k
+getKeyUsing f Empty = Nothing
+getKeyUsing f d     = foldr (res') Nothing $ toList d
+  where
+    res' : (k,v) -> Maybe k -> Maybe k
+    res' (k,v) res = case f v of
+        True  => Just k
+        False => res
+
+getKey : Eq v => v -> Dict k v -> Maybe k
+getKey v d = getKeyUsing (\x => x==v) d
+
 -- ---------------------------------------------------------------- [ Instance ]
+
 instance (Show k, Show v) => Show (Dict k v) where
   show Empty              = ""
   show (Node d (k,v) l r) = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
