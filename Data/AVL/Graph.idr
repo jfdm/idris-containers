@@ -145,8 +145,13 @@ addValueEdge l g =
       Nothing => g
   where
     conv : v -> v -> Maybe (NodeID, NodeID)
-    conv x y = [(xID, yID) | xID <- getNodeID x g,
-                             yID <- getNodeID y g]
+    conv x y =
+      case getNodeID x g of
+        Nothing  => Nothing
+        Just xID =>
+          case getNodeID y g of
+            Nothing  => Nothing
+            Just yID => Just (xID,yID)
 
     newEdge : (v, v, Maybe e) -> Maybe $ (Edge e)
     newEdge (x,y,l) =
@@ -265,16 +270,14 @@ updateNodeValueByID id val g = record {graph = newG, legend = newL} g
 
 ||| Construct a graph using a list of nodes and a list of edges.
 buildG : Eq v => List v -> List (v,v, Maybe e) -> Graph v e
-buildG Nil _  = mkEmptyGraph
-buildG ns  es = record {counter = (S maxID)} g
+buildG Nil _   = mkEmptyGraph
+buildG ns  Nil = addNodes ns mkEmptyGraph
+buildG ns  es  = addValueEdges es $ addNodes ns mkEmptyGraph
   where
     g : Graph v e
     g = addNodes ns mkEmptyGraph
 
     g' : Graph v e
     g' = addValueEdges es g
-
-    maxID : NodeID
-    maxID = foldl (\x, (_,id) => max x id) Z (legend g')
 
 -- --------------------------------------------------------------------- [ EOF ]
