@@ -11,18 +11,18 @@ towns = ["Munchen", "Augsburg", "Nurnberg","Stuttgart",
          "Frankfurt",
           "Mannheim"]
 
-links : List (String, String, Int)
-links = [("Frankfurt", "Mannheim", 85),
-         ("Frankfurt","Wurzburg",217),
-         ("Frankfurt","Kassel",173),
-        ("Mannheim","Karlsruhe", 80),
-        ("Karlsruhe","Ausburg", 250),
-        ("Ausburg","Munchen", 84),
-        ("Wurzburg","Erfurt", 186),
-        ("Wurzburg","Nurnburg", 167),
-        ("Nurnburg","Stuttgart", 183),
-        ("Nurnburg","Munchen", 167),
-        ("Kassel","Munchen", 502)]
+links : List (String, String, Maybe Int)
+links = [("Frankfurt" , "Mannheim" , Just 85),
+         ("Frankfurt" ,"Wurzburg"  , Just 217),
+         ("Frankfurt" ,"Kassel"    , Just 173),
+         ("Mannheim"  ,"Karlsruhe" , Just 80),
+         ("Karlsruhe" ,"Ausburg"   , Just 250),
+         ("Ausburg"   ,"Munchen"   , Just 84),
+         ("Wurzburg"  ,"Erfurt"    , Just 186),
+         ("Wurzburg"  ,"Nurnburg"  , Just 167),
+         ("Nurnburg"  ,"Stuttgart" , Just 183),
+         ("Nurnburg"  ,"Munchen"   , Just 167),
+         ("Kassel"    ,"Munchen"   , Just 502)]
 
 g : Graph String Int
 g = buildG towns links
