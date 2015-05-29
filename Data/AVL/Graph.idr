@@ -3,10 +3,9 @@
 ||| The underlying implementation is that of an AVL-based Dictionary
 ||| that associates a `(id,value)` pair to an adjacency list
 ||| `(id,label)`.
-module Data.Graph.AList
+module Data.AVL.Graph
 
 import public Data.AVL.Dict
--- import public Data.Graph.Common
 
 %access public
 
@@ -78,13 +77,21 @@ instance (Show v, Show e) => Show (Graph v e) where
   show (MkGraph _ _ g)     = show g
 
 -- ---------------------------------------------------------- [ Legend Utility ]
-
+private
 delFromLegend : ((v,NodeID) -> Bool) -> Legend v -> Legend v
 delFromLegend f Nil = Nil
 delFromLegend f (x::xs) =
   if f x
     then xs
     else x::xs
+
+private
+insertLegend : Eq v => v -> NodeID -> Legend v -> Legend v
+insertLegend val id l = (val, id) :: delFromLegend (\(x,_) => x == val) l
+
+private
+updateLegend : Eq v => v -> Legend v -> Legend v
+updateLegend x l = map (\(y,id) => if x == y then (x,id) else (y,id)) l
 
 -- ------------------------------------------------------------ [ Construction ]
 
@@ -102,26 +109,60 @@ addNode val (MkGraph c l g) = MkGraph (S c) newL newG
     newG = insert c (val,Nil) g
 
     newL : Legend v
-    newL = (val,c) :: delFromLegend (\(x,_) => x == val) l
+    newL = insertLegend val c l
 
 ||| Add many orphan nodes to the graph.
 addNodes : Eq v => List v -> Graph v e -> Graph v e
 addNodes vs g = foldl (flip $ addNode) g vs
 
+||| For a given value return the node id
+getNodeID : Eq v => v -> Graph v e -> Maybe NodeID
+getNodeID v g = List.lookup v (legend g)
+
+
 ||| Add a labelled edge to the Graph.
 addEdge : Edge e -> Graph v e -> Graph v e
-addEdge label (MkGraph c l g) = MkGraph c l (func label g)
+addEdge (x,y,l) g =
+    case validEdge x y of
+      True  => record {graph = doUpdate (x,y,l) (graph g)} g
+      False => g
   where
-    func : Edge e -> GraphRep v e -> GraphRep v e
-    func (f,t,label) g = update f (\(val,as) => (val,(t,label)::as)) g
+    validEdge : NodeID -> NodeID -> Bool
+    validEdge x y = isKey x (graph g) && isKey y (graph g)
+
+    doUpdate : (NodeID, NodeID, Maybe e) -> GraphRep v e -> GraphRep v e
+    doUpdate (x,y,l) gr = update x (\(val,as) => (val, (y,l)::as)) gr
 
 ||| Add multiple labelled edges to the Graph.
 addEdges : List (Edge e) -> Graph v e -> Graph v e
 addEdges es g = foldl (flip $ addEdge) g es
 
+||| Add Value Edge
+addValueEdge : Eq v => (v, v, Maybe e) -> Graph v e -> Graph v e
+addValueEdge l g =
+    case newEdge l of
+      Just e' => addEdge e' g
+      Nothing => g
+  where
+    conv : v -> v -> Maybe (NodeID, NodeID)
+    conv x y = [(xID, yID) | xID <- getNodeID x g,
+                             yID <- getNodeID y g]
+
+    newEdge : (v, v, Maybe e) -> Maybe $ (Edge e)
+    newEdge (x,y,l) =
+      case conv x y of
+        Just (xID, yID) => Just (xID,yID,l)
+        otherwise       => Nothing
+
+addValueEdges : Eq v => List (v,v, Maybe e) -> Graph v e -> Graph v e
+addValueEdges vs g  = foldl (flip $ addValueEdge) g vs
+
 ||| Insert a node, complete with predefined adjacency list to the graph.
-insertNode : v -> AList e -> Graph v e -> Graph v e
-insertNode val es (MkGraph c l g) = MkGraph (c + 1) l (insert c (val,es) g)
+insertNode : Eq v => v -> AList e -> Graph v e -> Graph v e
+insertNode val es (MkGraph c l g) = MkGraph (S c) newL (insert c (val,es) g)
+  where
+    newL : Legend v
+    newL = insertLegend val c l
 
 -- ------------------------------------------------------------------- [ Dumps ]
 
@@ -159,11 +200,7 @@ lookupNode val g =
 
 ||| Does the graph contain a node with a specific value.
 hasValue : Eq v => v -> Graph v e -> Bool
-hasValue v g = isJust $ List.lookup v (legend g)
-
-||| For a given value return the node id
-getNodeID : Eq v => v -> Graph v e -> Maybe NodeID
-getNodeID v g = List.lookup v (legend g)
+hasValue v g = isJust $ getNodeID v g
 
 ||| Get a nodes value
 getValue : NodeID -> Graph v e -> Maybe v
@@ -186,68 +223,58 @@ getSuccs val g =
     Nothing => Nil
     Just id => getSuccsByID id g
 
-||| Get the edge description for an node
+||| Get the adjaceny list for an node
 getEdgesByID : NodeID -> Graph v e -> List (DemiEdge e)
 getEdgesByID id g =
   case lookup id (graph g) of
     Nothing     => Nil
     Just (_,as) => as
 
-||| Get the full edge description for an node.
+||| Get the adjaceny list for an node.
 getEdges : Eq v => v -> Graph v e -> List (DemiEdge e)
 getEdges val g =
   case getNodeID val g of
     Just id => getEdgesByID id g
     Nothing => Nil
 
+||| Get the full edge description
 getEdgesVerboseByID : NodeID -> Graph v e -> List (Edge e)
 getEdgesVerboseByID id g =
   case lookup id (graph g) of
     Nothing     => Nil
     Just (_,as) => map (\(destID,label) => (id,destID,label)) as
 
+||| Get the full edge description
 getEdgesVerbose : Eq v => v -> Graph v e -> List (Edge e)
 getEdgesVerbose val g =
   case getNodeID val g of
     Just id => getEdgesVerboseByID id g
     Nothing => Nil
 
-
-findMaxID : Graph v e -> NodeID
-findMaxID g = dofindMaxID 0 (toList (graph g))
+-- ----------------------------------------------------------------- [ Updates ]
+updateNodeValueByID : Eq v => NodeID -> v -> Graph v e -> Graph v e
+updateNodeValueByID id val g = record {graph = newG, legend = newL} g
   where
-    dofindMaxID : NodeID -> List (NodeID,(v,AList e)) -> NodeID
-    dofindMaxID max Nil = max
-    dofindMaxID max ((curr,_)::rest) = case compare max curr of
-      LT => dofindMaxID curr rest
-      GT => dofindMaxID max rest
-      EQ => dofindMaxID max rest
+    newG : GraphRep v e
+    newG = update id (\(val',as) => (val,as)) (graph g)
+
+    newL : Legend v
+    newL = updateLegend val (legend g)
+
+-- ------------------------------------------------------------- [ Build Graph ]
 
 ||| Construct a graph using a list of nodes and a list of edges.
 buildG : Eq v => List v -> List (v,v, Maybe e) -> Graph v e
-buildG Nil _    = mkEmptyGraph
-buildG ns  es   = record {counter = (S maxID)} nodesAndEdges
+buildG Nil _  = mkEmptyGraph
+buildG ns  es = record {counter = (S maxID)} g
   where
-    justNodes : Graph v e
-    justNodes = addNodes ns mkEmptyGraph
+    g : Graph v e
+    g = addNodes ns mkEmptyGraph
 
-    convV : v -> v -> Maybe (NodeID, NodeID)
-    convV x y = [(xID, yID) | xID <- getNodeID x justNodes,
-                              yID <- getNodeID y justNodes]
-
-    conv : (v,v, Maybe e) -> Maybe (Edge e)
-    conv (x,y,l) =
-      case convV x y of
-        Just (xID, yID) => Just (xID,yID,l)
-        otherwise       => Nothing
-
-    gEdges : List (Edge e)
-    gEdges = catMaybes $ map conv es
-
-    nodesAndEdges : Graph v e
-    nodesAndEdges = addEdges gEdges justNodes
+    g' : Graph v e
+    g' = addValueEdges es g
 
     maxID : NodeID
-    maxID = foldl (\x, (_,id) => max x id) Z (legend nodesAndEdges)
+    maxID = foldl (\x, (_,id) => max x id) Z (legend g')
 
 -- --------------------------------------------------------------------- [ EOF ]

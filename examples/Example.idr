@@ -1,6 +1,6 @@
 module Example
 
-import Data.Graph.AList
+import Data.AVL.Graph
 
 towns : List String
 towns = ["Munchen", "Augsburg", "Nurnberg","Stuttgart",

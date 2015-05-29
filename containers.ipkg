@@ -6,11 +6,10 @@ modules = Data.AVL.Tree
         , Data.AVL.Dict
         , Data.AVL.Set
 
+        , Data.AVL.Graph
+
         , Data.RoseTree
         , Data.Stack
         , Data.Queue
-
-        , Data.Graph.Common
-        , Data.Graph.AList
 
         , Data.SigmaList
