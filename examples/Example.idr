@@ -29,7 +29,7 @@ links = [("Frankfurt"  ,"Mannheim" , Just 85),
          ("Kassel"     ,"Munchen"   , Just 502)]
 
 g : Graph String Int
-g = buildG towns links
+g = with List buildG towns links
 
  -- g1 : Graph String String
  -- g1 = buildG (zip [1..4] ["a", "b", "c", "d"] Refl) [("Munchen","Ausburg","a"),("Nurnburg","Ausburg","b"),("Munchen","Stuttgart","a")]

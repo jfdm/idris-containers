@@ -90,8 +90,8 @@ insertLegend : Eq v => v -> NodeID -> Legend v -> Legend v
 insertLegend val id l = (val, id) :: delFromLegend (\(x,_) => x == val) l
 
 private
-updateLegend : Eq v => v -> Legend v -> Legend v
-updateLegend x l = map (\(y,id) => if x == y then (x,id) else (y,id)) l
+updateLegend : Eq v => v -> v -> Legend v -> Legend v
+updateLegend old new l = map (\(x,id) => if x == old then (new,id) else (x,id)) l
 
 -- ------------------------------------------------------------ [ Construction ]
 
@@ -265,7 +265,28 @@ updateNodeValueByID id val g = record {graph = newG, legend = newL} g
     newG = update id (\(val',as) => (val,as)) (graph g)
 
     newL : Legend v
-    newL = updateLegend val (legend g)
+    newL = insertLegend val id $ delFromLegend (\(_,id') => id' == id) (legend g)
+
+updateNodeValue : Eq v => v -> v -> Graph v e -> Graph v e
+updateNodeValue val newVal g =
+  case getNodeID val g of
+    Just id => updateNodeValueByID id newVal g
+    Nothing => g
+
+updateNodeValueUsing : Eq v => v -> (v -> v) -> Graph v e -> Graph v e
+updateNodeValueUsing val f g =
+    case getNodeID val g of
+      Nothing => g
+      Just id => record {graph = newG id, legend = newL} g
+  where
+    newVal : v
+    newVal = f val
+
+    newG : Eq v => NodeID -> GraphRep v e
+    newG id = update id (\(_,as) => (newVal, as)) (graph g)
+
+    newL : Legend v
+    newL = updateLegend val newVal (legend g)
 
 -- ------------------------------------------------------------- [ Build Graph ]
 
