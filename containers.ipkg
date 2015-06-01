@@ -12,4 +12,5 @@ modules = Data.AVL.Tree
         , Data.Stack
         , Data.Queue
 
-        , Data.SigmaList
+        , Data.Sigma.DList
+        , Data.Sigma.DVect

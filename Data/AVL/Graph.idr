@@ -105,6 +105,7 @@ mkEmptyGraph = MkGraph Z Nil Empty
 addNode : Eq v => v -> Graph v e -> Graph v e
 addNode val (MkGraph c l g) = MkGraph (S c) newL newG
   where
+    partial
     newG : GraphRep v e
     newG = insert c (val,Nil) g
 

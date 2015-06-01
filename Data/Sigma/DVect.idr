@@ -4,56 +4,52 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.SigmaList
+module Data.Sigma.DVect
 
-%access public
---%default total
+import Data.Vect
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
   ||| A list construct for dependent types.
   |||
   ||| @aTy    The type of the value contained within the list element type.
+  ||| @len    The length of the list.
   ||| @elemTy The type of the elements within the list
   ||| @as     The List used to contain the different values within the type.
-  data SigmaList : (aTy : Type)
+  data DVect : (aTy : Type)
+                -> (len : Nat)
                 -> (elemTy : aTy -> Type)
-                -> (as : List aTy)
+                -> (as : Vect len aTy)
                 -> Type where
     ||| Create an empty List
-    Nil  : SigmaList aTy elemTy Nil
+    Nil  : DVect aTy Z elemTy Nil
     ||| Cons
     |||
     ||| @elem The element to add
     ||| @rest The list for `elem` to be added to.
     (::) : (elem : elemTy x)
-        -> (rest : SigmaList aTy elemTy xs)
-        -> SigmaList aTy elemTy (x::xs)
-
-||| Alisasing before syntactic sugar can be defined and added.
-SList : (aTy : Type) -> (elemTy : aTy -> Type) -> List aTy -> Type
-SList = SigmaList
+        -> (rest : DVect aTy n elemTy xs)
+        -> DVect aTy (S n) elemTy (x::xs)
 
 -- -------------------------------------------------------------- [ Form Tests ]
-isNil : SigmaList aTy eTy as -> Bool
+isNil : DVect aTy n eTy as -> Bool
 isNil Nil     = True
 isNil (x::xs) = False
 
-isCons : SigmaList aTy eTy as -> Bool
+isCons : DVect aTy n eTy as -> Bool
 isCons l = isNil l == False
 
 -- ------------------------------------------------------------------ [ Length ]
 
-length : SigmaList aTy eTy as -> Nat
-length Nil     = Z
-length (x::xs) = (S Z) + length xs
+length : DVect aTy n eTy as -> Nat
+length {n} _ = n
 
 -- ---------------------------------------------------------------- [ Indexing ]
 
 {- TODO Safely Index the List
 
 index : (n : Nat)
-     -> (l : SigmaList aTy eTy as)
+     -> (l : DVect aTy eTy as)
      -> (ok : lt n (length l) = True)
      -> (a : aTy ** eTy a)
 index Z     (x::xs) p    = (_ ** x)
@@ -62,33 +58,35 @@ index _     Nil     Refl   impossible
 -}
 
 index : (n : Nat)
-     -> (l : SigmaList aTy eTy as)
+     -> (l : DVect aTy l eTy as)
      -> Maybe $ Sigma aTy eTy
 index Z     (x::xs) = Just (_ ** x)
 index (S n) (x::xs) = index n xs
 index _     Nil     = Nothing
 
-head : (l : SigmaList aTy eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+head : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
 head Nil     {ok=Refl}   impossible
 head (x::xs) {ok=p}    = (_ ** x)
 
-tail : (l : SigmaList aTy eTy (a :: as))
+tail : (l : DVect aTy (S n) eTy (a :: as))
     -> {auto ok : isCons l = True}
-    -> (SigmaList aTy eTy as)
+    -> (DVect aTy n eTy as)
 tail Nil     {ok=Refl}   impossible
 tail (x::xs) {ok=p}    = xs
 
 
-last : (l : SigmaList aTy eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
-last Nil           {ok=Refl}  impossible
-last [x]           {ok=p}     = (_ ** x)
-last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
+last : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+last Nil        {ok=Refl}   impossible
+last [x]        {ok=p}    = (_ ** x)
+last (x::y::ys) {ok=p}    = last (y::ys) {ok=Refl}
 
 -- TODO init
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
-(++) : SigmaList aTy eTy xs -> SigmaList aTy eTy ys -> SigmaList aTy eTy (xs ++ ys)
+(++) : DVect aTy x     eTy xs
+    -> DVect aTy y     eTy ys
+    -> DVect aTy (x+y) eTy (xs ++ ys)
 (++) Nil     ys = ys
 (++) (x::xs) ys = x :: (xs ++ ys)
 
@@ -99,7 +97,13 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 
 -- ----------------------------------------------------------------- [ Functor ]
 -- TODO
-
+{-
+mapSV : (eXTy x -> eYTy y)
+     -> (DVect xTy l eXTy xs)
+     -> (ys : Vect l yTy ** DVect yTy l eYTy ys)
+mapSV f Nil     = (Nil ** Nil)
+mapSV f (x::xs) = let (ys ** xs') = mapSV f xs in (y :: ys ** f x ** xs')
+-}
 -- ---------------------------------------------------------------- [ Equality ]
 -- TODO
 
@@ -122,46 +126,8 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
--- ---------------------------------------------- [ To List of Dependent Pairs ]
-
-toLDP : SigmaList aTy eTy as -> List (x : aTy ** eTy x)
-toLDP Nil     = Nil
-toLDP (x::xs) = (_**x) :: toLDP xs
-
 -- -------------------------------------------------------------------- [ Show ]
--- A way of doing show, a little nasty but worth it.
-
-private
-showSigList : ({a : aTy} -> elemTy a -> String)
-            -> SigmaList aTy elemTy as
-            -> List String
-showSigList _    Nil    = Nil
-showSigList showFunc es with (es)
-            | Nil      = Nil
-            | (b::bs)  = (showFunc b) :: showSigList showFunc bs
-
-||| Function to show a `SigmaList`.
-|||
-||| Due to limitations in idris wrt to class instances on dependent
-||| types a generic show instance cannot be defined for
-||| sigmalist. This will cause minor annoyances in its use.
-|||
-||| @showFunc A function to show the elements
-||| @l       The list to be Shown.
-showSigmaList : (showFunc : {a : aTy} -> elemTy a -> String)
-              -> (l : SigmaList aTy elemTy as)
-              -> String
-showSigmaList sF xs = "[" ++ unwords (intersperse "," (showSigList sF xs)) ++ "]"
-
--- ---------------------------------------------------------------------- [ Eq ]
-
-eqSigmaList : (eqFunc : {a,b : aTy} -> elemTy a -> elemTy b -> Bool)
-           -> (x : SigmaList aTy elemTy xs)
-           -> (y : SigmaList aTy elemTy ys)
-           -> Bool
-eqSigmaList _  Nil     Nil     = True
-eqSigmaList eF (x::xs) (y::ys) = if eF x y then eqSigmaList eF xs ys else False
-
+-- TODO
 
 -- ------------------------------------------- [ Applicative/Monad/Traversable ]
 -- TODO
