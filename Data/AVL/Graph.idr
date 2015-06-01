@@ -209,11 +209,19 @@ hasValue : Eq v => v -> Graph v e -> Bool
 hasValue v g = isJust $ getNodeID v g
 
 ||| Get a nodes value
-getValue : NodeID -> Graph v e -> Maybe v
-getValue id g =
+getValueByID : NodeID -> Graph v e -> Maybe v
+getValueByID id g =
    case lookup id (graph g) of
       Just (val,_) => Just val
       Nothing      => Nothing
+
+||| Get Node Value
+getValueUsing : (v -> Bool) -> Graph v e -> Maybe v
+getValueUsing f g = doLook f (legend g)
+  where
+    doLook : (v -> Bool) -> List (v,NodeID) -> Maybe v
+    doLook _ Nil         = Nothing
+    doLook f ((x,_)::xs) = if f x then Just x else Nothing
 
 ||| Get a nodes successors.
 getSuccsByID : NodeID -> Graph v e -> List NodeID
