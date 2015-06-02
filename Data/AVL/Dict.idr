@@ -72,7 +72,7 @@ partial
 rotr : Ord k => Dict k v -> Dict k v
 rotr Empty             = Empty
 rotr (Node _ (k,v) l r) with (l)
-  | (Node _ (k',v') l' r') = mkNode k v l (mkNode k' v' r r' )
+  | (Node _ (k',v') l' r') = mkNode k v l' (mkNode k' v' r r' )
 -- 'missing case' Empty might cause jip
 
 private
