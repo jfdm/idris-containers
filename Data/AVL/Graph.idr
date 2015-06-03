@@ -266,35 +266,34 @@ getEdgesVerbose val g =
     Nothing => Nil
 
 -- ----------------------------------------------------------------- [ Updates ]
-updateNodeValueByID : Eq v => NodeID -> v -> Graph v e -> Graph v e
-updateNodeValueByID id val g = record {graph = newG, legend = newL} g
+
+updateNodeValueByIDUsing : Eq v => NodeID -> (v -> v) -> Graph v e -> Graph v e
+updateNodeValueByIDUsing id f g =
+    case getValueByID id g of
+      Nothing     => g
+      Just oldVal => let nval = f oldVal in record {graph = newG id nval, legend = newL oldVal nval} g
   where
-    newG : GraphRep v e
-    newG = update id (\(val',as) => (val,as)) (graph g)
+    newG : Eq v => NodeID -> v -> GraphRep v e
+    newG i nval = update i (\(_,as) => (nval, as)) (graph g)
 
-    newL : Legend v
-    newL = insertLegend val id $ delFromLegend (\(_,id') => id' == id) (legend g)
-
-updateNodeValue : Eq v => v -> v -> Graph v e -> Graph v e
-updateNodeValue val newVal g =
-  case getNodeID val g of
-    Just id => updateNodeValueByID id newVal g
-    Nothing => g
+    newL : v -> v -> Legend v
+    newL oval nval = updateLegend oval nval (legend g)
 
 updateNodeValueUsing : Eq v => v -> (v -> v) -> Graph v e -> Graph v e
-updateNodeValueUsing val f g =
-    case getNodeID val g of
-      Nothing => g
-      Just id => record {graph = newG id, legend = newL} g
-  where
-    newVal : v
-    newVal = f val
+updateNodeValueUsing oldval f g =
+  case getNodeID oldval g of
+    Nothing => g
+    Just id => updateNodeValueByIDUsing id f g
 
-    newG : Eq v => NodeID -> GraphRep v e
-    newG id = update id (\(_,as) => (newVal, as)) (graph g)
+replaceNodeValueByID : Eq v => NodeID -> v -> Graph v e -> Graph v e
+replaceNodeValueByID id val g = updateNodeValueByIDUsing id (\x => val) g
 
-    newL : Legend v
-    newL = updateLegend val newVal (legend g)
+replaceNodeValue : Eq v => v -> v -> Graph v e -> Graph v e
+replaceNodeValue val newVal g =
+  case getNodeID val g of
+    Just id => replaceNodeValueByID id newVal g
+    Nothing => g
+
 
 -- ------------------------------------------------------------- [ Build Graph ]
 
