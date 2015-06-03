@@ -22,10 +22,8 @@ check: clobber
 clobber : clean
 	find . -name "*.ibc" -delete
 
-test: install
-	$(MAKE) -C test build
-	(cd test; ./a.out)
-	$(MAKE) -C test clean
+test: clean
+	${IDRIS} --testpkg ${LIB}.ipkg
 
 doc:
 	${IDRIS} --mkdoc ${LIB}.ipkg

@@ -35,14 +35,14 @@ pushSThings : List ty -> Stack ty -> Stack ty
 pushSThings xs s = xs ++ s
 
 ||| Remove an element from the stack, returning the pair (head, tail).
-popS : (s : Stack ty) -> Maybe (ty, Stack ty)
-popS Nil     = Nothing
-popS (x::xs) = Just (x,xs)
+popS : (s : Stack ty) -> {auto ok : isCons s = True} -> (ty, Stack ty)
+popS Nil     {ok=Refl} impossible
+popS (x::xs) {ok=p}    = (x,xs)
 
 ||| See what is at the top of the stack.
-peekS : (s : Stack ty) -> Maybe ty
-peekS Nil     = Nothing
-peekS (x::xs) = Just x
+peekS : (s : Stack ty) -> {auto ok : isCons s = True} ->  ty
+peekS Nil     {ok=Refl} impossible
+peekS (x::xs) {ok=p}    = x
 
 clear : Stack ty -> Stack ty
 clear _ = mkStack
