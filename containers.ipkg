@@ -8,6 +8,8 @@ modules = Data.AVL.Tree
 
         , Data.AVL.Graph
 
+        , Data.Dependent.AVL.Tree
+
         , Data.RoseTree
         , Data.Stack
         , Data.Queue
