@@ -25,6 +25,10 @@ mkQueue = MkQ Nil Nil
 isQEmpty : Queue a -> Bool
 isQEmpty (MkQ inq outq) = isNil inq && isNil outq
 
+||| Is the queue cons
+isQCons : Queue a -> Bool
+isQCons (MkQ inq outq) = isCons inq || isCons outq
+
 ||| Push an element onto the queue.
 pushQ : a -> Queue a -> Queue a
 pushQ e (MkQ inq outq) = MkQ (e::inq) outq
@@ -40,22 +44,47 @@ pushQThings xs q = foldl (flip pushQ) q xs
 ||| Remove an element from the queue, returning the pair (head, tail)
 ||| @q The Q
 partial
-popQ : (q : Queue ty) -> Maybe (ty, Queue ty)
-popQ (MkQ Nil Nil)  = Nothing
-popQ (MkQ inq xs)   with (xs)
-  | Nil       = popQ (MkQ Nil (reverse inq))
+popQ : (q : Queue ty) -> {auto prf : isQCons q = True} ->  (ty, Queue ty)
+popQ (MkQ Nil Nil) {prf=Refl} impossible
+popQ (MkQ Nil [x])            = (x, MkQ Nil Nil)
+popQ (MkQ (x :: xs) (y :: (z :: ys))) = (y, MkQ (x::xs) ys)
+popQ (MkQ (x :: xs) Nil) = case (reverse (x::xs)) of
+  (y::ys) => (y, MkQ Nil ys)
+popQ (MkQ (x :: xs) [y]) = (y, MkQ Nil (reverse (x::xs)))
+popQ (MkQ Nil (x :: (y :: xs))) = (x, MkQ Nil (y::xs))
+
+
+
+||| See what is at the top of the Queue
+|||
+||| @q the Q
+partial
+peekQ : (q : Queue ty) -> {auto prf : isQCons q = True} -> ty
+peekQ qu = fst $ popQ qu
+
+||| Remove an element from the queue, returning the pair (head, tail)
+||| @q The Q
+partial
+popQ' : (q : Queue ty) -> Maybe (ty, Queue ty)
+popQ' (MkQ Nil Nil)  = Nothing
+popQ' (MkQ inq xs)   with (xs)
+  | Nil       = popQ' (MkQ Nil (reverse inq))
   | (x::outq) = Just (x, MkQ inq outq)
 
 ||| See what is at the top of the Queue
 |||
 ||| @q the Q
-peekQ : (q : Queue ty) -> Maybe ty
-peekQ (MkQ Nil Nil)       = Nothing
-peekQ (MkQ inq (x::outq)) = Just x
-peekQ (MkQ inq Nil)       = head' (reverse inq)
+peekQ' : (q : Queue ty) -> Maybe ty
+peekQ' (MkQ Nil Nil)       = Nothing
+peekQ' (MkQ inq (x::outq)) = Just x
+peekQ' (MkQ inq Nil)       = head' (reverse inq)
 
 clearQ : Queue a -> Queue a
 clearQ _ = mkQueue
 
+instance Eq ty => Eq (Queue ty) where
+  (==) (MkQ inx outx) (MkQ iny outy) = inx == iny && outx == outy
 
+instance Show ty => Show (Queue ty) where
+  show (MkQ inq outq) = unwords ["[Q", show inq, show outq, "]"]
 -- --------------------------------------------------------------------- [ EOF ]

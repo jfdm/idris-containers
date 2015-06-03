@@ -17,4 +17,9 @@ modules = Data.AVL.Tree
         , Data.Sigma.DList
         , Data.Sigma.DVect
 
-tests = Data.StackTest.runTest
+        , Test.Harness
+        , Test.Stack
+        , Test.Queue
+
+tests = Test.Stack.runTest
+      , Test.Queue.runTest
