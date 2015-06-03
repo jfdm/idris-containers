@@ -60,6 +60,8 @@ namespace Main
 
     printLn gs
 
+    printLn (updateNodeValueUsing "Mannheim" (\x => "as") g)
+
     -- putStrLn "Trace of a Depth First Traversal"
     -- traceDfsIO 9 g
     -- putStrLn "Trace of a Breadth First Traversal"

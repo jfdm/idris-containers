@@ -266,18 +266,18 @@ getEdgesVerbose val g =
     Nothing => Nil
 
 -- ----------------------------------------------------------------- [ Updates ]
+private
+updateLegendByID : NodeID -> (v -> v) -> Legend v -> Legend v
+updateLegendByID x f l = map (\(oval,y) => if x == y then (f oval,y) else (oval,y)) l
 
 updateNodeValueByIDUsing : Eq v => NodeID -> (v -> v) -> Graph v e -> Graph v e
-updateNodeValueByIDUsing id f g =
-    case getValueByID id g of
-      Nothing     => g
-      Just oldVal => let nval = f oldVal in record {graph = newG id nval, legend = newL oldVal nval} g
+updateNodeValueByIDUsing id f g = record {graph = newG id f, legend = newL id f} g
   where
-    newG : Eq v => NodeID -> v -> GraphRep v e
-    newG i nval = update i (\(_,as) => (nval, as)) (graph g)
+    newG : Eq v => NodeID -> (v -> v) -> GraphRep v e
+    newG i f = update i (\(o,as) => (f o, as)) (graph g)
 
-    newL : v -> v -> Legend v
-    newL oval nval = updateLegend oval nval (legend g)
+    newL : NodeID -> (v -> v) -> Legend v
+    newL i f = updateLegendByID i f (legend g)
 
 updateNodeValueUsing : Eq v => v -> (v -> v) -> Graph v e -> Graph v e
 updateNodeValueUsing oldval f g =
