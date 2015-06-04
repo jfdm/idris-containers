@@ -1,6 +1,6 @@
 module Example
 
-import Data.AVL.Graph
+import Data.AVL.Dependent.Graph
 
 
 towns : List String

@@ -54,6 +54,9 @@ lookupUsing f (MkDict d) = Tree.lookupUsing f d
 lookup : Ord k => k -> Dict k v -> Maybe v
 lookup k (MkDict d) = Tree.lookup k d
 
+isKey : Ord k => k -> Dict k v -> Bool
+isKey k (MkDict d) = Tree.isKey k d
+
 keys : Ord k => Dict k v -> List k
 keys (MkDict d) = Tree.keys d
 
@@ -80,5 +83,11 @@ getKeyUsing f (MkDict d) = Tree.getKeyUsing f d
 
 getKey : (Ord k, Eq v) => v -> Dict k v -> Maybe k
 getKey v (MkDict d) = Tree.getKey v d
+
+instance (Eq k, Eq v) => Eq (Dict k v) where
+   (==) (MkDict x) (MkDict y) = Tree.eqTree x y
+
+instance (Show k, Show v) => Show (Dict k v) where
+  show (MkDict d) = show d
 
 -- --------------------------------------------------------------------- [ EOF ]

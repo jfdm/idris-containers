@@ -5,6 +5,7 @@ opts = "-p effects"
 modules = Data.AVL.Dependent.Tree
         , Data.AVL.Dependent.Dict
         , Data.AVL.Dependent.Set
+        , Data.AVL.Dependent.Graph
         --   Data.AVL.Tree
         -- , Data.AVL.Dict
         -- , Data.AVL.Set
@@ -21,11 +22,13 @@ modules = Data.AVL.Dependent.Tree
         , Test.Harness
         , Test.Stack
         , Test.Queue
-        -- , Test.Dict
+
         , Test.DependentAVL.Dict
         , Test.DependentAVL.Set
+        , Test.DependentAVL.Graph
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
       , Test.DependentAVL.Dict.runTest
       , Test.DependentAVL.Set.runTest
+      , Test.DependentAVL.Graph.runTest

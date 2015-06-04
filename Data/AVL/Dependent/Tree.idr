@@ -194,4 +194,26 @@ getKeyUsing f d     =
 getKey : (Ord k, Eq v) => v -> Tree h k o v -> Maybe k
 getKey v d = getKeyUsing (\x => x==v) d
 
+isKey : Ord k => k -> Tree h k o v -> Bool
+isKey k d = isJust $ lookup k d
+
+-- ----------------------------------------------------------------- [ Classes ]
+
+eqTree : (Eq k, Eq v) => Tree h k o v -> Tree h' k p v -> Bool
+eqTree (Empty)               (Empty)               = True
+eqTree (Node xk xv xl xr _) (Node yk yv yl yr _) =
+    xk == yk  &&
+    xv == yv  &&
+    eqTree xl yl &&
+    eqTree xr yr -- Maybe add eq for balance...
+eqTree _ _ = False
+
+instance (Eq k, Eq v) => Eq (Tree h k o v) where
+  (==) x y = eqTree x y
+
+
+instance (Show k, Show v) => Show (Tree h k o v) where
+  show Empty              = ""
+  show (Node k v l r d) = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
+
 -- --------------------------------------------------------------------- [ EOF ]
