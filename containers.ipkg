@@ -3,6 +3,7 @@ package containers
 opts = "-p effects"
 
 modules = Data.AVL.Dependent.Dict
+        , Data.AVL.Dependent.Set
         --   Data.AVL.Tree
         -- , Data.AVL.Dict
         -- , Data.AVL.Set
@@ -20,11 +21,10 @@ modules = Data.AVL.Dependent.Dict
         , Test.Stack
         , Test.Queue
         -- , Test.Dict
-        -- , Test.Set
-        , Test.DepDictAVL
+        , Test.DependentAVL.Dict
+        , Test.DependentAVL.Set
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
-      , Test.DepDictAVL.runTest
-      -- , Test.Dict.runTest
-      -- , Test.Set.runTest
+      , Test.DependentAVL.Dict.runTest
+      , Test.DependentAVL.Set.runTest

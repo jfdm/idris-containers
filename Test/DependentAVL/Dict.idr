@@ -1,5 +1,5 @@
 ||| Testing Queues
-module Test.DepDictAVL
+module Test.DependentAVL.Dict
 
 import Test.Harness
 import Data.AVL.Dependent.Dict
