@@ -43,9 +43,9 @@ testMerge : Test (List (Int,Int))
 testMerge = MkTest
     (Just "Merging")
     (Dict.toList $ Dict.merge
-      (Dict.fromList [(1,2), (4,4)])
-      (Dict.fromList [(2,4), (3,5), (5,6), (4,3), (4,2)]))
-    ([(1,2), (2,4), (3,5), (4,2), (5,6)])
+      (Dict.fromList [(1,2), (2,6), (3,4)])
+      (Dict.fromList [(4,4), (5,5), (6,6)]))
+    ([(1,2), (2,6), (3,4),(4,4), (5,5), (6,6)])
     (==)
 
 partial
@@ -79,8 +79,8 @@ testKVs = MkTest
 partial
 runTest : IO ()
 runTest = do
-  putStrLn "Testing Dict"
   putStrLn infoLine
+  putStrLn "Testing Dict"
   runTests [
       testRunner testBuilding
     , testRunner testLookup

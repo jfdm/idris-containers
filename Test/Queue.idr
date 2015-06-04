@@ -16,8 +16,8 @@ test3 = MkTest (Just "Dequeue") (popQ (pushQThings [1,2,3] mkQueue)) (1,MkQ Nil 
 partial
 runTest : IO ()
 runTest = do
-  putStrLn "------------------------------------------------------------------------------"
   putStrLn "Testing Queue"
+  putStrLn infoLine
   runTests [
     testRunner test2
   , testRunner test3

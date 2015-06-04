@@ -52,15 +52,16 @@ data ROTDIR = RotRL | RotRLB | RotLR | RotLRB | NOUT
 
 private
 rotDIR : Ord k => Dict k v -> Dict k v -> ROTDIR
-rotDIR l r = if (hr + 1 < hl) && (bias l < 0)
-    then RotRLB
-    else if (hr + 1 < hl)
+rotDIR l r =
+    if (hr + 1 < hl) && (bias l < 0)
       then RotRL
-      else if (hl + 1 < hr) && (0 < bias r)
-        then RotLRB
-        else if (hl + 1 < hr)
+      else if (hr + 1 < hl)
+        then RotRLB
+        else if (hl + 1 < hr) && (0 < bias r)
           then RotLR
-          else NOUT
+          else if (hl + 1 < hr)
+            then RotLRB
+            else NOUT
   where
     hl : Nat
     hl = height l
@@ -72,7 +73,8 @@ partial
 rotr : Ord k => Dict k v -> Dict k v
 rotr Empty             = Empty
 rotr (Node _ (k,v) l r) with (l)
-  | (Node _ (k',v') l' r') = mkNode k v l' (mkNode k' v' r r' )
+  | (Node _ (k',v') l' r') = mkNode k v l' (mkNode k' v' r' r)
+  | Empty                  = mkNode k v l r
 -- 'missing case' Empty might cause jip
 
 private
@@ -81,6 +83,7 @@ rotl : Ord k => Dict k v -> Dict k v
 rotl Empty             = Empty
 rotl (Node _ (k,v) l r) with (r)
   | (Node _ (k',v') l' r') = mkNode k' v' (mkNode k v l l') r'
+  | Empty              = mkNode k v l r
 -- 'missing case 'Empty might cause jip
 
 -- --------------------------------------------------------------- [ Balancing ]
@@ -88,10 +91,10 @@ private
 partial
 balance : Ord k => k -> v -> Dict k v -> Dict k v -> Dict k v
 balance k v l r = case rotDIR l r of
-     RotRLB => rotr $ mkNode k v (rotl l) r
-     RotRL  => rotr $ mkNode k v l r
-     RotLRB => rotl $ mkNode k v l $ rotr r
-     RotLR  => rotl $ mkNode k v l r
+     RotRLB => rotr $ mkNode k v l r
+     RotRL  => rotr $ mkNode k v (rotl l) r
+     RotLRB => rotl $ mkNode k v l r
+     RotLR  => rotl $ mkNode k v l $ rotr r
      NOUT   => mkNode k v l r
 
 -- --------------------------------------------------------------------- [ API ]
@@ -103,17 +106,11 @@ isEmpty : Dict k v -> Bool
 isEmpty Empty = True
 isEmpty _    = False
 
-||| Note this is not the classical split.
+||| Note this is not the classical split, and doesn't work i think
 partial
 splitMax : Ord k => Dict k v -> (Dict k v, (k,v))
 splitMax (Node _ (k,v) l Empty) = (l, (k,v))
 splitMax (Node _ (k,v) l r)     = let (r', (k',v')) = (splitMax r) in (balance k v l r', (k',v'))
-
-partial
-merge : Ord k => Dict k v -> Dict k v -> Dict k v
-merge l    Empty = l
-merge Empty r    = r
-merge l    r     = let (l', (k,v)) = (splitMax l) in balance k v l' r
 
 lookupUsing : Ord k => (k -> Ordering) -> Dict k v -> Maybe v
 lookupUsing _ Empty        	 = Nothing
@@ -137,6 +134,21 @@ insert x a (Node d (y,b) l r) =
     LT => balance y b (insert x a l) r
     GT => balance y b l (insert x a r)
     EQ => Node d (x,a) l r
+-- -------------------------------------------------------------------- [ List ]
+
+toList : Dict k v -> List (k,v)
+toList Empty              = Nil
+toList (Node d (k,v) l r) = toList l ++ [(k,v)] ++ toList r
+
+partial
+fromList : Ord k => List (k,v) -> Dict k v
+fromList xs = foldl (\d, (k,v)=> insert k v d) Empty xs
+
+partial
+merge : Ord k => Dict k v -> Dict k v -> Dict k v
+merge l r = fromList $ toList $ fromList $ (toList l) ++ (toList r)
+--    let (l', (k,v)) = (splitMax l) in balance k v l' r
+
 
 partial
 remove : Ord k => k -> Dict k v -> Dict k v
@@ -162,7 +174,7 @@ partial
 update : Ord k => k -> (v -> v) -> Dict k v -> Dict k v
 update x f d = updateUsing (compare x) f d
 
-||| Note this is not the classical split
+||| Note this might be proken and is not the classical split
 partial
 split : Ord k => k -> Dict k v -> Maybe $ (Dict k v, (k,v))
 split _ Empty = Nothing
@@ -197,15 +209,6 @@ hasValueUsing f (Node _ (k,v) l r) = f v
 
 hasValue : Eq v => v -> Dict k v -> Bool
 hasValue v d = hasValueUsing (\x => v == x) d
-
--- -------------------------------------------------------------------- [ List ]
-toList : Dict k v -> List (k,v)
-toList Empty              = Nil
-toList (Node d (k,v) l r) = toList l ++ [(k,v)] ++ toList r
-
-partial
-fromList : Ord k => List (k,v) -> Dict k v
-fromList xs = foldl (\d, (k,v)=> insert k v d) Empty xs
 
 -- -------------------------------------------------------------------- [ misc ]
 getKeyUsing : (v -> Bool) -> Dict k v -> Maybe k

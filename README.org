@@ -1,31 +1,37 @@
 #+TITLE: Containers for Idris
 
-This packages provides containers not defined in the =Idris= base for use in =Idris= programmes. The are built primarily with existence in mind rather than a dependently typed construction. The latter will come later.
+This packages provides containers not defined in Idris `base`, `prelude`, or `contrib` and are for use in Idris programmes. They are built:
+
+
+#+BEGIN_QUOTE
+ primarily with existence in mind rather than a dependently typed construction. The latter /may/ will come later.
+#+END_QUOTE
 
 The ordered motivation behind these data structures are:
 
 1. My work requires the use of data structures that may not already be in the =Idris= base package.
 2. I do not like the implementation of a certain container and am providing an alternate construction.
-3. An exercise in implementing different data structures using functional programming..
+3. An exercise in implementing different data structures using functional programming.
 4. An exercise in using dependent types to implement different data structures.
 
 
 * Provided Containers
 
 + AVL Tree implementations of:
-  + Tree
-  + Dictionary
+  + Tree.
+  + Dictionary.
   + Set.
 + Graphs using Adjacency Lists.
 + Stack Based Queue
++ List based Stack
++ Dependently Typed AVL tree.
 
-* Sought After Containers
-+ Trees
-  + 2-3 Trees
-  + Finger Trees
-  + Rose Trees.
-  + Relaxed Radix Balanced (RRB) Trees
-+ Sequence using Finger Trees
-+ Immutable Arrays using RRB Trees
-+ Non-Integer-or-Nat Indexed Data Structures
-+ Inductive Graphs
+* Testing and Build Quality
+
+The containers built here are *rough and ready*. They may fail; they may not work as intended. There will be code duplication, there may not be documentation.
+
+If there is something missing, that you would like to see please contribute. I welcome reasonable PR and changes to design.
+
+There is a rudimentary testing suite that needs extending, and checks of the implementation's need performing. There is a quickcheck port to Idris out there but it *may* have bit-rotten away.
+
+Also please read the CONTRIBUTING.md guidelines, for everyone's sanity.

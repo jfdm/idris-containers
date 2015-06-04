@@ -9,7 +9,7 @@
 ||| http://www.swiss.ai.mit.edu/~adams/BB/.
 ||| * J. Nievergelt and E.M. Reingold, 'Binary search trees of bounded
 ||| balance', SIAM journal of computing 2(1), March 1973.
-module Data.Tree.AVL
+module Data.AVL.Tree
 
 -- @TODO Add dependent type and algebraic effect features to shore up
 -- implementation.
@@ -182,17 +182,12 @@ length (Node _ _ l r) = 1 + length l + length r
 -- -------------------------------------------------------------------- [ List ]
 toList : AVLTree a -> List a
 toList Empty          = Nil
-toList (Node d e l r) = e :: AVL.toList l ++ AVL.toList r
+toList (Node d e l r) = Tree.toList l ++ [e] ++ Tree.toList r
 
 
 fromList : Ord a => List a -> AVLTree a
 fromList Nil = Empty
 fromList xs  = foldl (flip insert) Empty xs
-
-private
-avlShow : Show a => AVLTree a -> String
-avlShow Empty          = ""
-avlShow (Node d n l r) = unwords ["(", show n, avlShow l, avlShow r, ")"]
 
 -- --------------------------------------------------------------- [ Instances ]
 instance Functor (AVLTree) where
@@ -200,6 +195,6 @@ instance Functor (AVLTree) where
   map f (Node d e l r) = Node d (f e) (map f l) (map f r)
 
 instance Show a => Show (AVLTree a) where
-  show = avlShow
+  show x = show $ Tree.toList x
 
 -- --------------------------------------------------------------------- [ EOF ]

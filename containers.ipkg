@@ -21,7 +21,9 @@ modules = Data.AVL.Tree
         , Test.Stack
         , Test.Queue
         , Test.Dict
+        , Test.Set
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
       , Test.Dict.runTest
+      , Test.Set.runTest

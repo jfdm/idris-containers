@@ -19,8 +19,8 @@ test4 = MkTest (Just "Popping") (snd (popS [1,2,3]), fst (popS [1,2,3])) ([2,3],
 covering
 runTest : IO ()
 runTest = do
-  putStrLn "------------------------------------------------------------------------------"
   putStrLn "Testing Stack"
+  putStrLn infoLine
   runTests [
     testRunner $ MkTest (Just "Nothing") (the (Stack Nat) mkStack) (the (Stack Nat) Nil) (==)
   , testRunner test2
