@@ -12,7 +12,8 @@ modules = Data.AVL.Dependent.Tree
 
         -- , Data.AVL.Graph
 
-        , Data.RoseTree
+        , Data.RedBlack.Tree
+
         , Data.Stack
         , Data.Queue
 
@@ -26,9 +27,11 @@ modules = Data.AVL.Dependent.Tree
         , Test.DependentAVL.Dict
         , Test.DependentAVL.Set
         , Test.DependentAVL.Graph
+        , Test.RedBlack.Tree
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
       , Test.DependentAVL.Dict.runTest
       , Test.DependentAVL.Set.runTest
       , Test.DependentAVL.Graph.runTest
+      , Test.RedBlack.Tree.runTest
