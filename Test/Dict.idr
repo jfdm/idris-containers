@@ -34,8 +34,8 @@ partial
 testUpdate : Test (Dict Int Int)
 testUpdate = MkTest
     (Just "Update")
-    (Dict.update 2 (*2) $ Dict.fromList [(1,2), (2,3), (3,4)])
-    (Dict.fromList [(1,2), (2,6), (3,4)])
+    (Dict.update 2 (*2) $ Dict.fromList [(1,2), (2,3), (3,4), (5,3)])
+    (Dict.fromList [(1,2), (2,6), (3,4), (5,3)])
     (==)
 
 partial

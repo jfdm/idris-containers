@@ -91,8 +91,8 @@ rotl (Node _ e l r) with (r)
 -- --------------------------------------------------------------- [ Balancing ]
 
 private
-balance : a -> AVLTree a -> AVLTree a -> AVLTree a
-balance e l r = case rotDIR l r of
+balance : a -> AVLTree a -> AVLTree a -> Ordering -> AVLTree a
+balance e l r o = case rotDIR l r o of
      RotRLB => rotr $ mkNode e (rotl l) r
      RotRL  => rotr $ mkNode e l r
      RotLRB => rotl $ mkNode e l $ rotr r
@@ -133,8 +133,8 @@ insert : Ord a => a -> AVLTree a -> AVLTree a
 insert e Empty          = mkNode e Empty Empty
 insert x (Node d y l r) =
   case compare x y of
-    LT => balance y (insert x l) r
-    GT => balance y l (insert x r)
+    LT => balance y (insert x l) r LT
+    GT => balance y l (insert x r) GT
     EQ => Node d x l r
 
 
@@ -142,8 +142,8 @@ remove : Ord a => a -> AVLTree a -> AVLTree a
 remove _ Empty          = Empty
 remove x (Node d y l r) =
   case compare x y of
-    LT => balance y (remove x l) r
-    GT => balance y l (remove x r)
+    LT => balance y (remove x l) r LT
+    GT => balance y l (remove x r) GT
     EQ => merge l r
 
 
@@ -152,8 +152,8 @@ updateUsing : Ord a => (a -> Ordering) -> (a -> a) -> AVLTree a -> AVLTree a
 updateUsing _ _ Empty = Empty
 updateUsing f t (Node d x l r) =
   case f x of
-    LT => balance x (updateUsing f t l) r
-    GT => balance x l (updateUsing f t r)
+    LT => balance x (updateUsing f t l) r LT
+    GT => balance x l (updateUsing f t r) GT
     EQ => Node d (t x) l r
 
 partial
