@@ -2,7 +2,8 @@ package containers
 
 opts = "-p effects"
 
-modules = Data.AVL.Dependent.Dict
+modules = Data.AVL.Dependent.Tree
+        , Data.AVL.Dependent.Dict
         , Data.AVL.Dependent.Set
         --   Data.AVL.Tree
         -- , Data.AVL.Dict

@@ -1,14 +1,14 @@
 ||| Implementation of a Set using an AVL Binary Search Tree.
 module Data.AVL.Dependent.Set
 
-import Data.AVL.Dependent.Dict
+import Data.AVL.Dependent.Tree
 
 -- ||| Alias for make it easier to work with.
 -- Set : Nat -> (k : Type) -> {default %instance o : Ord k} -> Type
 -- Set n k {o = o} = Dict' n k o Unit
 
 data Set : Type -> Type where
-  MkSet : {a : Type} -> {default %instance o : Ord a} -> Dict' n a o Unit -> Set a
+  MkSet : {a : Type} -> {default %instance o : Ord a} -> Tree n a o Unit -> Set a
 
 ||| Return a empty set.
 empty : Ord a => Set a
@@ -16,7 +16,7 @@ empty = MkSet Empty
 
 ||| Insert an element into a set.
 insert : Ord a => a -> Set a -> Set a
-insert a (MkSet m) = case (Dict.insert a () m) of
+insert a (MkSet m) = case (Tree.insert a () m) of
   Grew x => MkSet x
   Same x => MkSet x
 
@@ -43,7 +43,7 @@ union (MkSet m1) (MkSet m2) = MkSet $ Sigma.getProof $ fromList $ toList m1 ++ t
 
 ||| Construct a list using the given set.
 toList : Set a -> List a
-toList (MkSet m) = map fst $ Dict.toList m
+toList (MkSet m) = map fst $ Tree.toList m
 
 ||| Construct a set from the given list.
 fromList : Ord a => List a -> Set a

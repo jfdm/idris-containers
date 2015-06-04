@@ -9,7 +9,7 @@ import Data.AVL.Dependent.Dict
 testBuilding : Test (List (Int, Int))
 testBuilding = MkTest
     (Just "List, Building" )
-    (Dict.toList $ getProof $ Dict.fromList [(1,2), (2,3), (3,4)])
+    (Dict.toList $ Dict.fromList [(1,2), (2,3), (3,4)])
     [(1,2), (2,3), (3,4)]
     (==)
 
@@ -19,7 +19,7 @@ partial
 testUpdate : Test (List (Int, Int))
 testUpdate = MkTest
     (Just "Update")
-    (Dict.toList $ Dict.update 2 (*2) $ getProof $ Dict.fromList [(1,2), (2,3), (3,4), (5,3)])
+    (Dict.toList $ Dict.update 2 (*2) $ Dict.fromList [(1,2), (2,3), (3,4), (5,3)])
     [(1,2), (2,6), (3,4), (5,3)]
     (==)
 
@@ -27,7 +27,7 @@ partial
 testHas : Test (Bool)
 testHas = MkTest
    (Just "Has value")
-   (hasValue 6 $ getProof $ Dict.fromList [(1,2), (2,6), (3,4)])
+   (hasValue 6 $ Dict.fromList [(1,2), (2,6), (3,4)])
    (True)
    (==)
 
@@ -36,7 +36,7 @@ partial
 testLookup : Test (Maybe Int)
 testLookup = MkTest
     (Just "Lookup")
-    (Dict.lookup 1 $ getProof $ Dict.fromList [(1,2), (2,3), (3,4)])
+    (Dict.lookup 1 $ Dict.fromList [(1,2), (2,3), (3,4)])
     (Just 2)
     (==)
 
@@ -48,10 +48,8 @@ testKVs = MkTest
     ([1,2,3], [5,6,7])
     (==)
   where
-    given : Dict ?w Int Int
-    given = getProof $ Dict.fromList [(1,5), (2,6), (3,7)]
-
-w = proof search
+    given : Dict Int Int
+    given = Dict.fromList [(1,5), (2,6), (3,7)]
 
 partial
 runTest : IO ()
