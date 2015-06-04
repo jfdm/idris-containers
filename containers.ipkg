@@ -20,6 +20,8 @@ modules = Data.AVL.Tree
         , Test.Harness
         , Test.Stack
         , Test.Queue
+        , Test.Dict
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
+      , Test.Dict.runTest

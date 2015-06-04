@@ -201,7 +201,7 @@ hasValue v d = hasValueUsing (\x => v == x) d
 -- -------------------------------------------------------------------- [ List ]
 toList : Dict k v -> List (k,v)
 toList Empty              = Nil
-toList (Node d (k,v) l r) = (k,v) :: toList l ++ toList r
+toList (Node d (k,v) l r) = toList l ++ [(k,v)] ++ toList r
 
 partial
 fromList : Ord k => List (k,v) -> Dict k v
@@ -221,6 +221,19 @@ getKey : Eq v => v -> Dict k v -> Maybe k
 getKey v d = getKeyUsing (\x => x==v) d
 
 -- ---------------------------------------------------------------- [ Instance ]
+
+eqDict : (Eq k, Eq v) => Dict k v -> Dict k v -> Bool
+eqDict (Empty) (Empty) = True
+eqDict (Node xd x xl xr) (Node yd y yl yr) =
+    xd == yd &&
+    x  == y  &&
+    eqDict xl yl &&
+    eqDict xr yr
+eqDict _ _ = False
+
+instance (Eq k, Eq v) => Eq (Dict k v) where
+  (==) x y = eqDict x y
+
 
 instance (Show k, Show v) => Show (Dict k v) where
   show Empty              = ""

@@ -3,35 +3,34 @@ module Test.Harness
 import public System
 
 data Test : Type -> Type where
-  MkTest : (Show a) => (given : a) -> (expected : a) -> (a -> a -> Bool) -> String -> Test a
+  MkTest : (Show a) => Maybe String
+                   -> (given : a)
+                   -> (expected : a)
+                   -> (a -> a -> Bool)
+                   -> Test a
 
 covering
-testWrapper : (Show a) => String -> Test a -> IO (Maybe String)
-testWrapper title (MkTest given expected test err) = do
-    putStrLn $ unwords ["Begin Test:",title]
+testRunner : (Show a) => Test a -> IO ()
+testRunner (MkTest title given expected test) = do
+    putStrLn $ unwords [
+               "Begin Test:"
+              , fromMaybe "" title
+              , if isJust title then "\n" else ""]
     if test given expected
-      then pure Nothing
-      else pure (Just $ unwords [
-           "Error:"
-         , err, "\n"
-         , "Given:","\t"
-         , show given, "\n"
-         , "Expected:","\t"
-         , show expected
-         ])
+      then pure ()
+      else with List do
+         putStrLn $ unwords [
+               "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++","\n"
+             , "Error:", "\n"
+             , "Given:","\t"
+             , show given, "\n"
+             , "Expected:","\t"
+             , show expected
+             , "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++","\n"
+             ]
+         exit 1
 
 covering
-runTests : List (IO (Maybe String)) -> IO ()
-runTests Nil     = putStrLn "All Tests have passed"
-runTests (t::ts) =
-  case !t of
-    Nothing => do
-      putStrLn $ "Test Passed"
-      putStrLn "------------------------------------------------------------------------------"
-      runTests ts
-    Just err => do
-      putStrLn "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-"
-      putStrLn $ "Test Failed"
-      putStrLn err
-      putStrLn "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-"
-      exit 1
+runTests : List (IO ()) -> IO ()
+runTests Nil     = do putStrLn "All Tests have passed"
+runTests (t::ts) = do t; runTests ts
