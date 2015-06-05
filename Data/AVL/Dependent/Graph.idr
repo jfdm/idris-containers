@@ -227,7 +227,7 @@ getValueUsing f g = doLook f (legend g)
   where
     doLook : (v -> Bool) -> List (v,NodeID) -> Maybe v
     doLook _ Nil         = Nothing
-    doLook f ((x,_)::xs) = if f x then Just x else Nothing
+    doLook f ((x,_)::xs) = if f x then Just x else doLook f xs
 
 ||| Get a nodes successors.
 getSuccsByID : NodeID -> Graph v e -> List NodeID
