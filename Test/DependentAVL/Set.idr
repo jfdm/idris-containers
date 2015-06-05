@@ -9,7 +9,7 @@ partial
 testBuilding : Test (List Int)
 testBuilding = MkTest
     (Just "List, Building" )
-    (Set.toList $ Set.fromList [1,2,3,4,4,5,6])
+    (Set.toList $ Set.fromList [5,4,1,3,2,6])
     [1,2,3,4,5,6]
     (==)
 
@@ -57,7 +57,7 @@ partial
 testContains : Test Bool
 testContains = MkTest
     (Just "Contains")
-    (Set.contains 4 $ Set.fromList [1,2,3,4])
+    (Set.contains 4 $ Set.fromList [4,3,7,3,8,5,2,6,3])
     (True)
     (==)
 

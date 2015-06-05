@@ -55,8 +55,8 @@ rotLeft key val l (Node key' val' rl rr Balanced) =
                           rr LHeavy
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr LHeavy) rr LHeavy) =
-    Same $ Node key'' val'' (Node key val   l   rll Balanced)
-                            (Node key' val' rlr rr  RHeavy) Balanced --
+    Same $ Node key'' val'' (Node key val   l   rll Balanced) -- Needs checking
+                            (Node key' val' rlr rr  RHeavy) Balanced
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr RHeavy) rr LHeavy) =
     Same $ Node key'' val'' (Node key  val  l   rll LHeavy)
@@ -64,7 +64,7 @@ rotLeft key val l (Node key' val' (Node key'' val'' rll rlr RHeavy) rr LHeavy) =
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr  Balanced) rr LHeavy) =
     Same $ Node key'' val'' (Node key  val  l   rll Balanced)
-                            (Node key' val' rlr rr  Balanced) Balanced --
+                            (Node key' val' rlr rr  Balanced) Balanced -- Needs Checking
 
 rotLeft key val l (Node key' val' rl rr RHeavy) =
     Same $ Node key' val' (Node key val l rl Balanced)
@@ -81,7 +81,7 @@ rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr RHeavy) RHeavy) r 
 
 rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr LHeavy) RHeavy) r =
   Same $ Node key' val' (Node key   val   ll  lrl Balanced)
-                        (Node key'' val'' lrr r RHeavy) Balanced
+                        (Node key'' val'' lrr r    RHeavy) Balanced
 
 rotRight key val (Node key' val' ll lr Balanced) r =
   Grew $ Node key' val' ll
