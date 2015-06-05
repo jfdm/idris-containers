@@ -28,18 +28,17 @@ contains a (MkSet m) = isJust (lookup a m)
 union : Ord a => Set a -> Set a -> Set a
 union (MkSet m1) (MkSet m2) = MkSet $ Sigma.getProof $ fromList $ toList m1 ++ toList m2
 
+||| Construct a set that contains the elements from the first input
+||| set but not the second.
+|||
+||| *Note* Not an efficient operation as we are constructing a new set
+||| instead of modifying the right one.
+difference : Ord a => Set a -> Set a -> Set a
+difference s1 (MkSet m2) = foldl (\t, (e,_) => if contains e s1 then Set.insert e t else t)  empty $ Tree.toList m2
 
--- ||| Remove an element from the set.
--- delete : Ord a => a -> Set a -> Set a
--- delete a (MkSet m) = MkSet (remove a m)
-
--- ||| Construct a set that contains the elements from the first input set but not the second.
--- difference : Ord a => Set a -> Set a -> Set a
--- difference (MkSet m1) (MkSet m2) = MkSet (foldl (\ t, (k) => remove k t) empty (Tree.toList m2))
-
--- ||| Construct a set that contains common elements of the input sets.
--- intersection : Ord a => Set a -> Set a -> Set a
--- intersection s1 s2 = difference s1 (difference s1 s2)
+||| Construct a set that contains common elements of the input sets.
+intersection : Ord a => Set a -> Set a -> Set a
+intersection s1 s2 = difference s1 (difference s1 s2)
 
 ||| Construct a list using the given set.
 toList : Set a -> List a

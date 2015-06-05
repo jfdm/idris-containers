@@ -33,25 +33,25 @@ testMerge = MkTest
     [1,2,3,4,5]
     (==)
 
--- partial
--- testDiff : Test (List Int)
--- testDiff = MkTest
---    (Just "Difference")
---    (Set.toList $ Set.difference
---      (Set.fromList [2,4,6,8,9,1008])
---      (Set.fromList [4,2,4,6,8,1006,5,78,34]))
---    [2,4,6,8]
---    (==)
+partial
+testDiff : Test (List Int)
+testDiff = MkTest
+   (Just "Difference")
+   (Set.toList $ Set.difference
+     (Set.fromList [2,4,6,8,9,1008])
+     (Set.fromList [4,2,4,6,8,1006,5,78,34]))
+   [2,4,6,8]
+   (==)
 
--- partial
--- testIntersection : Test (List Int)
--- testIntersection = MkTest
---     (Just "Intersection")
---     (Set.toList $ Set.intersection
---         (Set.fromList [1,2,3,4,5,6,7,8,9])
---         (Set.fromList [1,2,33,44,55,66,77,88,99]))
---     [1,2]
---     (==)
+partial
+testIntersection : Test (List Int)
+testIntersection = MkTest
+    (Just "Intersection")
+    (Set.toList $ Set.intersection
+        (Set.fromList [1,2,3,4,5,6,7,8,9])
+        (Set.fromList [1,2,33,44,55,66,77,88,99]))
+    [1,2]
+    (==)
 
 partial
 testContains : Test Bool
@@ -71,6 +71,8 @@ runTest = do
       , testRunner testUpdate
       , testRunner testMerge
       , testRunner testContains
+      , testRunner testDiff
+      , testRunner testIntersection
     ]
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -51,19 +51,24 @@ rotLeft : k -> v -> Tree n k o v -> Tree (S (S n)) k o v -> InsertRes (S (S n)) 
 rotLeft key val l Empty                           impossible
 
 rotLeft key val l (Node key' val' rl rr Balanced) =
-    Grew $ Node key' val' (Node key val l rl RHeavy) rr LHeavy
+    Grew $ Node key' val' (Node key val l rl RHeavy)
+                          rr LHeavy
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr LHeavy) rr LHeavy) =
-    Same $ Node key'' val'' rll (Node key' val' rlr rr RHeavy) RHeavy
+    Same $ Node key'' val'' (Node key val   l   rll Balanced)
+                            (Node key' val' rlr rr  RHeavy) Balanced --
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr RHeavy) rr LHeavy) =
-    Same $ Node key'' val'' (Node key val l rll LHeavy) (Node key' val' rlr rr Balanced) Balanced
+    Same $ Node key'' val'' (Node key  val  l   rll LHeavy)
+                            (Node key' val' rlr rr  Balanced) Balanced
 
 rotLeft key val l (Node key' val' (Node key'' val'' rll rlr  Balanced) rr LHeavy) =
-    Same $ Node key'' val'' (Node key val l rll Balanced) (Node key' val' rlr rlr Balanced) Balanced
+    Same $ Node key'' val'' (Node key  val  l   rll Balanced)
+                            (Node key' val' rlr rr  Balanced) Balanced --
 
 rotLeft key val l (Node key' val' rl rr RHeavy) =
-    Same $ Node key' val' (Node key val l rl Balanced) rr Balanced
+    Same $ Node key' val' (Node key val l rl Balanced)
+                          rr Balanced
 
 
 
@@ -71,19 +76,24 @@ rotRight : k -> v -> Tree (S (S n)) k o v -> Tree n k o v -> InsertRes (S (S n))
 rotRight key val Empty r impossible
 
 rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr RHeavy) RHeavy) r =
-  Same $ Node key' val' (Node key val ll lrl LHeavy) (Node key'' val'' lrr r Balanced) Balanced
+  Same $ Node key' val' (Node key   val   ll  lrl LHeavy)
+                        (Node key'' val'' lrr r   Balanced) Balanced
 
 rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr LHeavy) RHeavy) r =
-  Same $ Node key' val' (Node key val ll lrl Balanced) (Node key'' val'' lrr r RHeavy) Balanced
+  Same $ Node key' val' (Node key   val   ll  lrl Balanced)
+                        (Node key'' val'' lrr r RHeavy) Balanced
 
 rotRight key val (Node key' val' ll lr Balanced) r =
-  Grew $ Node key' val' ll (Node key val lr r LHeavy) RHeavy
+  Grew $ Node key' val' ll
+                        (Node key val lr r LHeavy) RHeavy
 
 rotRight key val (Node key' val' ll lr LHeavy) r =
-  Same $ Node key' val' ll (Node key val lr r Balanced) Balanced
+  Same $ Node key' val' ll
+                        (Node key val lr r Balanced) Balanced
 
 rotRight key val (Node key' val' ll (Node key'' val'' lrl lrr Balanced) RHeavy) r =
-  Same $ Node key'' val'' (Node key' val' ll lrl Balanced) (Node key val lrr r Balanced) Balanced
+  Same $ Node key'' val'' (Node key' val' ll  lrl Balanced)
+                          (Node key   val lrr r   Balanced) Balanced
 
 -- --------------------------------------------------------------- [ Insertion ]
 insert : (o : Ord k) => k -> v -> (t : Tree n k o v) -> InsertRes n k o v
