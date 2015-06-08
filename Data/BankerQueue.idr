@@ -143,6 +143,16 @@ snocSnocs (MkQueue Z (Delay front) rearLen rear rearValid diffValid) x =
   in rewrite sym $ appendAssociative (lListToList front) (reverseOnto rear []) [x]
   in appendNilRightNeutral _
 
+||| `snoc` adds one to the length of a queue.
+snocLength : (q : Queue a) -> (x : a) -> length (snoc q x) = length q + 1
+snocLength q x =
+  rewrite lengthCorrect q
+  in rewrite lengthCorrect (snoc q x)
+  in rewrite snocSnocs q x
+  in rewrite List.lengthAppend (lListToList (Force (front q)) ++
+                   reverseOnto (rear q) []) [x]  
+  in Refl
+
 -- Consider adding a front view framed in terms of cons.
 
 ||| A view of the front of a queue.
@@ -194,25 +204,36 @@ cons x (MkQueue frontDiff front rearLen rear rearValid diffValid) =
 consConses : (x : a) -> (q : Queue a) -> queueToList (x `cons` q) = x :: queueToList q
 consConses x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
 
+consLength : (x : a) -> (q : Queue a) -> length (cons x q) = S (length q)
+consLength x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
+
 -- TODO head and tail should use default strategies
--- that recognize that  q `snoc` x  is never empty.
+-- that recognize that  q `snoc` x  is never empty, if at all
+-- possible. That is, if we can find evidence that `q` is the
+-- result of `snoc`, we should grab it.
 ||| Get the head of a queue.
-head : (q : Queue a) -> {auto m : Nat} -> {nonempty : length q = S m} -> a
+head : (q : Queue a) -> {auto m : Nat} -> {auto nonempty : length q = S m} -> a
 head {nonempty} q with (frontView q)
   head {nonempty} (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = absurd nonempty
   head {nonempty} q | (FVCons hd tl prf) = hd
 
 ||| Get the tail of a queue.
-tail : (q : Queue a) -> {auto m : Nat} -> {nonempty : length q = S m} -> Queue a
+tail : (q : Queue a) -> {auto m : Nat} -> {auto nonempty : length q = S m} -> Queue a
 tail {nonempty} q with (frontView q)
   tail {nonempty} (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = absurd nonempty
   tail {nonempty} q | (FVCons hd tl prf) = tl
 
-{-
-TODO: Write these
-headCons : (x : a) -> (q : Queue a) -> head (cons x q) = x
-tailCons : (x : a) -> (q : Queue a) -> tail (cons x q) === q
--}
+headCons : (x : a) -> (q : Queue a) -> head {m=length q} {nonempty=consLength x q} (cons x q) = x
+headCons x q with (frontView (cons x q))
+  headCons x (MkQueue Z [] Z [] Refl Refl) | FVEmpty impossible
+  headCons x (MkQueue frontDiff front rearLen rear rearValid diffValid) | (FVCons hd tl prf) =
+    sym $ headsSame prf
+
+tailCons : (x : a) -> (q : Queue a) -> tail {m=length q} {nonempty=consLength x q} (cons x q) === q
+tailCons x q with (frontView (cons x q))
+  tailCons x (MkQueue Z [] Z [] Refl Refl) | FVEmpty impossible
+  tailCons x (MkQueue frontDiff front rearLen rear rearValid diffValid) | (FVCons hd tl prf) =
+    sym $ tailsSame prf
 
 instance Functor Queue where
   map f (MkQueue frontDiff front rearLen rear rearValid diffValid) =
@@ -224,14 +245,14 @@ instance Functor Queue where
 instance Foldable Queue where
   foldr c n q = foldr c n (queueToList q)
   foldl f b q = foldl f b (queueToList q)
-
 -- Consider foldr c n q = foldr c (foldl (flip c) n (rear q)) (Force (front q))
 -- Consider foldl f b q = foldr (flip f) (foldl f b (Force $ front q)) (rear q)
 
 {-
 -- TODO Write this, and consElim. It may help to pull in some
--- well-foundedness theorems, and/or maybe to write a reversed version
--- of queueToList.
+-- well-foundedness theorems. Note that there are only finitely many
+-- representations of any given abstract queue, which I *believe*
+-- should make this more valid than it looks.
 snocElim : (P : Queue a -> Type) ->
        (base : P Empty) ->
        (step : (x : a) -> (q : Queue a) -> P q -> P (q `snoc` x)) ->
