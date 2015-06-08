@@ -12,34 +12,29 @@ import Data.AVL.Dependent.Tree
 
 %default total
 
-data Dict : Type -> Type -> Type where
+data Dict' : (k : Type) -> Ord k -> Type -> Type where
   MkDict : {k : Type}
         -> {v : Type}
-        -> {default %instance o : Ord k}
-        -> Tree h k o v
-        -> Dict k v
+        -> AVLTree h k o v
+        -> Dict' k o v
+
+Dict : (k : Type) -> {default %instance o : Ord k} -> (v : Type) -> Type
+Dict k {o = o} v = Dict' k o v
 
 ||| Empty
-empty : Ord k => Dict k v
-empty = MkDict Empty
+empty : (o : Ord k) => Dict k {o = o} v
+empty = MkDict (Element Empty AVLEmpty)
 
-partial
-insert : Ord k => k -> v -> Dict k v -> Dict k v
-insert key val (MkDict d) =
-  case Tree.insert key val d of
-    Grew x => MkDict x
-    Same x => MkDict x
-
+insert : (o : Ord k) => k -> v -> Dict k {o = o} v -> Dict k {o = o} v
+insert key val (MkDict d) = MkDict $ Sigma.getProof (runInsertRes $ Tree.insert key val d)
 
 ||| Update the value for the given key.
-partial
-update : Ord k => k -> (v -> v) -> Dict k v -> (Dict k v)
-update x ufunc (MkDict d) = case updateValueBy (compare x) ufunc d of
-  Same x => MkDict x
+update : (o : Ord k) => k -> (v -> v) -> Dict k {o = o} v -> Dict k {o = o} v
+update x ufunc (MkDict d) = MkDict $ Tree.update x ufunc d
 
 -- -------------------------------------------------------------------- [ List ]
 
-toList : Dict k v -> List (k,v)
+toList : Dict k {o = o} v -> List (k,v)
 toList (MkDict d) = Tree.toList d
 
 fromList : Ord k => List (k,v) -> Dict k v
@@ -48,46 +43,36 @@ fromList kvs = MkDict $ Sigma.getProof $ Tree.fromList kvs
 
 -- ----------------------------------------------------------------- [ Queries ]
 
-lookupUsing : Ord k => (k -> Ordering) -> Dict k v -> Maybe v
-lookupUsing f (MkDict d) = Tree.lookupUsing f d
-
-lookup : Ord k => k -> Dict k v -> Maybe v
+lookup : (o : Ord k) => k -> Dict k {o = o} v -> Maybe v
 lookup k (MkDict d) = Tree.lookup k d
 
-isKey : Ord k => k -> Dict k v -> Bool
-isKey k (MkDict d) = Tree.isKey k d
-
-keys : Ord k => Dict k v -> List k
+keys : Dict k {o = o} v -> List k
 keys (MkDict d) = Tree.keys d
 
-values : Ord k => Dict k v -> List v
+values : Dict k {o = o} v -> List v
 values (MkDict d) = Tree.values d
 
-length : Ord k => Dict k v -> Nat
-length (MkDict d) = Tree.length d
+size : Dict k {o = o} v -> Nat
+size (MkDict d) = Tree.size d
 
-hasKeyUsing : (Ord k) => (k -> Ordering) -> Dict k v -> Bool
-hasKeyUsing f (MkDict d) = Tree.hasKeyUsing f d
-
-hasKey : (Ord k) => k -> Dict k v -> Bool
+hasKey : k -> Dict k {o = o} v -> Bool
 hasKey key (MkDict d) = Tree.hasKey key d
 
-hasValueUsing : Ord k => (v -> Bool) -> Dict k v -> Bool
-hasValueUsing f (MkDict d) = Tree.hasValueUsing f d
-
-hasValue : (Ord k, Eq v) => v -> Dict k v -> Bool
+hasValue : (Eq v) => v -> Dict k {o = o} v -> Bool
 hasValue val (MkDict d) = Tree.hasValue val d
 
-getKeyUsing : Ord k => (v -> Bool) -> Dict k v -> Maybe k
-getKeyUsing f (MkDict d) = Tree.getKeyUsing f d
+findKey : (pred : v -> Bool) -> Dict k {o = o} v -> Maybe k
+findKey pred (MkDict d) = Tree.findKey pred d
 
-getKey : (Ord k, Eq v) => v -> Dict k v -> Maybe k
-getKey v (MkDict d) = Tree.getKey v d
+findKeyOf : (Eq v) => v -> Dict k {o = o} v -> Maybe k
+findKeyOf v (MkDict d) = Tree.findKeyOf v d
 
-instance (Eq k, Eq v) => Eq (Dict k v) where
-   (==) (MkDict x) (MkDict y) = Tree.eqTree x y
+instance (Eq k, Eq v) => Eq (Dict k {o = o} v) where
+   (==) (MkDict {h = h} x) (MkDict {h = h'} y) with (decEq h h')
+     (==) (MkDict {h = h} x) (MkDict {h = h} y)  | Yes Refl = x == y
+     (==) (MkDict {h = h} x) (MkDict {h = h'} y) | No _     = False
 
-instance (Show k, Show v) => Show (Dict k v) where
+instance (Show k, Show v) => Show (Dict k {o = o} v) where
   show (MkDict d) = show d
 
 -- --------------------------------------------------------------------- [ EOF ]

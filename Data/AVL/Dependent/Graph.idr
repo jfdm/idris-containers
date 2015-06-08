@@ -32,6 +32,9 @@ AList b = List (NodeID, Maybe b)
 
 -- ------------------------------------------------------------------- [ Types ]
 
+GraphRep : (vTy : Type) -> (eTy : Type) -> Type
+GraphRep vTy eTy = Dict (NodeID) (vTy, AList eTy)
+
 ||| A compact adjacency list representation of a graph.
 |||
 ||| Implementation details:
@@ -64,10 +67,7 @@ record Graph (vTy : Type) (eTy : Type) where
   constructor MkGraph
   counter : NodeID
   legend  : List (vTy, NodeID)
-  graph   : Dict (NodeID) (vTy, AList eTy)
-
-GraphRep : (vTy : Type) -> (eTy : Type) -> Type
-GraphRep vTy eTy = Dict (NodeID) (vTy, AList eTy)
+  graph   : GraphRep vTy eTy
 
 Legend : Type -> Type
 Legend vTy = List (vTy, NodeID)
@@ -105,7 +105,6 @@ mkEmptyGraph = MkGraph Z Nil empty
 addNode : Eq v => v -> Graph v e -> Graph v e
 addNode val (MkGraph c l g) = MkGraph (S c) newL newG
   where
-    partial
     newG : GraphRep v e
     newG = insert c (val,Nil) g
 
@@ -129,7 +128,7 @@ addEdge (x,y,l) g =
       False => g
   where
     validEdge : NodeID -> NodeID -> Bool
-    validEdge x y = isKey x (graph g) && isKey y (graph g)
+    validEdge x y = hasKey x (graph g) && hasKey y (graph g)
 
     doUpdate : (NodeID, NodeID, Maybe e) -> GraphRep v e -> GraphRep v e
     doUpdate (x,y,l) gr = update x (\(val,as) => (val, (y,l)::as)) gr

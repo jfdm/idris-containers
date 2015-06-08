@@ -54,6 +54,10 @@ data InsertRes : Nat -> (k : Type) -> (o : Ord k) -> Type -> Type where
 
 %name InsertRes res, r
 
+runInsertRes : InsertRes n k o v -> (n : Nat ** AVLTree n k o v)
+runInsertRes (Same t) = (_ ** t)
+runInsertRes (Grew t) = (_ ** t)
+
 rotLeft : k -> v -> AVLTree n k o v -> AVLTree (S (S n)) k o v -> InsertRes (S (S n)) k o v
 -- Impossible because Empty has depth 0 and we know the depth is at least 2 from the type
 rotLeft key val l (Element Empty AVLEmpty) impossible
@@ -142,17 +146,29 @@ lookup key (Element t _) = lookup' key t
           lookup' key (Node key' value' l r) | EQ = Just value'
           lookup' key (Node key' value' l r) | GT = lookup' key r
 
-fromList : (o : Ord k) => List (k, v) -> (n : Nat ** AVLTree n k o v)
-fromList [] = (0 ** Element Empty AVLEmpty)
-fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
-  fromList ((k, v) :: xs) | (Same x) = (_ ** x)
-  fromList ((k, v) :: xs) | (Grew x) = (_ ** x)
+update : (o : Ord k) => k -> (v -> v) -> AVLTree h k o v -> AVLTree h k o v
+update key f t@(Element Empty inv) = t
+update key f (Element (Node key' value' l r) inv) with (compare key key')
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | LT with (assert_total $ update key f (Element l invl)) -- Totality checker again
+      update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | LT | (Element l' invl')
+                                                           = Element (Node key' value' l' r) (AVLNode invl' invr b)
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | EQ
+                                                           = Element (Node key' (f value') l r) (AVLNode invl invr b)
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | GT with (assert_total $ update key f (Element r invr))
+      update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | GT | (Element r' invr')
+                                                           = Element (Node key' value' l r') (AVLNode invl invr' b)
 
 foldr : (step : k -> v -> p -> p) -> (init : p) -> AVLTree n k o v -> p
 foldr step init (Element t _) = foldr' step init t
   where foldr' : (k -> v -> p -> p) -> p -> Tree k o v -> p
         foldr' step' init' Empty = init'
         foldr' step' init' (Node key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
+
+fromList : (o : Ord k) => List (k, v) -> (n : Nat ** AVLTree n k o v)
+fromList [] = (0 ** Element Empty AVLEmpty)
+fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
+  fromList ((k, v) :: xs) | (Same x) = (_ ** x)
+  fromList ((k, v) :: xs) | (Grew x) = (_ ** x)
 
 toList : AVLTree n k o v -> List (k, v)
 toList = foldr (\k,v,xs => (k, v) :: xs) []
