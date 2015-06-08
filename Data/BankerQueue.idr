@@ -4,7 +4,8 @@ import Data.BankerQueue.LazyLists
 %default total
 %access public
 
-||| Okasaki-style Banker's queue
+||| Okasaki-style Banker's queue. This is actually an output-restricted
+||| deque.
 record Queue a where
   constructor MkQueue
   frontDiff : Nat -- How much longer the front of the queue is than the rear
@@ -32,9 +33,25 @@ infix 5 ===
 (===) : Queue a -> Queue a -> Type
 (===) q1 q2 = queueToList q1 = queueToList q2
 
+||| Converting a queue to a list and back gives you an equivalent queue.
+queueToFromList : (q : Queue a) -> listToQueue (queueToList q) === q
+queueToFromList q =
+  rewrite listToFromLList (lListToList (Force (front q)) ++ reverseOnto (rear q) [])
+  in rewrite appendNilRightNeutral
+                         (lListToList (Force (front q)) ++
+                         reverseOnto (rear q) [])
+  in Refl
+
+||| Converting a list to a queue and back gives you the same list.
+listToFromQueue : (xs : List a) -> queueToList (listToQueue xs) = xs
+listToFromQueue xs = rewrite listToFromLList xs in appendNilRightNeutral xs
+
+||| The number of elements in a queue
 length : Queue a -> Nat
 length q = frontDiff q + rearLen q + rearLen q
 
+||| `length q` gives the same result as converting `q` to a list and
+||| calculating its length.
 lengthCorrect : (q : Queue a) -> length q = length (queueToList q)
 lengthCorrect (MkQueue frontDiff front rearLen rear rearValid diffValid) =
   rewrite sym rearValid
@@ -45,6 +62,7 @@ lengthCorrect (MkQueue frontDiff front rearLen rear rearValid diffValid) =
   in rewrite lListToListPreservesLength front
   in Refl
 
+||| Equivalent queues have equal lengths.
 equivSameLength : (q1, q2 : Queue a) -> q1 === q2 -> length q1 = length q2
 equivSameLength q1 q2 eq =
   rewrite lengthCorrect q1
@@ -56,22 +74,50 @@ equivSameLength q1 q2 eq =
 instance Eq a => Eq (Queue a) where
   (==) q1 q2 = length q1 == length q2 && queueToLList q1 == queueToLList q2
 
-{-
-TODO Finish this
+toListViaLList : (q : Queue a) -> lListToList (queueToLList q) = queueToList q
+toListViaLList q = rewrite lListToListDistributesOverAppend (Force (front q)) (reverseOntoL (rear q) [])
+                   in rewrite lListToListReverseOntoL (rear q) []
+                   in Refl
+
+toLListEqEquiv : (q1, q2 : Queue a) -> queueToLList q1 = queueToLList q2 -> q1 === q2
+toLListEqEquiv q1 q2 prf =
+  rewrite sym $ toListViaLList q1
+  in rewrite sym $ toListViaLList q2
+  in cong {f = lListToList} prf
+
+toLListViaList : (q : Queue a) -> listToLList (queueToList q) = queueToLList q
+toLListViaList q =
+  rewrite listToLListDistributesOverAppend
+             (lListToList (Force (front q)))
+             (reverseOnto (rear q) [])
+  in rewrite sym $ lListToListReverseOntoL (rear q) []
+  in rewrite lListToFromList (Force (front q))
+  in rewrite lListToFromList (reverseOntoL (rear q) [])
+  in Refl
+
+toListEqToLList : (q1, q2 : Queue a) -> q1 === q2 -> queueToLList q1 = queueToLList q2
+toListEqToLList q1 q2 prf =
+  rewrite sym $ toLListViaList q1
+  in rewrite sym $ toLListViaList q2
+  in cong {f = listToLList} prf
+
+||| If `a` has decidable equality, then `Queue a` has decidable equivalence.
 decEquiv : DecEq a => (q1, q2 : Queue a) -> Dec (q1 === q2)
-decEquiv q1 q2 with (decEq (length q1) (length q2))
+decEquiv {a} q1 q2 with (decEq (length q1) (length q2))
   decEquiv q1 q2 | (No contra) = No (\ab => contra (equivSameLength q1 q2 ab))
-  decEquiv q1 q2 | (Yes prf) with (decEq (queueToLList q1) (queueToLList q2))
+  decEquiv {a} q1 q2 | (Yes prf) with (decEq (queueToLList q1) (queueToLList q2))
+    decEquiv q1 q2 | (Yes prf) | (Yes sl) = Yes (toLListEqEquiv q1 q2 sl)
+    decEquiv {a} q1 q2 | (Yes prf) | (No contra) = No (contra . toListEqToLList q1 q2)
 
-    decEquiv q1 q2 | (Yes prf) | (Yes sl) = Yes $
+||| The empty queue
+Empty : Queue a
+Empty = MkQueue Z [] Z [] Refl Refl
 
-       ?decEquiv_rhs_1
-    decEquiv q1 q2 | (Yes prf) | (No contra) = No (\ab => ?decEquiv_rhs_2)
-    -}
+||| Converting the empty queue to a list yields the empty list.
+emptyIsEmpty : queueToList Empty = []
+emptyIsEmpty = Refl
 
-empty : Queue a
-empty = MkQueue Z [] Z [] Refl Refl
-
+||| Add an element to the end of a queue
 snoc : Queue a -> a -> Queue a
 snoc (MkQueue (S k) front rearLen rear rearValid diffValid) x =
   MkQueue k front (S rearLen) (x :: rear) (rewrite rearValid in Refl)
@@ -97,13 +143,15 @@ snocSnocs (MkQueue Z (Delay front) rearLen rear rearValid diffValid) x =
   in rewrite sym $ appendAssociative (lListToList front) (reverseOnto rear []) [x]
   in appendNilRightNeutral _
 
+-- Consider adding a front view framed in terms of cons.
+
 ||| A view of the front of a queue.
 data FrontView : Queue a -> Type where
-  FVEmpty : FrontView empty
+  FVEmpty : FrontView Empty
   FVCons : (hd : a) -> (tl : Queue a) -> queueToList q = hd :: queueToList tl -> FrontView q
 
 -- There are some weird things in here that I seemed to need to do to satisfy
--- the termination checker. I don't know why.
+-- the totality checker. I don't know why.
 ||| View the front of a queue.
 frontView : (q : Queue a) -> FrontView q
 frontView (MkQueue Z [] Z [] Refl Refl) = FVEmpty
@@ -137,8 +185,56 @@ uncons q with (frontView q)
   uncons (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = Nothing
   uncons q | (FVCons hd tl prf) = Just (hd, tl)
 
+||| Adds an element to the *front* of a queue.
+cons : a -> Queue a -> Queue a
+cons x (MkQueue frontDiff front rearLen rear rearValid diffValid) =
+  MkQueue (S frontDiff) (x :: front) rearLen rear rearValid (cong diffValid)
+
+||| `cons` behaves properly relative to `queueToList`
+consConses : (x : a) -> (q : Queue a) -> queueToList (x `cons` q) = x :: queueToList q
+consConses x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
+
+-- TODO head and tail should use default strategies
+-- that recognize that  q `snoc` x  is never empty.
+||| Get the head of a queue.
+head : (q : Queue a) -> {auto m : Nat} -> {nonempty : length q = S m} -> a
+head {nonempty} q with (frontView q)
+  head {nonempty} (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = absurd nonempty
+  head {nonempty} q | (FVCons hd tl prf) = hd
+
+||| Get the tail of a queue.
+tail : (q : Queue a) -> {auto m : Nat} -> {nonempty : length q = S m} -> Queue a
+tail {nonempty} q with (frontView q)
+  tail {nonempty} (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = absurd nonempty
+  tail {nonempty} q | (FVCons hd tl prf) = tl
+
+{-
+TODO: Write these
+headCons : (x : a) -> (q : Queue a) -> head (cons x q) = x
+tailCons : (x : a) -> (q : Queue a) -> tail (cons x q) === q
+-}
+
 instance Functor Queue where
   map f (MkQueue frontDiff front rearLen rear rearValid diffValid) =
         MkQueue frontDiff (map f front) rearLen (map f rear) (rewrite mapPreservesLength f rear in rearValid)
         (rewrite mapPreservesLength f rear in rewrite mapPreservesLength f front in diffValid)
 
+-- Some thinking and testing may be required to figure out the best
+-- Foldable instance.
+instance Foldable Queue where
+  foldr c n q = foldr c n (queueToList q)
+  foldl f b q = foldl f b (queueToList q)
+
+-- Consider foldr c n q = foldr c (foldl (flip c) n (rear q)) (Force (front q))
+-- Consider foldl f b q = foldr (flip f) (foldl f b (Force $ front q)) (rear q)
+
+{-
+-- TODO Write this, and consElim. It may help to pull in some
+-- well-foundedness theorems, and/or maybe to write a reversed version
+-- of queueToList.
+snocElim : (P : Queue a -> Type) ->
+       (base : P Empty) ->
+       (step : (x : a) -> (q : Queue a) -> P q -> P (q `snoc` x)) ->
+       (queue : Queue a) -> P queue
+snocElim P base step queue = ?elim_rhs
+-}

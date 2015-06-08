@@ -56,6 +56,13 @@ instance Functor LList where
   map f [] = []
   map f (x :: xs) = f x :: map f xs
 
+instance Foldable LList where
+  foldr c n [] = n
+  foldr c n (x :: xs) = x `c` foldr c n (Force xs)
+
+  foldl f b [] = b
+  foldl f b (x :: xs) = foldl f (b `f` x) (Force xs)
+
 ||| Append two lazy lists.
 (++) : LList a -> LList a -> LList a
 (++) [] ys = ys
@@ -90,11 +97,25 @@ listToLList : List a -> LList a
 listToLList [] = []
 listToLList (x :: xs) = x :: listToLList xs
 
+listToFromLList : (xs : List a) -> lListToList (listToLList xs) = xs
+listToFromLList [] = Refl
+listToFromLList (x :: xs) = cong (listToFromLList xs)
+
+lListToFromList : (xs : LList a) -> listToLList (lListToList xs) = xs
+lListToFromList [] = Refl
+lListToFromList (x :: Delay xs) = rewrite lListToFromList xs in Refl
+
 lListToListDistributesOverAppend : (l, r : LList a) ->
                                    lListToList (l ++ r) = lListToList l ++ lListToList r
 lListToListDistributesOverAppend [] r = Refl
 lListToListDistributesOverAppend (x :: xs) r =
   rewrite lListToListDistributesOverAppend xs r in Refl
+
+listToLListDistributesOverAppend : (l, r : List a) ->
+                                   listToLList (l ++ r) = listToLList l ++ listToLList r
+listToLListDistributesOverAppend [] r = Refl
+listToLListDistributesOverAppend (x :: xs) r =
+  rewrite listToLListDistributesOverAppend xs r in Refl
 
 appendNilRightNeutralL : (xs : LList a) -> xs ++ [] = xs
 appendNilRightNeutralL [] = Refl
@@ -156,3 +177,7 @@ reverseOntoLReversesOnto (x :: xs) ys =
   rewrite reverseOntoLReversesOnto xs (x :: ys)
   in rewrite appendAssociative (reverseOnto xs []) [x] (lListToList ys)
   in cong {f = (++lListToList ys)} (sym $ reverseOntoReversesOnto xs [x])
+
+lListToListReverseOntoL : (xs : List a) -> (ys : LList a) -> lListToList (reverseOntoL xs ys) = reverseOnto xs (lListToList ys)
+lListToListReverseOntoL [] ys = Refl
+lListToListReverseOntoL (x :: xs) ys = lListToListReverseOntoL xs (x :: ys)
