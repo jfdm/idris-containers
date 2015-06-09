@@ -33,6 +33,12 @@ headsSameL Refl = Refl
 forceSameSame : (x,y : Lazy a) -> Force x = Force y -> x = y
 forceSameSame (Delay x) (Delay x) Refl = Refl
 
+delaySameSame : (x,y : a) -> Delay {t = LazyEval} x = Delay {t = LazyEval} y -> x = y
+delaySameSame x x Refl = Refl
+
+delayForceSameSame : (x, y : Lazy a) -> Delay {t = LazyEval} (Force x) = Delay {t = LazyEval} (Force y) -> x = y
+delayForceSameSame (Delay x) (Delay x) Refl = Refl
+
 delayForce : Delay {t=LazyEval} (Force {t=LazyEval} x) = x
 delayForce = Refl
 

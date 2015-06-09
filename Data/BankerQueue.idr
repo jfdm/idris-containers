@@ -153,7 +153,47 @@ snocLength q x =
                    reverseOnto (rear q) []) [x]  
   in Refl
 
--- Consider adding a front view framed in terms of cons.
+||| Adds an element to the *front* of a queue.
+cons : a -> Queue a -> Queue a
+cons x (MkQueue frontDiff front rearLen rear rearValid diffValid) =
+  MkQueue (S frontDiff) (x :: front) rearLen rear rearValid (cong diffValid)
+
+||| `cons` behaves properly relative to `queueToList`.
+consConses : (x : a) -> (q : Queue a) -> queueToList (x `cons` q) = x :: queueToList q
+consConses x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
+
+||| `cons` behaves properly relative to `length`.
+consLength : (x : a) -> (q : Queue a) -> length (cons x q) = S (length q)
+consLength x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
+
+rearsEqRearLensEq : (xs, ys : Queue a) -> rear xs = rear ys -> rearLen xs = rearLen ys
+rearsEqRearLensEq (MkQueue frontDiff front rearLen rear rearValid diffValid) (MkQueue k x j rear y z) Refl =
+  rewrite sym rearValid
+  in rewrite y in Refl
+
+reflsSame : (x, y : a) -> (p,q : x = y) -> p = q
+reflsSame x x Refl Refl = Refl
+
+mkQueue : (fd : Nat ) -> (frnt : LList a) -> (rr : List a) -> (dv : length frnt = fd + length rr) -> Queue a
+mkQueue fd frnt rr dv = MkQueue fd (Delay frnt) (length rr) rr Refl dv
+
+queueSamemkQueue : (q : Queue a) -> q = mkQueue (frontDiff q) (front q) (rear q) (diffValid q)
+queueSamemkQueue (MkQueue frontDiff (Delay front) (List.length rear) rear Refl diffValid) = Refl
+
+-- This horrifying thing works around type dependencies.
+private
+sameListsEqual_lem : (fd1 : Nat) -> (fr1 : LList a) -> (rl1 : Nat) -> (rr1 : List a) -> (rv1 : length rr1 = rl1) -> (dv1 : length fr1 = fd1 + length rr1) -> 
+ (fd2 : Nat) -> (fr2 : LList a) -> (rl2 : Nat) -> (rr2 : List a) -> (rv2 : length rr2 = rl2) -> (dv2 : length fr2 = fd2 + length rr2) -> 
+ fr1 = fr2 -> rr1 = rr2 ->
+ MkQueue fd1 fr1 rl1 rr1 rv1 dv1 = MkQueue fd2 fr2 rl2 rr2 rv2 dv2
+sameListsEqual_lem fd1 fr1 (List.length rr1) rr1 Refl dv1 fd2 fr1 (List.length rr1) rr1 Refl dv2 Refl Refl with (plusRightCancel fd1 fd2 (length rr1) $ sym dv1 `trans` dv2)
+  sameListsEqual_lem fd1 fr1 (List.length rr1) rr1 Refl dv1 fd1 fr1 (List.length rr1) rr1 Refl dv2 Refl Refl | Refl =
+    rewrite reflsSame (length fr1) (fd1 + length rr1) dv1 dv2 in Refl
+
+||| If two queues have the same front and rear lists, then they are in fact equal.
+sameListsEqual : (xs, ys : Queue a) -> Force (front xs) = Force (front ys) -> rear xs = rear ys -> xs = ys
+sameListsEqual (MkQueue fd1 (Delay fr1) rl1 rr1 rv1 dv1) (MkQueue fd2 (Delay fr2) rl2 rr2 rv2 dv2) fronts rears =
+    (sameListsEqual_lem fd1 fr1 rl1 rr1 rv1 dv1 fd2 fr2 rl2 rr2 rv2 dv2 fronts rears)
 
 ||| A view of the front of a queue.
 data FrontView : Queue a -> Type where
@@ -195,18 +235,6 @@ uncons q with (frontView q)
   uncons (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = Nothing
   uncons q | (FVCons hd tl prf) = Just (hd, tl)
 
-||| Adds an element to the *front* of a queue.
-cons : a -> Queue a -> Queue a
-cons x (MkQueue frontDiff front rearLen rear rearValid diffValid) =
-  MkQueue (S frontDiff) (x :: front) rearLen rear rearValid (cong diffValid)
-
-||| `cons` behaves properly relative to `queueToList`
-consConses : (x : a) -> (q : Queue a) -> queueToList (x `cons` q) = x :: queueToList q
-consConses x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
-
-consLength : (x : a) -> (q : Queue a) -> length (cons x q) = S (length q)
-consLength x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
-
 -- TODO head and tail should use default strategies
 -- that recognize that  q `snoc` x  is never empty, if at all
 -- possible. That is, if we can find evidence that `q` is the
@@ -235,6 +263,35 @@ tailCons x q with (frontView (cons x q))
   tailCons x (MkQueue frontDiff front rearLen rear rearValid diffValid) | (FVCons hd tl prf) =
     sym $ tailsSame prf
 
+||| A view of the front of a queue based on `cons`. Unlike `FrontView`,
+||| which should have an analogue for *any* queue representation, this
+||| particular view is specific to output-restricted deques.
+data FrontViewCons : Queue a -> Type where
+  FVCEmpty : FrontViewCons Empty
+  FVCCons : (hd : a) -> (tl : Queue a) -> q === (hd `cons` tl) -> FrontViewCons q
+
+frontViewCons : (q : Queue a) -> FrontViewCons q
+frontViewCons q with (frontView q)
+  frontViewCons (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = FVCEmpty
+  frontViewCons q | (FVCons hd tl prf) =
+    FVCCons hd tl $ rewrite consConses hd tl in prf
+
+||| Pull an element off the front (if there is one) and push it
+||| on the back.
+rotateLeftOnce : (q : Queue a) -> Queue a
+rotateLeftOnce q with (frontView q)
+  rotateLeftOnce _ | FVEmpty = Empty
+  rotateLeftOnce q | FVCons hd tl _ = tl `snoc` hd
+
+-- This could be written more efficiently by digging into the representation.
+-- This way, however, is much easier.
+splitAt : Nat -> Queue a -> (Queue a, Queue a)
+splitAt Z q = (Empty, q)
+splitAt (S n) q with (frontView q)
+  splitAt (S n) _ | FVEmpty = (Empty, Empty)
+  splitAt (S n) q | (FVCons hd tl prf) with (splitAt n tl)
+    splitAt (S n) q | (FVCons hd tl prf) | (lefts, rights) = (cons hd lefts, rights)
+
 instance Functor Queue where
   map f (MkQueue frontDiff front rearLen rear rearValid diffValid) =
         MkQueue frontDiff (map f front) rearLen (map f rear) (rewrite mapPreservesLength f rear in rearValid)
@@ -248,14 +305,5 @@ instance Foldable Queue where
 -- Consider foldr c n q = foldr c (foldl (flip c) n (rear q)) (Force (front q))
 -- Consider foldl f b q = foldr (flip f) (foldl f b (Force $ front q)) (rear q)
 
-{-
--- TODO Write this, and consElim. It may help to pull in some
--- well-foundedness theorems. Note that there are only finitely many
--- representations of any given abstract queue, which I *believe*
--- should make this more valid than it looks.
-snocElim : (P : Queue a -> Type) ->
-       (base : P Empty) ->
-       (step : (x : a) -> (q : Queue a) -> P q -> P (q `snoc` x)) ->
-       (queue : Queue a) -> P queue
-snocElim P base step queue = ?elim_rhs
--}
+-- TODO Add a Monoid instance.
+-- TODO Add well-foundedness proofs
