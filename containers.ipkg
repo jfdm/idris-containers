@@ -17,6 +17,7 @@ modules = Data.AVL.Dependent.Tree
         , Data.Stack
         , Data.Queue
         , Data.BankerQueue.LazyList
+        , Data.BankerQueue.WellFounded
         , Data.BankerQueue
 
         , Data.Sigma.DList

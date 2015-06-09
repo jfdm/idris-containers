@@ -1,5 +1,6 @@
 module Data.BankerQueue
 import Data.BankerQueue.LazyLists
+import Data.BankerQueue.WellFounded
 
 %default total
 %access public
@@ -30,12 +31,18 @@ queueToLList q = rear q `rotateOnto` front q
 
 infix 5 ===
 ||| Equivalence of queues, using propositional equality of the elements.
+record (===) (q1 : Queue a) (q2 : Queue a) where
+  constructor MkEquiv
+  getEquiv : queueToList q1 = queueToList q2
+
+{-
 (===) : Queue a -> Queue a -> Type
 (===) q1 q2 = queueToList q1 = queueToList q2
+-}
 
 ||| Converting a queue to a list and back gives you an equivalent queue.
 queueToFromList : (q : Queue a) -> listToQueue (queueToList q) === q
-queueToFromList q =
+queueToFromList q = MkEquiv $
   rewrite listToFromLList (lListToList (Force (front q)) ++ reverseOnto (rear q) [])
   in rewrite appendNilRightNeutral
                          (lListToList (Force (front q)) ++
@@ -63,11 +70,11 @@ lengthCorrect (MkQueue frontDiff front rearLen rear rearValid diffValid) =
   in Refl
 
 ||| Equivalent queues have equal lengths.
-equivSameLength : (q1, q2 : Queue a) -> q1 === q2 -> length q1 = length q2
-equivSameLength q1 q2 eq =
+lengthPreservesEquiv : (q1, q2 : Queue a) -> q1 === q2 -> length q1 = length q2
+lengthPreservesEquiv q1 q2 eq =
   rewrite lengthCorrect q1
   in rewrite lengthCorrect q2
-  in rewrite eq
+  in rewrite getEquiv eq
   in Refl
 
 -- Some experimentation may be required to find the best way to do this.
@@ -80,7 +87,7 @@ toListViaLList q = rewrite lListToListDistributesOverAppend (Force (front q)) (r
                    in Refl
 
 toLListEqEquiv : (q1, q2 : Queue a) -> queueToLList q1 = queueToLList q2 -> q1 === q2
-toLListEqEquiv q1 q2 prf =
+toLListEqEquiv q1 q2 prf = MkEquiv $
   rewrite sym $ toListViaLList q1
   in rewrite sym $ toListViaLList q2
   in cong {f = lListToList} prf
@@ -99,15 +106,15 @@ toListEqToLList : (q1, q2 : Queue a) -> q1 === q2 -> queueToLList q1 = queueToLL
 toListEqToLList q1 q2 prf =
   rewrite sym $ toLListViaList q1
   in rewrite sym $ toLListViaList q2
-  in cong {f = listToLList} prf
+  in cong {f = listToLList} (getEquiv prf)
 
 ||| If `a` has decidable equality, then `Queue a` has decidable equivalence.
 decEquiv : DecEq a => (q1, q2 : Queue a) -> Dec (q1 === q2)
-decEquiv {a} q1 q2 with (decEq (length q1) (length q2))
-  decEquiv q1 q2 | (No contra) = No (\ab => contra (equivSameLength q1 q2 ab))
-  decEquiv {a} q1 q2 | (Yes prf) with (decEq (queueToLList q1) (queueToLList q2))
+decEquiv q1 q2 with (decEq (length q1) (length q2))
+  decEquiv q1 q2 | (No contra) = No (\ab => contra (lengthPreservesEquiv q1 q2 ab))
+  decEquiv q1 q2 | (Yes prf) with (decEq (queueToLList q1) (queueToLList q2))
     decEquiv q1 q2 | (Yes prf) | (Yes sl) = Yes (toLListEqEquiv q1 q2 sl)
-    decEquiv {a} q1 q2 | (Yes prf) | (No contra) = No (contra . toListEqToLList q1 q2)
+    decEquiv q1 q2 | (Yes prf) | (No contra) = No (contra . toListEqToLList q1 q2)
 
 ||| The empty queue
 Empty : Queue a
@@ -153,6 +160,15 @@ snocLength q x =
                    reverseOnto (rear q) []) [x]  
   in Refl
 
+||| Snoccing the same element onto two equivalent queues yields equivalent
+||| queues.
+snocPreservesEquiv : (q1, q2 : Queue a) -> (x : a) -> q1 === q2 -> (q1 `snoc` x) === (q2 `snoc` x)
+snocPreservesEquiv q1 q2 x q1q2 = MkEquiv $
+  rewrite snocSnocs q1 x
+  in rewrite snocSnocs q2 x
+  in rewrite getEquiv q1q2
+  in Refl
+
 ||| Adds an element to the *front* of a queue.
 cons : a -> Queue a -> Queue a
 cons x (MkQueue frontDiff front rearLen rear rearValid diffValid) =
@@ -165,6 +181,15 @@ consConses x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
 ||| `cons` behaves properly relative to `length`.
 consLength : (x : a) -> (q : Queue a) -> length (cons x q) = S (length q)
 consLength x (MkQueue frontDiff front rearLen rear rearValid diffValid) = Refl
+
+||| Consing the same element onto two equivalent queues yields equivalent
+||| queues.
+consPreservesEquiv : (x : a) -> (q1, q2 : Queue a) -> q1 === q2 -> (x `cons` q1) === (x `cons` q2)
+consPreservesEquiv x q1 q2 q1q2 = MkEquiv $
+  rewrite consConses x q1
+  in rewrite consConses x q2
+  in rewrite getEquiv q1q2
+  in Refl
 
 rearsEqRearLensEq : (xs, ys : Queue a) -> rear xs = rear ys -> rearLen xs = rearLen ys
 rearsEqRearLensEq (MkQueue frontDiff front rearLen rear rearValid diffValid) (MkQueue k x j rear y z) Refl =
@@ -261,20 +286,20 @@ tailCons : (x : a) -> (q : Queue a) -> tail {m=length q} {nonempty=consLength x 
 tailCons x q with (frontView (cons x q))
   tailCons x (MkQueue Z [] Z [] Refl Refl) | FVEmpty impossible
   tailCons x (MkQueue frontDiff front rearLen rear rearValid diffValid) | (FVCons hd tl prf) =
-    sym $ tailsSame prf
+    MkEquiv $ sym $ tailsSame prf
 
 ||| A view of the front of a queue based on `cons`. Unlike `FrontView`,
 ||| which should have an analogue for *any* queue representation, this
 ||| particular view is specific to output-restricted deques.
 data FrontViewCons : Queue a -> Type where
   FVCEmpty : FrontViewCons Empty
-  FVCCons : (hd : a) -> (tl : Queue a) -> q === (hd `cons` tl) -> FrontViewCons q
+  FVCCons : (hd : a) -> (tl : Queue a) -> (hd `cons` tl) === q -> FrontViewCons q
 
 frontViewCons : (q : Queue a) -> FrontViewCons q
 frontViewCons q with (frontView q)
   frontViewCons (MkQueue Z (Delay []) Z [] Refl Refl) | FVEmpty = FVCEmpty
   frontViewCons q | (FVCons hd tl prf) =
-    FVCCons hd tl $ rewrite consConses hd tl in prf
+    FVCCons hd tl $ (MkEquiv $ rewrite consConses hd tl in sym prf)
 
 ||| Pull an element off the front (if there is one) and push it
 ||| on the back.
@@ -305,5 +330,98 @@ instance Foldable Queue where
 -- Consider foldr c n q = foldr c (foldl (flip c) n (rear q)) (Force (front q))
 -- Consider foldl f b q = foldr (flip f) (foldl f b (Force $ front q)) (rear q)
 
--- TODO Add a Monoid instance.
--- TODO Add well-foundedness proofs
+||| ``q `ConsesTo` r`` means that it's possible to cons an element onto `q`
+||| to get a queue equivalent to `r`. This is primarily useful because it is
+||| a well-founded relation.
+data ConsesTo : Queue a -> Queue a -> Type where
+  ConsingOn : (x : a) -> (x `cons` q) === r -> ConsesTo q r
+
+consesToWF' : {a : Type} -> WellFounded' (ConsesTo {a})
+consesToWF' {a} =
+  let foo = inverseImageWF' {a=Queue a} NatSucc (BankerQueue.length) natSuccWF'
+  in coarserWF' (ConsesTo {a}) (NatSucc `On` BankerQueue.length) crs foo
+    where
+      crs : (xs, ys : Queue a) -> ConsesTo xs ys -> (NatSucc `On` length) xs ys
+      crs xs ys (ConsingOn x prf) =
+        rewrite sym $ lengthPreservesEquiv (cons x xs) ys prf
+        in rewrite sym $ consLength x xs
+        in Refl
+
+-- TODO This ends up being *much* too hard to use, because the types
+-- blow up to gargantuan size. This both slows type checking to a crawl
+-- and, more importantly, makes the metavariables really hard to use.
+-- Probably the right fix is to implement this using an Accessible *datatype*
+-- as is currently found in contrib. I thought I could get away without
+-- that, but I was wrong. Fortunately, the well-foundedness proofs below
+-- can actually be transformed into the right sort of datatype in a
+-- straightforward manner, so the effort isn't wasted.
+
+||| An eliminator (induction principle) for `cons`. If you can prove
+||| `P ys` for each `ys` such that ``x `cons` ys === xs``, then you
+||| get a proof of `P xs`.
+consElim : {a : Type} -> {P : Queue a -> Type} ->
+           (step : (xs : Queue a) -> ((ys : Queue a) -> ys `ConsesTo` xs -> P ys) -> P xs) ->
+           (zs : Queue a) -> P zs
+consElim {P} step zs = consesToWF' zs P step
+
+||| ``q `SnocsTo` r`` means that it's possible to cons
+||| an element onto `q` to get a queue equivalent to `r`.
+data SnocsTo : Queue a -> Queue a -> Type where
+  SnoccingOn : (x : a) -> (q `snoc` x) === r -> SnocsTo q r
+
+snocsToWF' : {a : Type} -> WellFounded' (SnocsTo {a})
+snocsToWF' {a} =
+  let foo = inverseImageWF' {a=Queue a} NatSucc (BankerQueue.length) natSuccWF'
+  in coarserWF' (SnocsTo {a}) (NatSucc `On` BankerQueue.length) crs foo
+    where
+      crs : (xs, ys : Queue a) -> SnocsTo xs ys -> (NatSucc `On` length) xs ys
+      crs xs ys (SnoccingOn x prf) =
+        rewrite sym $ lengthPreservesEquiv (snoc xs x) ys prf
+        in rewrite plusCommutative 1 (length xs)
+        in rewrite sym $ snocLength xs x
+        in Refl
+
+||| An eliminator (induction principle) for `snoc`. If you can prove
+||| `P ys` for each `ys` such that ``ys `snoc` x === xs``, then you
+||| get a proof of `P xs`.
+snocElim : {a : Type} -> {P : Queue a -> Type} ->
+           (step : (xs : Queue a) -> ((ys : Queue a) -> ys `SnocsTo` xs -> P ys) -> P xs) ->
+           (zs : Queue a) -> P zs
+snocElim {P} step zs = snocsToWF' zs P step
+
+infixl 7 <++
+
+||| Remove all the elements from the front of the second argument
+||| and snoc them onto the end of the first argument. This is
+||| efficient if the second argument is short and the first is
+||| long. The implementation demonstrates the utility of `consElim`.
+(<++) : Queue a -> Queue a -> Queue a
+(<++) {a} = consElim {P = const (Queue a -> Queue a)} step
+  where
+    step : (q2 : Queue a) ->
+           ((q : Queue a) -> q `ConsesTo` q2 -> Queue a -> Queue a) ->
+           (q1 : Queue a) -> Queue a
+    step q2 ind q1 with (frontViewCons q2)
+      step _  ind q1  | FVCEmpty = q1
+      step q2 ind q1 | (FVCCons hd tl prf) = ind tl (ConsingOn hd (MkEquiv $ getEquiv prf)) (q1 `snoc` hd)
+
+-- TODO Prove <++ correct
+
+instance Semigroup (Queue a) where
+  -- TODO This should be written using a more direct
+  -- pattern-matching approach for efficiency and ease of proof.
+  (<+>) = (<++)
+
+instance Monoid (Queue a) where
+  neutral = Empty
+
+||| A synonym for `cons` that gives us access to list syntax
+(::) : a -> Queue a -> Queue a
+(::) = cons
+
+||| A synonym for `Empty` that gives us access to list syntax
+Nil : Queue a
+Nil = Empty
+
+instance Show a => Show (Queue a) where
+  show q = show (queueToList q)
