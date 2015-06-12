@@ -28,37 +28,37 @@ height b = S (height' b)
     height' (RHeavy {n}) = S n
     height' {n} (Balanced {n}) = n
 
-data Tree : (k : Type) -> Ord k -> Type -> Type where
-  Empty : Tree k o v
+data Tree : (k : Type) -> Type -> Type where
+  Empty : Tree k v
   Node : (key : k)
       -> (val : v)
-      -> (l : Tree k o v)
-      -> (r : Tree k o v)
-      -> Tree k o v
+      -> (l : Tree k v)
+      -> (r : Tree k v)
+      -> Tree k v
 
 %name Tree t, tree
 
-data AVLInvariant : Nat -> (Tree k o v) -> Type where
+data AVLInvariant : Nat -> Tree k v -> Type where
   AVLEmpty : AVLInvariant 0 Empty
   AVLNode  : AVLInvariant n l -> AVLInvariant m r -> (b : Balance n m) -> AVLInvariant (height b) (Node k v l r)
 
 %name AVLInvariant inv
 
-AVLTree : (n : Nat) -> (k : Type) -> (o : Ord k) -> (v : Type) ->  Type
-AVLTree n k o v = Subset (Tree k o v) (AVLInvariant n)
+AVLTree : (n : Nat) -> (k : Type) -> (v : Type) ->  Type
+AVLTree n k v = Subset (Tree k v) (AVLInvariant n)
 
 -- --------------------------------------------------------------- [ Rotations ]
-data InsertRes : Nat -> (k : Type) -> (o : Ord k) -> Type -> Type where
-  Same : AVLTree n k o v     -> InsertRes n k o v
-  Grew : AVLTree (S n) k o v -> InsertRes n k o v
+data InsertRes : Nat -> (k : Type) -> Type -> Type where
+  Same : AVLTree n k v     -> InsertRes n k v
+  Grew : AVLTree (S n) k v -> InsertRes n k v
 
 %name InsertRes res, r
 
-runInsertRes : InsertRes n k o v -> (n : Nat ** AVLTree n k o v)
+runInsertRes : InsertRes n k v -> (n : Nat ** AVLTree n k v)
 runInsertRes (Same t) = (_ ** t)
 runInsertRes (Grew t) = (_ ** t)
 
-rotLeft : k -> v -> AVLTree n k o v -> AVLTree (S (S n)) k o v -> InsertRes (S (S n)) k o v
+rotLeft : k -> v -> AVLTree n k v -> AVLTree (S (S n)) k v -> InsertRes (S (S n)) k v
 -- Impossible because Empty has depth 0 and we know the depth is at least 2 from the type
 rotLeft key val l (Element Empty AVLEmpty) impossible
 
@@ -82,7 +82,7 @@ rotLeft key val (Element l invl) (Element (Node key' val' rl rr) (AVLNode invrl 
     Same $ Element (Node key' val' (Node key val l rl) rr)
                         (AVLNode (AVLNode invl invrl Balanced) invrr Balanced)
 
-rotRight : k -> v -> AVLTree (S (S n)) k o v -> AVLTree n k o v -> InsertRes (S (S n)) k o v
+rotRight : k -> v -> AVLTree (S (S n)) k v -> AVLTree n k v -> InsertRes (S (S n)) k v
 rotRight key val (Element Empty AVLEmpty) r impossible
 
 rotRight key'' val'' (Element (Node key val ll (Node key' val' lrl lrr))
@@ -109,7 +109,7 @@ rotRight key val (Element (Node key' val' ll (Node key'' val'' lrl lrr))
                  (AVLNode (AVLNode invll invlrl Balanced) (AVLNode invlrr invr Balanced) Balanced)
 
 -- --------------------------------------------------------------- [ Insertion ]
-insert : (o : Ord k) => k -> v -> (t : AVLTree n k o v) -> InsertRes n k o v
+insert : (Ord k) => k -> v -> (t : AVLTree n k v) -> InsertRes n k v
 insert newKey newVal (Element Empty AVLEmpty) = Grew (Element (Node newKey newVal Empty Empty)
                                                               (AVLNode AVLEmpty AVLEmpty Balanced))
 insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) with (compare newKey key)
@@ -137,16 +137,16 @@ insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) with (co
     insert newKey newVal (Element (Node key val l r) (AVLNode invl invr RHeavy))   | GT | (Grew (Element r' invr'))
                                                                                           = rotLeft key val (Element l invl) (Element r' invr')
 
-lookup : (o : Ord k) => k -> AVLTree h k o v -> Maybe v
+lookup : (Ord k) => k -> AVLTree h k v -> Maybe v
 lookup key (Element t _) = lookup' key t
-  where lookup' : (o : Ord k) => k -> Tree k o v -> Maybe v
+  where lookup' : (Ord k) => k -> Tree k v -> Maybe v
         lookup' key Empty = Nothing
         lookup' key (Node key' value' l r) with (compare key key')
           lookup' key (Node key' value' l r) | LT = lookup' key l
           lookup' key (Node key' value' l r) | EQ = Just value'
           lookup' key (Node key' value' l r) | GT = lookup' key r
 
-update : (o : Ord k) => k -> (v -> v) -> AVLTree h k o v -> AVLTree h k o v
+update : (Ord k) => k -> (v -> v) -> AVLTree h k v -> AVLTree h k v
 update key f t@(Element Empty inv) = t
 update key f (Element (Node key' value' l r) inv) with (compare key key')
     update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | LT with (assert_total $ update key f (Element l invl)) -- Totality checker again
@@ -158,50 +158,50 @@ update key f (Element (Node key' value' l r) inv) with (compare key key')
       update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | GT | (Element r' invr')
                                                            = Element (Node key' value' l r') (AVLNode invl invr' b)
 
-foldr : (step : k -> v -> p -> p) -> (init : p) -> AVLTree n k o v -> p
+foldr : (step : k -> v -> p -> p) -> (init : p) -> AVLTree n k v -> p
 foldr step init (Element t _) = foldr' step init t
-  where foldr' : (k -> v -> p -> p) -> p -> Tree k o v -> p
+  where foldr' : (k -> v -> p -> p) -> p -> Tree k v -> p
         foldr' step' init' Empty = init'
         foldr' step' init' (Node key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
 
-fromList : (o : Ord k) => List (k, v) -> (n : Nat ** AVLTree n k o v)
+fromList : (Ord k) => List (k, v) -> (n : Nat ** AVLTree n k v)
 fromList [] = (0 ** Element Empty AVLEmpty)
 fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
   fromList ((k, v) :: xs) | (Same x) = (_ ** x)
   fromList ((k, v) :: xs) | (Grew x) = (_ ** x)
 
-toList : AVLTree n k o v -> List (k, v)
+toList : AVLTree n k v -> List (k, v)
 toList = foldr (\k,v,xs => (k, v) :: xs) []
 
-size : AVLTree h k o v -> Nat
+size : AVLTree h k v -> Nat
 size = foldr (\_,_=> S) 0
 
-keys : AVLTree h k o v -> List k
+keys : AVLTree h k v -> List k
 keys = map fst . toList
 
-values : AVLTree h k o v -> List v
+values : AVLTree h k v -> List v
 values = map snd . toList
 
-all : (pred : k -> v -> Bool) ->  AVLTree h k o v -> Bool
+all : (pred : k -> v -> Bool) ->  AVLTree h k v -> Bool
 all pred = foldr (\k,v,pred' => pred' && pred k v) True
 
-any : (pred : k -> v -> Bool) ->  AVLTree h k o v -> Bool
+any : (pred : k -> v -> Bool) ->  AVLTree h k v -> Bool
 any pred = foldr (\k,v,pred' => pred' || pred k v) False
 
-hasKey : (o : Ord k) => k -> AVLTree h k o v -> Bool
+hasKey : (o : Ord k) => k -> AVLTree h k v -> Bool
 hasKey key = any (\key',value' => key == key')
 
-hasValue : (Eq v) => v -> AVLTree h k o v -> Bool
+hasValue : (Eq v) => v -> AVLTree h k v -> Bool
 hasValue value = any (\key',value' => value == value')
 
-findKey : (pred : v -> Bool) -> AVLTree h k o v -> Maybe k
+findKey : (pred : v -> Bool) -> AVLTree h k v -> Maybe k
 findKey pred = foldr (\k,v,p => if pred v then Just k else p) Nothing
 
-findKeyOf : (Eq v) => v -> AVLTree h k o v -> Maybe k
+findKeyOf : (Eq v) => v -> AVLTree h k v -> Maybe k
 findKeyOf value = findKey (== value)
 
 -- ----------------------------------------------------------------- [ Classes ]
-eqTree : (Eq k, Eq v) => Tree k o v -> Tree k o v -> Bool
+eqTree : (Eq k, Eq v) => Tree k v -> Tree k v -> Bool
 eqTree Empty              Empty              = True
 eqTree (Node xk xv xl xr) (Node yk yv yl yr) =
   xk == yk  &&
@@ -210,17 +210,17 @@ eqTree (Node xk xv xl xr) (Node yk yv yl yr) =
   eqTree xr yr
 eqTree _ _                                   = False
 
-instance (Eq k, Eq v) => Eq (Tree k o v) where
+instance (Eq k, Eq v) => Eq (Tree k v) where
   (==) x y = eqTree x y
 
-instance (Eq k, Eq v) => Eq (AVLTree h k o v) where
+instance (Eq k, Eq v) => Eq (AVLTree h k v) where
   (==) (Element t _) (Element t' _) = t == t'
 
-instance (Show k, Show v) => Show (Tree k o v) where
+instance (Show k, Show v) => Show (Tree k v) where
   show Empty              = ""
   show (Node k v l r)     = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
 
-instance (Show k, Show v) => Show (AVLTree h k o v) where
+instance (Show k, Show v) => Show (AVLTree h k v) where
   show (Element t _) = show t
 
 -- --------------------------------------------------------------------- [ EOF ]

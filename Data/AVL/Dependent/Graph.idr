@@ -33,7 +33,7 @@ AList b = List (NodeID, Maybe b)
 -- ------------------------------------------------------------------- [ Types ]
 
 GraphRep : (vTy : Type) -> (eTy : Type) -> Type
-GraphRep vTy eTy = Dict (NodeID) (vTy, AList eTy)
+GraphRep vTy eTy = Dict NodeID (vTy, AList eTy)
 
 ||| A compact adjacency list representation of a graph.
 |||
