@@ -1,6 +1,6 @@
 package containers
 
-opts = "-p effects"
+opts = "-p effects --warnreach"
 
 modules = Data.AVL.Dependent.Tree
         , Data.AVL.Dependent.Dict
