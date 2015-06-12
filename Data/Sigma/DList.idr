@@ -82,11 +82,28 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 
 -- TODO init
 
+-- ---------------------------------------------- [ To List of Dependent Pairs ]
+
+toLDP : DList aTy eTy as -> List (x : aTy ** eTy x)
+toLDP Nil     = Nil
+toLDP (x::xs) = (_**x) :: toLDP xs
+
+fromList : {ty : Type} -> {e : ty -> Type} -> {x : ty}
+         -> List (e x) -> (es : List ty ** DList ty e es)
+fromList Nil     = (_ ** DList.Nil)
+fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
+
 -- --------------------------------------------------------- [ Bob The Builder ]
 
 (++) : DList aTy eTy xs -> DList aTy eTy ys -> DList aTy eTy (xs ++ ys)
 (++) Nil     ys = ys
 (++) (x::xs) ys = x :: (xs ++ ys)
+
+
+-- infixl 4 ++=
+
+-- (++=) : List (eTy x) -> (ys ** List ty ** DList aTy eTy (xs ++ ys))
+-- (++=) xs ys =
 
 -- TODO replicate
 
@@ -118,11 +135,8 @@ last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
--- ---------------------------------------------- [ To List of Dependent Pairs ]
+-- ----------------------------------------------------------- [ List to DList ]
 
-toLDP : DList aTy eTy as -> List (x : aTy ** eTy x)
-toLDP Nil     = Nil
-toLDP (x::xs) = (_**x) :: toLDP xs
 
 -- -------------------------------------------------------------------- [ Show ]
 -- A way of doing show, a little nasty but worth it.
