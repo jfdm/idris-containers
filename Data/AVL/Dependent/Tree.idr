@@ -28,202 +28,201 @@ height b = S (height' b)
     height' (RHeavy {n}) = S n
     height' {n} (Balanced {n}) = n
 
-data Tree : Nat -> (k : Type) -> Ord k -> Type -> Type where
-  Empty : Tree 0 k o v
+data Tree : (k : Type) -> Type -> Type where
+  Empty : Tree k v
   Node : (key : k)
       -> (val : v)
-      -> (l : Tree n k o v)
-      -> (r : Tree m k o v)
-      -> (b : Balance n m)
-      -> Tree (height b) k o v
+      -> (l : Tree k v)
+      -> (r : Tree k v)
+      -> Tree k v
 
 %name Tree t, tree
 
+data AVLInvariant : Nat -> Tree k v -> Type where
+  AVLEmpty : AVLInvariant 0 Empty
+  AVLNode  : AVLInvariant n l -> AVLInvariant m r -> (b : Balance n m) -> AVLInvariant (height b) (Node k v l r)
+
+%name AVLInvariant inv
+
+AVLTree : (n : Nat) -> (k : Type) -> (v : Type) ->  Type
+AVLTree n k v = Subset (Tree k v) (AVLInvariant n)
+
 -- --------------------------------------------------------------- [ Rotations ]
-data InsertRes : Nat -> (k : Type) -> (o : Ord k) -> Type -> Type where
-  Same : Tree n k o v     -> InsertRes n k o v
-  Grew : Tree (S n) k o v -> InsertRes n k o v
+data InsertRes : Nat -> (k : Type) -> Type -> Type where
+  Same : AVLTree n k v     -> InsertRes n k v
+  Grew : AVLTree (S n) k v -> InsertRes n k v
 
 %name InsertRes res, r
 
-rotLeft : k -> v -> Tree n k o v -> Tree (S (S n)) k o v -> InsertRes (S (S n)) k o v
+runInsertRes : InsertRes n k v -> (n : Nat ** AVLTree n k v)
+runInsertRes (Same t) = (_ ** t)
+runInsertRes (Grew t) = (_ ** t)
+
+rotLeft : k -> v -> AVLTree n k v -> AVLTree (S (S n)) k v -> InsertRes (S (S n)) k v
 -- Impossible because Empty has depth 0 and we know the depth is at least 2 from the type
-rotLeft key val l Empty                           impossible
+rotLeft key val l (Element Empty AVLEmpty) impossible
 
-rotLeft key val l (Node key' val' rl rr Balanced) =
-    Grew $ Node key' val' (Node key val l rl RHeavy)
-                          rr LHeavy
+rotLeft key val (Element l invl) (Element (Node key' val' rl rr) (AVLNode invrl invrr Balanced)) =
+    Grew $ Element (Node key' val' (Node key val l rl) rr)
+                        (AVLNode (AVLNode invl invrl RHeavy) invrr LHeavy)
 
-rotLeft key val l (Node key' val' (Node key'' val'' rll rlr LHeavy) rr LHeavy) =
-    Same $ Node key'' val'' (Node key val   l   rll Balanced) -- Needs checking
-                            (Node key' val' rlr rr  RHeavy) Balanced
+rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr LHeavy) invrr LHeavy)) =
+    Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr)) -- Needs Checking
+                        (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr RHeavy) Balanced)
 
-rotLeft key val l (Node key' val' (Node key'' val'' rll rlr RHeavy) rr LHeavy) =
-    Same $ Node key'' val'' (Node key  val  l   rll LHeavy)
-                            (Node key' val' rlr rr  Balanced) Balanced
+rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr RHeavy) invrr LHeavy)) =
+    Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr))
+                        (AVLNode (AVLNode invl invrll LHeavy) (AVLNode invrlr invrr Balanced) Balanced)
 
-rotLeft key val l (Node key' val' (Node key'' val'' rll rlr  Balanced) rr LHeavy) =
-    Same $ Node key'' val'' (Node key  val  l   rll Balanced)
-                            (Node key' val' rlr rr  Balanced) Balanced -- Needs Checking
+rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr Balanced) invrr LHeavy)) =
+    Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr))
+                        (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr Balanced) Balanced) -- Needs Checking
 
-rotLeft key val l (Node key' val' rl rr RHeavy) =
-    Same $ Node key' val' (Node key val l rl Balanced)
-                          rr Balanced
+rotLeft key val (Element l invl) (Element (Node key' val' rl rr) (AVLNode invrl invrr RHeavy)) =
+    Same $ Element (Node key' val' (Node key val l rl) rr)
+                        (AVLNode (AVLNode invl invrl Balanced) invrr Balanced)
 
+rotRight : k -> v -> AVLTree (S (S n)) k v -> AVLTree n k v -> InsertRes (S (S n)) k v
+rotRight key val (Element Empty AVLEmpty) r impossible
 
+rotRight key'' val'' (Element (Node key val ll (Node key' val' lrl lrr))
+             (AVLNode invll (AVLNode invlrl invlrr RHeavy) RHeavy)) (Element r invr) =
+  Same $ Element (Node key' val' (Node key val ll lrl) (Node key'' val'' lrr r))
+                 (AVLNode (AVLNode invll invlrl LHeavy) (AVLNode invlrr invr Balanced) Balanced)
 
-rotRight : k -> v -> Tree (S (S n)) k o v -> Tree n k o v -> InsertRes (S (S n)) k o v
-rotRight key val Empty r impossible
+rotRight key'' val'' (Element (Node key val ll (Node key' val' lrl lrr))
+             (AVLNode invll (AVLNode invlrl invlrr LHeavy) RHeavy)) (Element r invr) =
+  Same $ Element (Node key' val' (Node key val ll lrl) (Node key'' val'' lrr r))
+                 (AVLNode (AVLNode invll invlrl Balanced) (AVLNode invlrr invr RHeavy) Balanced)
 
-rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr RHeavy) RHeavy) r =
-  Same $ Node key' val' (Node key   val   ll  lrl LHeavy)
-                        (Node key'' val'' lrr r   Balanced) Balanced
+rotRight key val (Element (Node key' val' ll lr) (AVLNode invll invlr Balanced)) (Element r invr) =
+  Grew $ Element (Node key' val' ll (Node key val lr r))
+                 (AVLNode invll (AVLNode invlr invr LHeavy) RHeavy)
 
-rotRight key'' val'' (Node key val ll (Node key' val' lrl lrr LHeavy) RHeavy) r =
-  Same $ Node key' val' (Node key   val   ll  lrl Balanced)
-                        (Node key'' val'' lrr r    RHeavy) Balanced
+rotRight key val (Element (Node key' val' ll lr) (AVLNode invll invlr LHeavy)) (Element r invr) =
+  Same $ Element (Node key' val' ll (Node key val lr r))
+                 (AVLNode invll (AVLNode invlr invr Balanced) Balanced)
 
-rotRight key val (Node key' val' ll lr Balanced) r =
-  Grew $ Node key' val' ll
-                        (Node key val lr r LHeavy) RHeavy
-
-rotRight key val (Node key' val' ll lr LHeavy) r =
-  Same $ Node key' val' ll
-                        (Node key val lr r Balanced) Balanced
-
-rotRight key val (Node key' val' ll (Node key'' val'' lrl lrr Balanced) RHeavy) r =
-  Same $ Node key'' val'' (Node key' val' ll  lrl Balanced)
-                          (Node key   val lrr r   Balanced) Balanced
+rotRight key val (Element (Node key' val' ll (Node key'' val'' lrl lrr))
+             (AVLNode invll (AVLNode invlrl invlrr Balanced) RHeavy)) (Element r invr) =
+  Same $ Element (Node key'' val'' (Node key' val' ll lrl) (Node key val lrr r))
+                 (AVLNode (AVLNode invll invlrl Balanced) (AVLNode invlrr invr Balanced) Balanced)
 
 -- --------------------------------------------------------------- [ Insertion ]
-insert : (o : Ord k) => k -> v -> (t : Tree n k o v) -> InsertRes n k o v
-insert newKey newVal Empty = Grew (Node newKey newVal Empty Empty Balanced)
-insert newKey newVal (Node key val l r b) with (compare newKey key)
-  insert newKey newVal (Node key val l r b) | EQ = Same (Node newKey newVal l r b)
+insert : (Ord k) => k -> v -> (t : AVLTree n k v) -> InsertRes n k v
+insert newKey newVal (Element Empty AVLEmpty) = Grew (Element (Node newKey newVal Empty Empty)
+                                                              (AVLNode AVLEmpty AVLEmpty Balanced))
+insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) with (compare newKey key)
+  insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) | EQ = Same (Element (Node newKey newVal l r) (AVLNode invl invr b))
 
-  insert newKey newVal (Node key val l r b) | LT with (insert newKey newVal l)
-    insert newKey newVal (Node key val l r b)        | LT | (Same l') = Same (Node key val l' r b)
-    insert newKey newVal (Node key val l r LHeavy)   | LT | (Grew l') = rotRight key val l' r
-    insert newKey newVal (Node key val l r Balanced) | LT | (Grew l') = Grew (Node key val l' r LHeavy)
-    insert newKey newVal (Node key val l r RHeavy)   | LT | (Grew l') = Same (Node key val l' r Balanced)
+  insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) | LT with (assert_total $ insert newKey newVal (Element l invl))
+    -- Totality checker not clever enough to see that this is smaller
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b))        | LT | (Same (Element l' invl'))
+                                                                                          = Same $ Element (Node key val l' r) (AVLNode invl' invr b)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr LHeavy))   | LT | (Grew (Element l' invl'))
+                                                                                          = rotRight key val (Element l' invl') (Element r invr)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr Balanced)) | LT | (Grew (Element l' invl'))
+                                                                                          = Grew $ Element (Node key val l' r) (AVLNode invl' invr LHeavy)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr RHeavy))   | LT | (Grew (Element l' invl'))
+                                                                                          = Same $ Element (Node key val l' r) (AVLNode invl' invr Balanced)
 
-  insert newKey newVal (Node key val l r b) | GT with (insert newKey newVal r)
-    insert newKey newVal (Node key val l r b)        | GT | (Same r') = Same (Node key val l r' b)
-    insert newKey newVal (Node key val l r LHeavy)   | GT | (Grew r') = Same (Node key val l r' Balanced)
-    insert newKey newVal (Node key val l r Balanced) | GT | (Grew r') = Grew (Node key val l r' RHeavy)
-    insert newKey newVal (Node key val l r RHeavy)   | GT | (Grew r') = rotLeft key val l r'
+  insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) | GT with (assert_total $ insert newKey newVal (Element r invr))
+  -- Totality checker not clever enough to see that this is smaller
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b))        | GT | (Same (Element r' invr'))
+                                                                                          = Same $ Element (Node key val l r') (AVLNode invl invr' b)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr LHeavy))   | GT | (Grew (Element r' invr'))
+                                                                                          = Same $ Element (Node key val l r') (AVLNode invl invr' Balanced)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr Balanced)) | GT | (Grew (Element r' invr'))
+                                                                                          = Grew $ Element (Node key val l r') (AVLNode invl invr' RHeavy)
+    insert newKey newVal (Element (Node key val l r) (AVLNode invl invr RHeavy))   | GT | (Grew (Element r' invr'))
+                                                                                          = rotLeft key val (Element l invl) (Element r' invr')
 
--- ------------------------------------------------------------------ [ Update ]
+lookup : (Ord k) => k -> AVLTree h k v -> Maybe v
+lookup key (Element t _) = lookup' key t
+  where
+    lookup' : (Ord k) => k -> Tree k v -> Maybe v
+    lookup' key Empty = Nothing
+    lookup' key (Node key' value' l r) with (compare key key')
+      lookup' key (Node key' value' l r) | LT = lookup' key l
+      lookup' key (Node key' value' l r) | EQ = Just value'
+      lookup' key (Node key' value' l r) | GT = lookup' key r
 
-||| Update value in the dictionary in place selecting key using a
-||| custom comparison function.
-updateValueBy : (o : Ord k) => (k -> Ordering)
-                            -> (v -> v)
-                            -> Tree h k o v
-                            -> InsertRes h k o v
-updateValueBy cmp ufunc Empty = Same Empty
-updateValueBy cmp ufunc (Node key val l r b) with (cmp key)
-  updateValueBy cmp ufunc (Node key val l r b) | EQ = Same (Node key (ufunc val) l r b)
+update : (Ord k) => k -> (v -> v) -> AVLTree h k v -> AVLTree h k v
+update key f t@(Element Empty inv) = t
+update key f (Element (Node key' value' l r) inv) with (compare key key')
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | LT with (assert_total $ update key f (Element l invl)) -- Totality checker again
+      update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | LT | (Element l' invl')
+                                                           = Element (Node key' value' l' r) (AVLNode invl' invr b)
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | EQ
+                                                           = Element (Node key' (f value') l r) (AVLNode invl invr b)
+    update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | GT with (assert_total $ update key f (Element r invr))
+      update key f (Element (Node key' value' l r) (AVLNode invl invr b)) | GT | (Element r' invr')
+                                                           = Element (Node key' value' l r') (AVLNode invl invr' b)
 
-  updateValueBy cmp ufunc (Node key val l r b) | LT with (updateValueBy cmp ufunc l)
-    updateValueBy cmp ufunc (Node key val l r b)        | LT | (Same l') = Same (Node key val l' r b)
-    updateValueBy cmp ufunc (Node key val l r LHeavy)   | LT | (Grew l') = rotRight key val l' r
-    updateValueBy cmp ufunc (Node key val l r Balanced) | LT | (Grew l') = Grew (Node key val l' r LHeavy)
-    updateValueBy cmp ufunc (Node key val l r RHeavy)   | LT | (Grew l') = Same (Node key val l' r Balanced)
+foldr : (step : k -> v -> p -> p) -> (init : p) -> AVLTree n k v -> p
+foldr step init (Element t _) = foldr' step init t
+  where
+    foldr' : (k -> v -> p -> p) -> p -> Tree k v -> p
+    foldr' step' init' Empty = init'
+    foldr' step' init' (Node key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
 
-  updateValueBy cmp ufunc (Node key val l r b) | GT with (updateValueBy cmp ufunc r)
-    updateValueBy cmp ufunc (Node key val l r b)        | GT | (Same r') = Same (Node key val l r' b)
-    updateValueBy cmp ufunc (Node key val l r LHeavy)   | GT | (Grew r') = Same (Node key val l r' Balanced)
-    updateValueBy cmp ufunc (Node key val l r Balanced) | GT | (Grew r') = Grew (Node key val l r' RHeavy)
-    updateValueBy cmp ufunc (Node key val l r RHeavy)   | GT | (Grew r') = rotLeft key val l r'
-
-
-fromList : (o : Ord k) => List (k, v) -> (n : Nat ** Tree n k o v)
-fromList [] = (0 ** Empty)
+fromList : (Ord k) => List (k, v) -> (n : Nat ** AVLTree n k v)
+fromList [] = (0 ** Element Empty AVLEmpty)
 fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
   fromList ((k, v) :: xs) | (Same x) = (_ ** x)
   fromList ((k, v) :: xs) | (Grew x) = (_ ** x)
 
-toList : Tree n k o v -> List (k, v)
-toList Empty = []
-toList (Node key val l r b) = toList l ++ [(key, val)] ++ toList r
+toList : AVLTree n k v -> List (k, v)
+toList = foldr (\k,v,xs => (k, v) :: xs) []
 
+size : AVLTree h k v -> Nat
+size = foldr (\_,_=> S) 0
 
-lookupUsing : Ord k => (k -> Ordering) -> Tree h k o v -> Maybe v
-lookupUsing _ Empty        	   = Nothing
-lookupUsing f (Node k v l r b) =
-  case f k of
-    LT => lookupUsing f l
-    GT => lookupUsing f r
-    EQ => Just v
+keys : AVLTree h k v -> List k
+keys = map fst . toList
 
-lookup : Ord k => k -> Tree h k o v -> Maybe v
-lookup k d = lookupUsing (compare k) d
+values : AVLTree h k v -> List v
+values = map snd . toList
 
-keys : Ord k => Tree h k o v -> List k
-keys Empty = Nil
-keys (Node k _ l r b) = keys l ++ [k] ++ keys r
+all : (pred : k -> v -> Bool) ->  AVLTree h k v -> Bool
+all pred = foldr (\k,v,pred' => pred' && pred k v) True
 
-values : Ord k => Tree h k o v -> List v
-values Empty = Nil
-values (Node _ v l r b) = values l ++ [v] ++ values r
+any : (pred : k -> v -> Bool) ->  AVLTree h k v -> Bool
+any pred = foldr (\k,v,pred' => pred' || pred k v) False
 
-length : Ord k => Tree h k o v -> Nat
-length Empty = Z
-length (Node _ _ l r b) = 1 + length l + length r
+hasKey : (o : Ord k) => k -> AVLTree h k v -> Bool
+hasKey key = any (\key',value' => key == key')
 
-hasKeyUsing : (Ord k) => (k -> Ordering) -> Tree h k o v -> Bool
-hasKeyUsing f Empty = False
-hasKeyUsing f (Node k v l r b) =
-  case f k of
-    EQ => True
-    LT => (hasKeyUsing f l)
-    GT => (hasKeyUsing f r)
+hasValue : (Eq v) => v -> AVLTree h k v -> Bool
+hasValue value = any (\key',value' => value == value')
 
-hasKey : (Ord k) => k -> Tree h k o v -> Bool
-hasKey k d = hasKeyUsing (compare k) d
+findKey : (pred : v -> Bool) -> AVLTree h k v -> Maybe k
+findKey pred = foldr (\k,v,p => if pred v then Just k else p) Nothing
 
-hasValueUsing : Ord k => (v -> Bool) -> Tree h k o v -> Bool
-hasValueUsing f Empty = False
-hasValueUsing f (Node k v l r b) =
-  f v || (hasValueUsing f l) || (hasValueUsing f r)
-
-hasValue : (Ord k, Eq v) => v -> Tree h k o v -> Bool
-hasValue v d = hasValueUsing (\x => v == x) d
-
-getKeyUsing : Ord k => (v -> Bool) -> Tree h k o v -> Maybe k
-getKeyUsing f Empty = Nothing
-getKeyUsing f d     =
-    foldr (\acc,res => isRes f acc res) Nothing $ Tree.toList d
-  where
-    isRes : (v -> Bool) -> (k,v) -> Maybe k -> Maybe k
-    isRes f (k,v) r = case f v of
-                         True  => Just k
-                         False => r
-
-getKey : (Ord k, Eq v) => v -> Tree h k o v -> Maybe k
-getKey v d = getKeyUsing (\x => x==v) d
-
-isKey : Ord k => k -> Tree h k o v -> Bool
-isKey k d = isJust $ lookup k d
+findKeyOf : (Eq v) => v -> AVLTree h k v -> Maybe k
+findKeyOf value = findKey (== value)
 
 -- ----------------------------------------------------------------- [ Classes ]
+eqTree : (Eq k, Eq v) => Tree k v -> Tree k v -> Bool
+eqTree Empty              Empty              = True
+eqTree (Node xk xv xl xr) (Node yk yv yl yr) =
+  xk == yk  &&
+  xv == yv  &&
+  eqTree xl yl &&
+  eqTree xr yr
+eqTree _ _                                   = False
 
-eqTree : (Eq k, Eq v) => Tree h k o v -> Tree h' k p v -> Bool
-eqTree (Empty)               (Empty)               = True
-eqTree (Node xk xv xl xr _) (Node yk yv yl yr _) =
-    xk == yk  &&
-    xv == yv  &&
-    eqTree xl yl &&
-    eqTree xr yr -- Maybe add eq for balance...
-eqTree _ _ = False
-
-instance (Eq k, Eq v) => Eq (Tree h k o v) where
+instance (Eq k, Eq v) => Eq (Tree k v) where
   (==) x y = eqTree x y
 
+instance (Eq k, Eq v) => Eq (AVLTree h k v) where
+  (==) (Element t _) (Element t' _) = t == t'
 
-instance (Show k, Show v) => Show (Tree h k o v) where
+instance (Show k, Show v) => Show (Tree k v) where
   show Empty              = ""
-  show (Node k v l r d) = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
+  show (Node k v l r)     = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
+
+instance (Show k, Show v) => Show (AVLTree h k v) where
+  show (Element t _) = show t
 
 -- --------------------------------------------------------------------- [ EOF ]
