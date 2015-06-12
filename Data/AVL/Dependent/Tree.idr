@@ -139,12 +139,13 @@ insert newKey newVal (Element (Node key val l r) (AVLNode invl invr b)) with (co
 
 lookup : (Ord k) => k -> AVLTree h k v -> Maybe v
 lookup key (Element t _) = lookup' key t
-  where lookup' : (Ord k) => k -> Tree k v -> Maybe v
-        lookup' key Empty = Nothing
-        lookup' key (Node key' value' l r) with (compare key key')
-          lookup' key (Node key' value' l r) | LT = lookup' key l
-          lookup' key (Node key' value' l r) | EQ = Just value'
-          lookup' key (Node key' value' l r) | GT = lookup' key r
+  where
+    lookup' : (Ord k) => k -> Tree k v -> Maybe v
+    lookup' key Empty = Nothing
+    lookup' key (Node key' value' l r) with (compare key key')
+      lookup' key (Node key' value' l r) | LT = lookup' key l
+      lookup' key (Node key' value' l r) | EQ = Just value'
+      lookup' key (Node key' value' l r) | GT = lookup' key r
 
 update : (Ord k) => k -> (v -> v) -> AVLTree h k v -> AVLTree h k v
 update key f t@(Element Empty inv) = t
@@ -160,9 +161,10 @@ update key f (Element (Node key' value' l r) inv) with (compare key key')
 
 foldr : (step : k -> v -> p -> p) -> (init : p) -> AVLTree n k v -> p
 foldr step init (Element t _) = foldr' step init t
-  where foldr' : (k -> v -> p -> p) -> p -> Tree k v -> p
-        foldr' step' init' Empty = init'
-        foldr' step' init' (Node key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
+  where
+    foldr' : (k -> v -> p -> p) -> p -> Tree k v -> p
+    foldr' step' init' Empty = init'
+    foldr' step' init' (Node key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
 
 fromList : (Ord k) => List (k, v) -> (n : Nat ** AVLTree n k v)
 fromList [] = (0 ** Element Empty AVLEmpty)

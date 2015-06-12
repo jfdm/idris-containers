@@ -55,6 +55,9 @@ hasKey key (MkDict d) = Tree.hasKey key d
 hasValue : (Eq v) => v -> Dict k v -> Bool
 hasValue val (MkDict d) = Tree.hasValue val d
 
+hasValueUsing : (v -> Bool) -> Dict k v -> Bool
+hasValueUsing f (MkDict d) = Tree.any (\k,v => (f v)) d
+
 findKey : (pred : v -> Bool) -> Dict k v -> Maybe k
 findKey pred (MkDict d) = Tree.findKey pred d
 
