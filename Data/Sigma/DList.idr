@@ -141,6 +141,10 @@ fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
 -- -------------------------------------------------------------------- [ Show ]
 -- A way of doing show, a little nasty but worth it.
 
+foldr : ({a : aTy} -> elemTy a -> p -> p) -> p -> DList aTy elemTy as -> p
+foldr f init Nil     = init
+foldr f init (x::xs) = f x (foldr f init xs)
+
 private
 doDListShow : ({a : aTy} -> elemTy a -> String)
            -> DList aTy elemTy as
