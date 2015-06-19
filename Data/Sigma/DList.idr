@@ -46,16 +46,7 @@ length (x::xs) = (S Z) + length xs
 
 -- ---------------------------------------------------------------- [ Indexing ]
 
-{- TODO Safely Index the List
-
-index : (n : Nat)
-     -> (l : DList aTy eTy as)
-     -> (ok : lt n (length l) = True)
-     -> (a : aTy ** eTy a)
-index Z     (x::xs) p    = (_ ** x)
-index (S n) (x::xs) p    = index n xs ...
-index _     Nil     Refl   impossible
--}
+-- TODO Safely Index the List
 
 index : (n : Nat)
      -> (l : DList aTy eTy as)
@@ -64,7 +55,9 @@ index Z     (x::xs) = Just (_ ** x)
 index (S n) (x::xs) = index n xs
 index _     Nil     = Nothing
 
-head : (l : DList aTy eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+head : (l : DList aTy eTy as)
+    -> {auto ok : isCons l = True}
+    -> Sigma aTy eTy
 head Nil     {ok=Refl}   impossible
 head (x::xs) {ok=p}    = (_ ** x)
 
@@ -75,58 +68,250 @@ tail Nil     {ok=Refl}   impossible
 tail (x::xs) {ok=p}    = xs
 
 
-last : (l : DList aTy eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+last : (l : DList aTy eTy as)
+    -> {auto ok : isCons l = True}
+    -> Sigma aTy eTy
 last Nil           {ok=Refl}  impossible
 last [x]           {ok=p}     = (_ ** x)
 last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
 
--- TODO init
-
--- ---------------------------------------------- [ To List of Dependent Pairs ]
-
-toLDP : DList aTy eTy as -> List (x : aTy ** eTy x)
-toLDP Nil     = Nil
-toLDP (x::xs) = (_**x) :: toLDP xs
-
-fromList : {ty : Type} -> {e : ty -> Type} -> {x : ty}
-         -> List (e x) -> (es : List ty ** DList ty e es)
-fromList Nil     = (_ ** DList.Nil)
-fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
+-- TODO Safely init the list
+-- TODO Unsafely init the list.
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
-(++) : DList aTy eTy xs -> DList aTy eTy ys -> DList aTy eTy (xs ++ ys)
+(++) : DList aTy eTy xs
+    -> DList aTy eTy ys
+    -> DList aTy eTy (xs ++ ys)
 (++) Nil     ys = ys
 (++) (x::xs) ys = x :: (xs ++ ys)
 
-
--- infixl 4 ++=
-
--- (++=) : List (eTy x) -> (ys ** List ty ** DList aTy eTy (xs ++ ys))
--- (++=) xs ys =
-
 -- TODO replicate
 
--- ---------------------------------------------------------------- [ SubLists ]
--- TODO
+replicate : {a : aTy}
+         -> Nat
+         -> elemTy a
+         -> (as : List aTy ** DList aTy elemTy as)
+replicate Z     x = (_ ** Nil)
+replicate (S Z) x = (_ ** DList.(::) x Nil)
+replicate (S n) x = (_ ** DList.(::) x (getProof (replicate n x)))
 
--- ----------------------------------------------------------------- [ Functor ]
--- TODO
+
+-- ---------------------------------------------------------------- [ SubLists ]
+
+take : Nat
+    -> DList aTy elemTy as
+    -> (bs : List aTy ** DList aTy elemTy bs)
+take Z     xs      = (_ ** Nil)
+take (S n) Nil     = (_ ** Nil)
+take (S n) (x::xs) = (_ ** DList.(::) x (getProof (take n xs)))
+
+takeWhile : ({a : aTy} -> elemTy a -> Bool)
+         -> DList aTy elemTy as
+         -> (bs : List aTy ** DList aTy elemTy bs)
+takeWhile p Nil     = (_ ** Nil)
+takeWhile p (x::xs) =
+    if p x
+      then (_ ** DList.(::) x (getProof (takeWhile p xs)))
+      else (_ ** Nil)
+
+drop : Nat
+    -> DList aTy elemTy as
+    -> (bs : List aTy ** DList aTy elemTy bs)
+drop Z     xs      = (_ ** Nil)
+drop (S n) Nil     = (_ ** Nil)
+drop (S n) (x::xs) = (_ ** getProof (drop n xs))
+
+dropWhile : ({a : aTy} -> elemTy a -> Bool)
+         -> DList aTy elemTy as
+         -> (bs : List aTy ** DList aTy elemTy bs)
+dropWhile p Nil     = (_ ** Nil)
+dropWhile p (x::xs) =
+    if p x
+      then dropWhile p xs
+      else (_ ** DList.(::) x xs)
 
 -- ---------------------------------------------------------------- [ Equality ]
--- TODO
+
+eqDList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+       -> DList aTy elemTy as
+       -> DList aTy elemTy bs
+       -> Bool
+eqDList _ Nil     Nil     = True
+eqDList _ xs      Nil     = True
+eqDList _ Nil     xs      = True
+eqDList p (x::xs) (y::ys) =
+  if p x y
+    then eqDList p xs ys
+    else False
+eqDList _ _       _       = False
 
 -- ------------------------------------------------------------------- [ Order ]
 
--- TODO
+cmpDList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+        -> ({a,b : aTy} -> elemTy a -> elemTy b -> Ordering)
+        -> DList aTy elemTy as
+        -> DList aTy elemTy bs
+        -> Ordering
+cmpDList _  _   Nil     Nil     = EQ
+cmpDList _  _   Nil     _       = LT
+cmpDList _  _   _       Nil     = GT
+cmpDList eq cmp (x::xs) (y::ys) =
+  if not $ eq x y
+    then cmp x y
+    else cmpDList eq cmp xs ys
 
 -- ----------------------------------------------------------------- [ Folding ]
 -- TODO
 
--- -------------------------------------------------------- [ Membership Tests ]
+foldr : ({a : aTy} -> elemTy a -> p -> p)
+     -> p
+     -> DList aTy elemTy as -> p
+foldr f init Nil     = init
+foldr f init (x::xs) = f x (foldr f init xs)
+
+foldl : ({a : aTy} -> p -> elemTy a -> p)
+      -> p
+      -> DList aTy elemTy as -> p
+foldl f init Nil = init
+foldl f init (x::xs) = foldl f (f init x) xs
+
+-- ----------------------------------------------------------------- [ Functor ]
+
+map : ({a : aTy} -> elemTy a -> b)
+     -> DList aTy elemTy as
+     -> List b
+map f Nil     = List.Nil
+map f (x::xs) = with List f x :: DList.map f xs
+
+-- TODO map from one DList to another.
+
+mapMaybe : ({a : aTy} -> elemTy a -> Maybe b)
+         -> DList aTy elemTy as
+         -> List b
+mapMaybe f Nil     = Nil
+mapMaybe f (x::xs) =
+  case f x of
+    Nothing => mapMaybe f xs
+    Just y  => y :: mapMaybe f xs
+
+-- TODO mapMaybe from one DList to another
+
+-- --------------------------------------------------------- [ Transformations ]
 -- TODO
 
+-- ---------------------------------------------- [ To List of Dependent Pairs ]
+
+toLDP : DList aTy eTy as
+     -> List (x : aTy ** eTy x)
+toLDP Nil     = Nil
+toLDP (x::xs) = (_**x) :: toLDP xs
+
+-- ----------------------------------------------------------- [ List to DList ]
+
+fromList : {ty : Type}
+        -> {e : ty -> Type}
+        -> {x : ty}
+        -> List (e x)
+        -> (es : List ty ** DList ty e es)
+fromList Nil     = (_ ** DList.Nil)
+fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
+
+-- -------------------------------------------------------- [ Membership Tests ]
+
+any : ({a : aTy} -> elemTy a -> Bool)
+   -> DList aTy elemTy as
+   -> Bool
+any p = DList.foldr (\e,res => res || p e) False
+
+all : ({a : aTy} -> elemTy a -> Bool)
+   -> DList aTy elemTy as
+   -> Bool
+all p = DList.foldr (\e,res => res && p e) True
+
+elemBy : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+      -> elemTy a
+      -> DList aTy elemTy as
+      -> Bool
+elemBy p e = any (\x => p e x)
+
+-- TODO elem
+
+hasAnyBy : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+         -> DList aTy elemTy as
+         -> DList aTy elemTy bs
+         -> Bool
+hasAnyBy p es  Nil     = False
+hasAnyBy p Nil es      = False
+hasAnyBy p es  (x::xs) =
+  if elemBy p x es
+    then True
+    else hasAnyBy p es xs
+
+-- TODO hasAny
+
 -- --------------------------------------------------------------- [ Searching ]
+
+find : ({a : aTy} -> elemTy a -> Bool)
+    -> DList aTy elemTy as
+    -> Maybe $ Sigma aTy elemTy
+find p Nil     = Nothing
+find p (x::xs) =
+  if p x
+    then Just (_ ** x)
+    else find p xs
+
+private
+findIndex' : Nat
+          -> ({a : aTy} -> elemTy a -> Bool)
+          -> DList aTy elemTy as
+          -> Maybe Nat
+findIndex' cnt p Nil     = Nothing
+findIndex' cnt p (x::xs) =
+    if p x
+      then Just cnt
+      else findIndex' (S cnt) p xs
+
+findIndex : ({a : aTy} -> elemTy a -> Bool)
+         -> DList aTy elemTy as
+         -> Maybe Nat
+findIndex = findIndex' Z
+
+
+private
+findIndices' : Nat
+            -> ({a : aTy} -> elemTy a -> Bool)
+            -> DList aTy elemTy as
+            -> List Nat
+findIndices' cnt p Nil     = Nil
+findIndices' cnt p (x::xs) =
+    if p x
+      then cnt :: findIndices' (S cnt) p xs
+      else findIndices' (S cnt) p xs
+
+findIndices : ({a : aTy} -> elemTy a -> Bool)
+           -> DList aTy elemTy as
+           -> List Nat
+findIndices = findIndices' Z
+
+elemIndexBy : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+            -> elemTy a
+            -> DList aTy elemTy as
+            -> Maybe Nat
+elemIndexBy p e = findIndex (\x => p e x)
+
+-- TODO elemIndex
+
+elemIndicesBy : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+              -> elemTy a
+              -> DList aTy elemTy as
+              -> List Nat
+elemIndicesBy p e = findIndices (\x => p e x)
+
+
+-- TODO elemIndicies
+
+-- ------------------------------------------------------------- [ Conversions ]
 -- TODO
 
 -- ----------------------------------------------------------------- [ Filters ]
@@ -135,16 +320,17 @@ fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
--- ----------------------------------------------------------- [ List to DList ]
+-- ----------------------------------------------------------------- [ Zipping ]
+-- TODO
 
+-- -------------------------------------------------------------- [ Predicates ]
+-- TODO
+
+-- ----------------------------------------------------------------- [ Sorting ]
+-- TODO
 
 -- -------------------------------------------------------------------- [ Show ]
 -- A way of doing show, a little nasty but worth it.
-
-foldr : ({a : aTy} -> elemTy a -> p -> p) -> p -> DList aTy elemTy as -> p
-foldr f init Nil     = init
-foldr f init (x::xs) = f x (foldr f init xs)
-
 private
 doDListShow : ({a : aTy} -> elemTy a -> String)
            -> DList aTy elemTy as
@@ -166,23 +352,5 @@ showDList : (showFunc : {a : aTy} -> elemTy a -> String)
               -> (l : DList aTy elemTy as)
               -> String
 showDList f xs = "[" ++ unwords (intersperse "," (doDListShow f xs)) ++ "]"
-
--- ---------------------------------------------------------------------- [ Eq ]
-
-eqDList : (eqFunc : {a,b : aTy} -> elemTy a -> elemTy b -> Bool)
-           -> (x : DList aTy elemTy xs)
-           -> (y : DList aTy elemTy ys)
-           -> Bool
-eqDList _  Nil    Nil    = True
-eqDList _  Nil    ys     = False
-eqDList _  xs     Nil    = False
-eqDList f (x::xs) (y::ys) = if f x y then eqDList f xs ys else False
-
-
--- ------------------------------------------- [ Applicative/Monad/Traversable ]
--- TODO
-
--- -------------------------------------------------------- [ Decidable Equals ]
--- TODO
 
 -- --------------------------------------------------------------------- [ EOF ]
