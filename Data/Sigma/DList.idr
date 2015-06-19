@@ -335,10 +335,8 @@ private
 doDListShow : ({a : aTy} -> elemTy a -> String)
            -> DList aTy elemTy as
            -> List String
-doDListShow _    Nil    = Nil
-doDListShow f es with (es)
-            | Nil      = Nil
-            | (b::bs)  = (f b) :: doDListShow f bs
+doDListShow _  Nil     = Nil
+doDListShow f  (x::xs) = (f x) :: doDListShow f xs
 
 ||| Function to show a `DList`.
 |||
@@ -349,8 +347,8 @@ doDListShow f es with (es)
 ||| @showFunc A function to show the elements
 ||| @l       The list to be Shown.
 showDList : (showFunc : {a : aTy} -> elemTy a -> String)
-              -> (l : DList aTy elemTy as)
-              -> String
+         -> (l : DList aTy elemTy as)
+         -> String
 showDList f xs = "[" ++ unwords (intersperse "," (doDListShow f xs)) ++ "]"
 
 -- --------------------------------------------------------------------- [ EOF ]
