@@ -138,8 +138,6 @@ eqDList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
        -> DList aTy elemTy bs
        -> Bool
 eqDList _ Nil     Nil     = True
-eqDList _ xs      Nil     = True
-eqDList _ Nil     xs      = True
 eqDList p (x::xs) (y::ys) =
   if p x y
     then eqDList p xs ys
