@@ -176,11 +176,11 @@ foldl f init (x::xs) = foldl f (f init x) xs
 
 -- ----------------------------------------------------------------- [ Functor ]
 
-map : ({a : aTy} -> elemTy a -> b)
-     -> DList aTy elemTy as
-     -> List b
-map f Nil     = List.Nil
-map f (x::xs) = with List f x :: DList.map f xs
+mapDList : ({a : aTy} -> elemTy a -> b)
+       -> DList aTy elemTy as
+       -> List b
+mapDList f Nil     = List.Nil
+mapDList f (x::xs) = with List f x :: mapDList f xs
 
 -- TODO map from one DList to another.
 
