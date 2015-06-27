@@ -198,6 +198,11 @@ mapMaybe f (x::xs) =
 -- --------------------------------------------------------- [ Transformations ]
 -- TODO
 
+fromLDP : List (x : aTy ** eTy x)
+       -> (as ** DList aTy eTy as)
+fromLDP Nil     = (_ ** DList.Nil)
+fromLDP (x::xs) = (_ ** DList.(++) [getProof x] (getProof $ fromLDP xs))
+
 -- ---------------------------------------------- [ To List of Dependent Pairs ]
 
 toLDP : DList aTy eTy as
