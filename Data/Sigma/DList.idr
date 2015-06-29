@@ -96,7 +96,6 @@ replicate Z     x = (_ ** Nil)
 replicate (S Z) x = (_ ** DList.(::) x Nil)
 replicate (S n) x = (_ ** DList.(::) x (getProof (replicate n x)))
 
-
 -- ---------------------------------------------------------------- [ SubLists ]
 
 take : Nat
@@ -323,6 +322,33 @@ elemIndicesBy p e = findIndices (\x => p e x)
 -- ------------------------------------------------------------ [ Partitioning ]
 -- TODO
 
+
+
+span : ({a : aTy} -> elemTy a -> Bool)
+    -> DList aTy elemTy xys
+    -> ((xs ** DList aTy elemTy xs), (ys ** DList aTy elemTy ys))
+span f Nil     = ((_ ** Nil), (_ ** Nil))
+span f (x::xs) =
+  if f x
+    then let ((_ ** ys),(_ ** zs)) = span f xs
+           in ((_ ** x::ys), (_ ** zs))
+    else ((_ ** Nil), (_ ** (x::xs)))
+
+break : ({a : aTy} -> elemTy a -> Bool)
+      -> DList aTy elemTy xys
+      -> ((xs ** DList aTy elemTy xs), (ys ** DList aTy elemTy ys))
+break f xs = span (not . f) xs
+
+split : ({a : aTy} -> elemTy a -> Bool)
+     -> DList aTy elemTy xys
+     -> (xxs ** DList (List aTy) (\xs => DList aTy elemTy xs) xxs)
+split f xs =
+  case break f xs of
+    ((_ ** chunk), (_ ** Nil))     => (_ ** [chunk])
+    ((_ ** chunk), (_ ** (y::ys))) => let (_ ** rest) = DList.split f ys
+        in (_ ** DList.(::) chunk rest)
+
+
 -- ----------------------------------------------------------------- [ Zipping ]
 -- TODO
 
@@ -331,6 +357,18 @@ elemIndicesBy p e = findIndices (\x => p e x)
 
 -- ----------------------------------------------------------------- [ Sorting ]
 -- TODO
+
+mergeBy : Ord aTy => ({a,b : aTy} -> elemTy a -> elemTy b -> Ordering)
+        -> DList aTy elemTy as
+        -> DList aTy elemTy bs
+        -> (cs ** DList aTy elemTy cs) -- Someday replace with (sort (as ++ bs))
+mergeBy cmp Nil right = (_ ** right)
+mergeBy cmp left Nil  = (_ ** left)
+mergeBy cmp (x::xs) (y::ys) =
+  if cmp x y == LT
+    then let (_ ** rest) = mergeBy cmp xs      (y::ys) in (_ ** DList.(::) x rest)
+    else let (_ ** rest) = mergeBy cmp (x::xs) ys      in (_ ** DList.(::) y rest)
+
 
 -- -------------------------------------------------------------------- [ Show ]
 -- A way of doing show, a little nasty but worth it.
