@@ -21,6 +21,7 @@ modules = Data.AVL.Dependent.Tree
         , Data.Sigma.DVect
 
         , Test.Harness
+        , Test.Random
         , Test.Stack
         , Test.Queue
 

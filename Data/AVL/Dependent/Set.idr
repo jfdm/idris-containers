@@ -24,6 +24,8 @@ union (MkSet m1) (MkSet m2) = MkSet (Sigma.getProof $ Tree.foldr insertElement (
   where insertElement : (Ord a) => a -> Unit -> (h : Nat ** AVLTree h a Unit) -> (h' : Nat ** AVLTree h' a Unit)
         insertElement k v m' = runInsertRes (Tree.insert k v (Sigma.getProof m'))
 
+size : Set a -> Nat
+size (MkSet m) = Tree.size m
 
 ||| Construct a set that contains the elements from the first input
 ||| set but not the second.

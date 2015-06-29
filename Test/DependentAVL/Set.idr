@@ -2,35 +2,54 @@
 module Test.DependentAVL.Set
 
 import Test.Harness
+import Test.Random
+
 import Data.AVL.Dependent.Set
+
+list1 : List Integer
+list1 = genRndList 123456789 (0,100) 30
+
+list2 : List Integer
+list2 = genRndList 987654321 (0,100) 30
+
+
+set1' : Set Integer
+set1' = Set.insert 101 $ Set.fromList list1
+
+set1 : Set Integer
+set1 = Set.fromList list1
+
+set2 : Set Integer
+set2 = Set.fromList list2
+
 
 -- ------------------------------------------------------------ [ Construction ]
 partial
-testBuilding : Test (List Int)
+testBuilding : Test (Bool)
 testBuilding = MkTest
     (Just "List, Building" )
-    (Set.toList $ Set.fromList [5,4,1,3,2,6])
-    [1,2,3,4,5,6]
+    (sorted $ Set.toList $ Set.fromList list1)
+    True
     (==)
 
 
 -- ---------------------------------------------------------------- [ Updating ]
-partial
-testUpdate : Test (List Int)
-testUpdate = MkTest
-    (Just "Insert")
-    (Set.toList $ Set.insert 1 $ Set.fromList [2,3,4,5])
-    [1,2,3,4,5]
-    (==)
 
 partial
-testMerge : Test (List Int)
+testUpdate : Test (Bool)
+testUpdate = MkTest
+    (Just "Insert")
+    (Set.size set1' == 31 && Set.size set1 == 30)
+    True
+    (==)
+
+
+partial
+testMerge : Test (Nat)
 testMerge = MkTest
     (Just "Union")
-    (Set.toList $ Set.union
-      (Set.fromList [1,4])
-      (Set.fromList [2,3,5,4,3]))
-    [1,2,3,4,5]
+    (Set.size $ Set.union set1 set2)
+    (60)
     (==)
 
 partial
