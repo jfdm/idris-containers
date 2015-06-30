@@ -2,15 +2,19 @@
 module Test.AVL.Dict
 
 import Test.Harness
+import Test.Random
 import Data.AVL.Dict
+
+kvlist1 : List (Integer, Integer)
+kvlist1 = genRndKVList 123456789 (0,100) 20
 
 -- ------------------------------------------------------------ [ Construction ]
 
-testBuilding : Test (List (Int, Int))
+testBuilding : Test (Nat)
 testBuilding = MkTest
     (Just "List, Building" )
-    (Dict.toList $ Dict.fromList [(1,2), (2,3), (3,4)])
-    [(1,2), (2,3), (3,4)]
+    (Dict.size $ Dict.fromList kvlist1)
+    20
     (==)
 
 
