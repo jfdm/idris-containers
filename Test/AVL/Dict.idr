@@ -1,8 +1,8 @@
 ||| Testing Queues
-module Test.DependentAVL.Dict
+module Test.AVL.Dict
 
 import Test.Harness
-import Data.AVL.Dependent.Dict
+import Data.AVL.Dict
 
 -- ------------------------------------------------------------ [ Construction ]
 

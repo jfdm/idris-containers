@@ -1,10 +1,10 @@
 ||| Testing Stacks using silly stupid tests
-module Test.DependentAVL.Set
+module Test.AVL.Set
 
 import Test.Harness
 import Test.Random
 
-import Data.AVL.Dependent.Set
+import Data.AVL.Set
 
 list1 : List Integer
 list1 = genRndList 123456789 (0,100) 30

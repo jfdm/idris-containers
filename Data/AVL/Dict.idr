@@ -6,9 +6,9 @@
 |||
 ||| *Note* When using this Data Structure, the design is such that the
 ||| tree does not factor in unbalanced trees and so removal of items is not permited.
-module Data.AVL.Dependent.Dict
+module Data.AVL.Dict
 
-import Data.AVL.Dependent.Tree
+import Data.AVL.Tree
 
 %default total
 

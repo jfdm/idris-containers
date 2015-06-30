@@ -2,10 +2,10 @@ package containers
 
 opts = "-p effects --warnreach"
 
-modules = Data.AVL.Dependent.Tree
-        , Data.AVL.Dependent.Dict
-        , Data.AVL.Dependent.Set
-        , Data.AVL.Dependent.Graph
+modules = Data.AVL.Tree
+        , Data.AVL.Dict
+        , Data.AVL.Set
+        , Data.AVL.Graph
 
         , Data.RedBlack.Tree
 
@@ -20,14 +20,14 @@ modules = Data.AVL.Dependent.Tree
         , Test.Stack
         , Test.Queue
 
-        , Test.DependentAVL.Dict
-        , Test.DependentAVL.Set
-        , Test.DependentAVL.Graph
+        , Test.AVL.Dict
+        , Test.AVL.Set
+        , Test.AVL.Graph
         , Test.RedBlack.Tree
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
-      , Test.DependentAVL.Dict.runTest
-      , Test.DependentAVL.Set.runTest
-      , Test.DependentAVL.Graph.runTest
+      , Test.AVL.Dict.runTest
+      , Test.AVL.Set.runTest
+      , Test.AVL.Graph.runTest
       , Test.RedBlack.Tree.runTest

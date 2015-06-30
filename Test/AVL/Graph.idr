@@ -1,8 +1,8 @@
 ||| Testing Stacks using silly stupid tests
-module Test.DependentAVL.Graph
+module Test.AVL.Graph
 
 import Test.Harness
-import Data.AVL.Dependent.Graph
+import Data.AVL.Graph
 
 -- ------------------------------------------------------------ [ Construction ]
 

@@ -1,7 +1,7 @@
 ||| Implementation of a Set using an AVL Binary Search Tree.
 module Data.AVL.Dependent.Set
 
-import Data.AVL.Dependent.Tree
+import Data.AVL.Tree
 
 data Set : (a : Type) -> Type where
   MkSet : {a : Type} -> AVLTree n a Unit -> Set a

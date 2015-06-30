@@ -3,10 +3,11 @@
 ||| The underlying implementation is that of an AVL-based Dictionary
 ||| that associates a `(id,value)` pair to an adjacency list
 ||| `(id,label)`.
-module Data.AVL.Dependent.Graph
+module Data.AVL.Graph
 
-import Data.AVL.Dependent.Tree
-import public Data.AVL.Dependent.Dict
+import Data.AVL.Tree
+
+import public Data.AVL.Dict
 
 %access public
 
