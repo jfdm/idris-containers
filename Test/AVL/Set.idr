@@ -7,10 +7,10 @@ import Test.Random
 import Data.AVL.Set
 
 list1 : List Integer
-list1 = genRndList 123456789 (0,100) 30
+list1 = genRndListU 123456789 (0,100) 30
 
 list2 : List Integer
-list2 = genRndList 987654321 (0,100) 30
+list2 = genRndListU 987654321 (101,200) 30
 
 
 set1' : Set Integer
@@ -56,7 +56,7 @@ testDiff : Test Nat
 testDiff = MkTest
    (Just "Difference")
    (Set.size $ Set.difference set1 set1)
-   0
+   30
    (==)
 
 partial

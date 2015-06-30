@@ -2,56 +2,35 @@
 module Test.RedBlack.Tree
 
 import Test.Harness
+import Test.Random
+
 import Data.RedBlack.Tree
+
+
+list1 : List Integer
+list1 = genRndListU 123456789 (0,100) 30
+
+list2 : List Integer
+list2 = genRndListU 987654321 (0,100) 30
 
 -- ------------------------------------------------------------ [ Construction ]
 partial
-testBuilding : Test (List Int)
+testBuilding : Test Nat
 testBuilding = MkTest
     (Just "List, Building" )
-    (Tree.toList $ Tree.fromList [1,2,3,4,4,5,6])
-    [1,2,3,4,5,6]
+    (Tree.size $ Tree.fromList (list1 ++ list1))
+    30
     (==)
 
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testUpdate : Test (List Int)
+testUpdate : Test Nat
 testUpdate = MkTest
     (Just "Insert")
-    (Tree.toList $ Tree.insert 1 $ Tree.fromList [2,3,4,5])
-    [1,2,3,4,5]
+    (Tree.size $ insert 1 $ Tree.fromList list2)
+    31
     (==)
-
--- partial
--- testMerge : Test (List Int)
--- testMerge = MkTest
---     (Just "Union")
---     (Tree.toList $ Tree.union
---       (Tree.fromList [1,4])
---       (Tree.fromList [2,3,5,4,3]))
---     [1,2,3,4,5]
---     (==)
-
--- partial
--- testDiff : Test (List Int)
--- testDiff = MkTest
---    (Just "Difference")
---    (Tree.toList $ Tree.difference
---      (Tree.fromList [2,4,6,8,9,1008])
---      (Tree.fromList [4,2,4,6,8,1006,5,78,34]))
---    [2,4,6,8]
---    (==)
-
--- partial
--- testIntersection : Test (List Int)
--- testIntersection = MkTest
---     (Just "Intersection")
---     (Tree.toList $ Tree.intersection
---         (Tree.fromList [1,2,3,4,5,6,7,8,9])
---         (Tree.fromList [1,2,33,44,55,66,77,88,99]))
---     [1,2]
---     (==)
 
 partial
 testContains : Test Bool

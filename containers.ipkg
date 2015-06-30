@@ -27,7 +27,7 @@ modules = Data.AVL.Tree
 
 tests = Test.Stack.runTest
       , Test.Queue.runTest
+      , Test.RedBlack.Tree.runTest
       , Test.AVL.Dict.runTest
       , Test.AVL.Set.runTest
       , Test.AVL.Graph.runTest
-      , Test.RedBlack.Tree.runTest

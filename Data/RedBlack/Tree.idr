@@ -34,6 +34,17 @@ ins x t@(Node R y a b) =
         EQ => t
 
 
+foldr : (step : a -> p -> p) -> (init : p) -> Tree a -> p
+foldr step init n = foldr' step init n
+  where
+    foldr' : (a -> p -> p) -> p -> Tree a -> p
+    foldr' step' init' Empty = init'
+    foldr' step' init' (Node _ val l r) = foldr' step' (step' val (foldr' step' init' r)) l
+
+
+size : Tree a -> Nat
+size t = Tree.foldr (\_,res => S res) Z t
+
 contains : Ord a => a -> Tree a -> Bool
 contains x Empty = False
 contains x (Node _ y l r) =

@@ -6,7 +6,7 @@ import Test.Random
 import Data.AVL.Dict
 
 kvlist1 : List (Integer, Integer)
-kvlist1 = genRndKVList 123456789 (0,100) 20
+kvlist1 = genRndKVListU 123456789 (0,100) 20
 
 -- ------------------------------------------------------------ [ Construction ]
 
