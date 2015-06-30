@@ -129,10 +129,10 @@ addEdge (x,y,l) g =
       False => g
   where
     validEdge : NodeID -> NodeID -> Bool
-    validEdge x y = hasKey x (graph g) && hasKey y (graph g)
+    validEdge x' y' = hasKey x' (graph g) && hasKey y' (graph g)
 
     doUpdate : (NodeID, NodeID, Maybe e) -> GraphRep v e -> GraphRep v e
-    doUpdate (x,y,l) gr = update x (\(val,as) => (val, (y,l)::as)) gr
+    doUpdate (x'',y'',l') gr = update x'' (\(val,as) => (val, (y'',l')::as)) gr
 
 ||| Add multiple labelled edges to the Graph.
 addEdges : List (Edge e) -> Graph v e -> Graph v e
@@ -155,9 +155,9 @@ addValueEdge l g =
             Just yID => Just (xID,yID)
 
     newEdge : (v, v, Maybe e) -> Maybe $ (Edge e)
-    newEdge (x,y,l) =
-      case conv x y of
-        Just (xID, yID) => Just (xID,yID,l)
+    newEdge (x',y',l') =
+      case conv x' y' of
+        Just (xID', yID') => Just (xID',yID',l')
         otherwise       => Nothing
 
 addValueEdges : Eq v => List (v,v, Maybe e) -> Graph v e -> Graph v e
