@@ -68,19 +68,19 @@ rotLeft key val (Element l invl) (Element (Node key' val' rl rr) (AVLNode invrl 
 
 rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr LHeavy) invrr LHeavy)) =
     Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr)) -- Needs Checking
-                        (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr RHeavy) Balanced)
+                   (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr RHeavy) Balanced)
 
 rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr RHeavy) invrr LHeavy)) =
     Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr))
-                        (AVLNode (AVLNode invl invrll LHeavy) (AVLNode invrlr invrr Balanced) Balanced)
+                   (AVLNode (AVLNode invl invrll LHeavy) (AVLNode invrlr invrr Balanced) Balanced)
 
 rotLeft key val (Element l invl) (Element (Node key' val' (Node key'' val'' rll rlr) rr) (AVLNode (AVLNode invrll invrlr Balanced) invrr LHeavy)) =
     Same $ Element (Node key'' val'' (Node key val l rll) (Node key' val' rlr rr))
-                        (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr Balanced) Balanced) -- Needs Checking
+                   (AVLNode (AVLNode invl invrll Balanced) (AVLNode invrlr invrr Balanced) Balanced) -- Needs Checking
 
 rotLeft key val (Element l invl) (Element (Node key' val' rl rr) (AVLNode invrl invrr RHeavy)) =
     Same $ Element (Node key' val' (Node key val l rl) rr)
-                        (AVLNode (AVLNode invl invrl Balanced) invrr Balanced)
+                   (AVLNode (AVLNode invl invrl Balanced) invrr Balanced)
 
 rotRight : k -> v -> AVLTree (S (S n)) k v -> AVLTree n k v -> InsertRes (S (S n)) k v
 rotRight key val (Element Empty AVLEmpty) r impossible

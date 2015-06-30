@@ -28,10 +28,9 @@ partial
 testBuilding : Test (Bool)
 testBuilding = MkTest
     (Just "List, Building" )
-    (sorted $ Set.toList $ Set.fromList list1)
+    (Set.size set1 == 30 && (sorted $ Set.toList $ Set.fromList list1))
     True
     (==)
-
 
 -- ---------------------------------------------------------------- [ Updating ]
 
@@ -56,28 +55,24 @@ partial
 testDiff : Test (List Int)
 testDiff = MkTest
    (Just "Difference")
-   (Set.toList $ Set.difference
-     (Set.fromList [2,4,6,8,9,1008])
-     (Set.fromList [4,2,4,6,8,1006,5,78,34]))
-   [2,4,6,8]
+   (Set.size $ Set.difference set1 set1)
+   0
    (==)
 
 partial
-testIntersection : Test (List Int)
+testIntersection : Test (Nat)
 testIntersection = MkTest
     (Just "Intersection")
-    (Set.toList $ Set.intersection
-        (Set.fromList [1,2,3,4,5,6,7,8,9])
-        (Set.fromList [1,2,33,44,55,66,77,88,99]))
-    [1,2]
+    (Set.size $ Set.intersection set1 set1)
+    30
     (==)
 
 partial
 testContains : Test Bool
 testContains = MkTest
     (Just "Contains")
-    (Set.contains 4 $ Set.fromList [4,3,7,3,8,5,2,6,3])
-    (True)
+    (Set.contains 102 $ set1)
+    (False)
     (==)
 
 partial
