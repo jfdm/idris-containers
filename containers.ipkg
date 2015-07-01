@@ -13,6 +13,7 @@ modules = Data.AVL.Tree
         , Data.Queue
 
         , Data.Sigma.DList
+        , Data.Sigma.DList.Eff
         , Data.Sigma.DVect
 
         , Test.Harness
