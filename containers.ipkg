@@ -9,6 +9,8 @@ modules = Data.AVL.Tree
 
         , Data.RedBlack.Tree
 
+        , Data.RoseTree
+
         , Data.Stack
         , Data.Queue
 
