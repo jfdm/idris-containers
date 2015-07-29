@@ -116,6 +116,14 @@ addNode val (MkGraph c l g) = MkGraph (S c) newL newG
 addNodes : Eq v => List v -> Graph v e -> Graph v e
 addNodes vs g = foldl (flip $ addNode) g vs
 
+getNodeIDUsing : (v -> Bool) -> Graph v e -> Maybe NodeID
+getNodeIDUsing f g = doLook f (legend g)
+  where
+    doLook : (v -> Bool) -> List (v,NodeID) -> Maybe NodeID
+    doLook _ Nil         = Nothing
+    doLook f ((x,id)::xs) = if f x then Just id else doLook f xs
+
+
 ||| For a given value return the node id
 getNodeID : Eq v => v -> Graph v e -> Maybe NodeID
 getNodeID v g = List.lookup v (legend g)
