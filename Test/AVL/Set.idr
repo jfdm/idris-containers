@@ -52,11 +52,11 @@ testMerge = MkTest
     (==)
 
 partial
-testDiff : Test Nat
+testDiff : Test $ List Nat
 testDiff = MkTest
    (Just "Difference")
-   (Set.size $ Set.difference set1 set1)
-   30
+   (Set.toList $ Set.difference (Set.fromList [1,2,3]) (Set.fromList [2,3,4]))
+   [1]
    (==)
 
 partial

@@ -1,5 +1,5 @@
 ||| Implementation of a Set using an AVL Binary Search Tree.
-module Data.AVL.Dependent.Set
+module Data.AVL.Set
 
 import Data.AVL.Tree
 
@@ -33,7 +33,7 @@ size (MkSet m) = Tree.size m
 ||| *Note* Not an efficient operation as we are constructing a new set
 ||| instead of modifying the right one.
 difference : (Ord a) => Set a -> Set a -> Set a
-difference s1 (MkSet m2) = Tree.foldr (\e,_,t => if contains e s1 then Set.insert e t else t) empty $ m2
+difference (MkSet m1) s2 = Tree.foldr (\e,_,t => if (contains e s2) then t else Set.insert e t) empty $ m1
 
 ||| Construct a set that contains common elements of the input sets.
 intersection : (Ord a) => Set a -> Set a -> Set a
