@@ -74,7 +74,7 @@ partial
 testRoots : Test $ List String
 testRoots = MkTest
   (Just "Get Root Nodes")
-  (catMaybes $ map (\x => getValueByID x g) (rootNodes g))
+  (getValuesByID (rootNodes g) g)
   ["Frankfurt"]
   (\x,y => sort x == sort y)
 

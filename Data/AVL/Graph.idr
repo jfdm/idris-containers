@@ -308,7 +308,9 @@ replaceNodeValue val newVal g =
 -- -------------------------------------------------------------------- [ Misc ]
 
 getValuesByID : List NodeID -> Graph v e -> List v
-getValuesByID is g = foldr (\(v,id),res => if elem id is then v::res else res) List.Nil (legend g)
+getValuesByID is g = catMaybes $ map (\x => getValueByID x g) is
+
+-- foldr (\(v,id),res => if elem id is then v::res else res) List.Nil (legend g)
 
 leafNodes : Graph v e -> List NodeID
 leafNodes g = filter (\x => isNil (getSuccsByID x g)) (verticesID g)
