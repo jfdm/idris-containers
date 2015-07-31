@@ -6,8 +6,10 @@
 module Data.AVL.Graph
 
 import Data.AVL.Tree
+import Data.AVL.Set
 
 import public Data.AVL.Dict
+
 
 %access public
 
@@ -198,11 +200,6 @@ edges g = func $ toList $ graph g
     func : List (NodeID, (v,AList e)) -> List (Edge e)
     func xs = foldl (\res,(x,y) => func' x y ++ res) Nil xs
 
-    -- func : GraphRep v e -> List (Edge e)
-    -- func (MkDict Tree.Empty) = Nil
-    -- func (MkDict (Tree.Node id (val,as) l r b)) =
-    --     foldl (\xs,(id',l) => (id,id',l)::xs) Nil as ++ func l ++ func r
-
 -- ----------------------------------------------------------------- [ Lookups ]
 
 ||| Using Node ID, extract the node value and adjacency list from the graph.
@@ -308,6 +305,41 @@ replaceNodeValue val newVal g =
     Just id => replaceNodeValueByID id newVal g
     Nothing => g
 
+-- -------------------------------------------------------------------- [ Misc ]
+
+leafNodes : Graph v e -> List NodeID
+leafNodes g = filter (\x => isNil (getSuccsByID x g)) (verticesID g)
+
+rootNodes : Graph v e -> List NodeID
+rootNodes g = Set.toList $ Set.difference parents succs
+  where
+    parents : Set NodeID
+    parents = Set.fromList $ filter (\x => isCons (getSuccsByID x g)) (verticesID g)
+
+    nodes : Set NodeID
+    nodes = Set.fromList (verticesID g)
+
+    succs : Set NodeID
+    succs = Set.fromList $ concatMap (\x => getSuccsByID x g) (verticesID g)
+
+
+disconnectedNodes : Graph v e -> List NodeID
+disconnectedNodes g = Set.toList $ Set.difference (Set.fromList nodes) cNodes
+  where
+    nodes : List NodeID
+    nodes = (verticesID g)
+
+    yNodes : List NodeID
+    yNodes = concatMap (\x => getSuccsByID x g) nodes
+
+    xNodes : List NodeID
+    xNodes = filter (\x => isCons (getSuccsByID x g)) nodes
+
+    cNodes : Set NodeID
+    cNodes = Set.fromList $ xNodes ++ yNodes
+
+isDisconnected : Graph v e -> Bool
+isDisconnected g = isCons $ (disconnectedNodes g)
 
 -- ------------------------------------------------------------- [ Build Graph ]
 

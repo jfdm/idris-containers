@@ -54,7 +54,6 @@ testSuccs = MkTest
     [2,5]
     (==)
 
-
 partial
 testEdges : Test (List $ List (DemiEdge Int))
 testEdges = MkTest
@@ -62,6 +61,39 @@ testEdges = MkTest
     ([getEdgesByID 0 g, getEdges "Kassel" g])
     ([Nil, [(0, Just 502)]])
     (==)
+
+partial
+testLeafs : Test $ List String
+testLeafs = MkTest
+  (Just "Get Leaf Nodes")
+  (catMaybes $ map (\x => getValueByID x g) (leafNodes g))
+  ["Erfurt", "Stuttgart", "Munchen"]
+  (\x,y => sort x == sort y)
+
+partial
+testRoots : Test $ List String
+testRoots = MkTest
+  (Just "Get Root Nodes")
+  (catMaybes $ map (\x => getValueByID x g) (rootNodes g))
+  ["Frankfurt"]
+  (\x,y => sort x == sort y)
+
+partial
+testDiscon : Test Bool
+testDiscon = MkTest
+  (Just "Disconnected")
+  (isDisconnected g)
+  False
+  (==)
+
+partial
+testDiscon2 : Test Bool
+testDiscon2 = MkTest
+  (Just "Disconnected")
+  (isDisconnected (addNode "Aachen" g))
+  True
+  (==)
+
 
 partial
 runTest : IO ()
@@ -72,6 +104,10 @@ runTest = do
         testRunner testBuild
       , testRunner testSuccs
       , testRunner testEdges
+      , testRunner testLeafs
+      , testRunner testRoots
+      , testRunner testDiscon
+      , testRunner testDiscon2
     ]
 
 -- --------------------------------------------------------------------- [ EOF ]
