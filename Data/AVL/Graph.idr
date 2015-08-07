@@ -372,7 +372,7 @@ namespace Dot
 
   flatten : List (String, String) -> List String
   flatten Nil         = Nil
-  flatten ((x,y)::xs) = (x ++ "=" ++ y) :: flatten xs
+  flatten ((x,y)::xs) = (x ++ "=" ++ show y) :: flatten xs
 
   unwords'' : List String -> String
   unwords'' Nil = ""
