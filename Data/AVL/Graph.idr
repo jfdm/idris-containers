@@ -10,7 +10,6 @@ import Data.AVL.Set
 
 import public Data.AVL.Dict
 
-
 %access public
 
 ||| Node Identifier
@@ -28,7 +27,7 @@ DemiEdge b = (NodeID, Maybe b)
 ||| Adjacency 'list' denoting adjacent nodes in the graph.
 ||| The list is a dict between destination `NodeID` and label.
 |||
-||| Note:: Should probably change this to a dict with a list of edges,
+||| Note:: Should probably c0hange this to a dict with a list of edges,
 ||| but that is too much work at the momemt.
 AList : Type -> Type
 AList b = List (NodeID, Maybe b)
@@ -359,5 +358,56 @@ buildG ns  es  = addValueEdges es $ addNodes ns mkEmptyGraph
 
     g' : Graph v e
     g' = addValueEdges es g
+
+-- ------------------------------------------------------------------ [ To Dot ]
+
+namespace Dot
+  data SDTy = NODE | GRAPH | EDGE
+
+  data SimpleDot : SDTy -> Type where
+    Node    : NodeID -> List (String, String)                -> SimpleDot NODE
+    Edge    : NodeID -> NodeID -> List (String, String)      -> SimpleDot EDGE
+    Digraph : List (SimpleDot NODE) -> List (SimpleDot EDGE) -> SimpleDot GRAPH
+    Graph   : List (SimpleDot NODE) -> List (SimpleDot EDGE) -> SimpleDot GRAPH
+
+  flatten : List (String, String) -> List String
+  flatten Nil         = Nil
+  flatten ((x,y)::xs) = (x ++ "=" ++ y) :: flatten xs
+
+  unwords'' : List String -> String
+  unwords'' Nil = ""
+  unwords'' (x::xs) = x ++ unwords'' xs
+
+  showAs : List (String, String) -> String
+  showAs Nil = ";"
+  showAs xs  = unwords
+      [ "["
+      , unwords'' $ intersperse "," (flatten xs)
+      , "];"]
+
+  instance Show (SimpleDot x) where
+    show (Node i as) = unwords [ show i, showAs as]
+    show (Edge x y as) = unwords
+        [ show x
+        , "->"
+        , show y
+        , showAs as
+        ]
+    show (Digraph ns es) = unlines ["digraph g ", unlines ["{" , unlines $ map show ns, "\n\n", unlines $ map show es, "}\n"]]
+    show (Graph   ns es) = unlines [show "graph g ", unlines ["{" , unlines $ map show ns, "\n\n", unlines $ map show es, "}\n"]]
+
+toDot : Graph v e -> (v -> String) -> (Maybe e -> String) -> SimpleDot GRAPH
+toDot g v e = Digraph ns es
+  where
+    f : NodeID -> String
+    f n = case getValueByID n g of
+        Nothing => ""
+        Just u  => v u
+
+    ns : List (SimpleDot NODE)
+    ns = map (\x => Node x [("label", f x)]) (verticesID g)
+
+    es : List (SimpleDot EDGE)
+    es = map (\(x,y,l) => Edge x y [("label", e l)]) (edges g)
 
 -- --------------------------------------------------------------------- [ EOF ]
