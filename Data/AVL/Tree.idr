@@ -175,6 +175,13 @@ fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
 toList : AVLTree n k v -> List (k, v)
 toList = foldr (\k,v,xs => (k, v) :: xs) []
 
+isEmpty : AVLTree h k v -> Bool
+isEmpty (Element t _) = isEmpty' t
+  where
+    isEmpty' : Tree k v -> Bool
+    isEmpty' Empty          = True
+    isEmpty' (Node _ _ _ _) = False
+
 size : AVLTree h k v -> Nat
 size = foldr (\_,_=> S) 0
 

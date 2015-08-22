@@ -37,6 +37,12 @@ fromList kvs = MkDict $ Sigma.getProof $ Tree.fromList kvs
 
 -- ----------------------------------------------------------------- [ Queries ]
 
+isEmpty : Dict k v -> Bool
+isEmpty (MkDict d) = Tree.isEmpty d
+
+foldr : (k -> v -> p -> p) -> p -> Dict k v -> p
+foldr f init (MkDict d) = Tree.foldr f init d
+
 lookup : (Ord k) => k -> Dict k v -> Maybe v
 lookup k (MkDict d) = Tree.lookup k d
 
