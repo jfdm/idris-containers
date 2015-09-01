@@ -219,6 +219,18 @@ fromList : {ty : Type}
 fromList Nil     = (_ ** DList.Nil)
 fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
 
+toLDP' : {ty : Type} -> {x : ty} -> {e : ty -> Type}
+      -> List (e x) -> List (x : ty ** e x)
+toLDP' Nil     = Nil
+toLDP' (x::xs) = (_ ** x) :: toLDP' xs
+
+fromList' : {ty : Type}
+       -> {e : ty -> Type}
+       -> {x : ty}
+       -> List (e x)
+       -> (es : List ty ** DList ty e es)
+fromList' xs = fromLDP $ toLDP' xs
+
 -- -------------------------------------------------------- [ Membership Tests ]
 
 any : ({a : aTy} -> elemTy a -> Bool)
