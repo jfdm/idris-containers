@@ -165,13 +165,13 @@ foldr : ({a : aTy} -> elemTy a -> p -> p)
      -> p
      -> DList aTy elemTy as -> p
 foldr f init Nil     = init
-foldr f init (x::xs) = f x (foldr f init xs)
+foldr f init (x::xs) = f x (DList.foldr f init xs)
 
 foldl : ({a : aTy} -> p -> elemTy a -> p)
       -> p
       -> DList aTy elemTy as -> p
 foldl f init Nil = init
-foldl f init (x::xs) = foldl f (f init x) xs
+foldl f init (x::xs) = DList.foldl f (f init x) xs
 
 -- ----------------------------------------------------------------- [ Functor ]
 
