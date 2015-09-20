@@ -1,5 +1,5 @@
 ||| Testing Stacks using silly stupid tests
-module Test.Stack
+module Data.Test.Stack
 
 import Test.Generic
 import Data.Stack

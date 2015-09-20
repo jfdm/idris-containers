@@ -1,5 +1,10 @@
+-- --------------------------------------------------------------- [ Queue.idr ]
+-- Module    : Queue.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Testing Queues
-module Test.Queue
+module Data.Test.Queue
 
 import Test.Generic
 import Data.Queue

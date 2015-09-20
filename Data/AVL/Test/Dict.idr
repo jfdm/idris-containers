@@ -1,5 +1,10 @@
-||| Testing Queues
-module Test.AVL.Dict
+-- ---------------------------------------------------------------- [ Dict.idr ]
+-- Module    : Dict.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
+module Data.AVL.Test.Dict
 
 import Test.Generic
 import Test.Random

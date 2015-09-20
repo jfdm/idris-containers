@@ -18,17 +18,18 @@ modules = Data.AVL.Tree
         , Data.Sigma.DList.Eff
         , Data.Sigma.DVect
 
-        , Test.Stack
-        , Test.Queue
+        , Data.Test.Stack
+        , Data.Test.Queue
+        , Data.Test.RedBlack
 
-        , Test.AVL.Dict
-        , Test.AVL.Set
-        , Test.AVL.Graph
-        , Test.RedBlack.Tree
+        , Data.AVL.Test.Dict
+        , Data.AVL.Test.Set
+        , Data.AVL.Test.Graph
 
-tests = Test.Stack.runTest
-      , Test.Queue.runTest
-      , Test.RedBlack.Tree.runTest
-      , Test.AVL.Dict.runTest
-      , Test.AVL.Set.runTest
-      , Test.AVL.Graph.runTest
+
+tests = Data.Test.Stack.runTest
+      , Data.Test.Queue.runTest
+      , Data.Test.RedBlack.runTest
+      , Data.AVL.Test.Dict.runTest
+      , Data.AVL.Test.Set.runTest
+      , Data.AVL.Test.Graph.runTest

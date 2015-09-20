@@ -1,5 +1,10 @@
+-- --------------------------------------------------------------- [ Graph.idr ]
+-- Module    : Graph.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Testing Stacks using silly stupid tests
-module Test.AVL.Graph
+module Data.AVL.Test.Graph
 
 import Test.Generic
 import Data.AVL.Graph

@@ -1,5 +1,5 @@
 ||| Testing Stacks using silly stupid tests
-module Test.RedBlack.Tree
+module Data.Test.RedBlack
 
 import Test.Generic
 import Test.Random

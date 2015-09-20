@@ -1,5 +1,10 @@
+-- ----------------------------------------------------------------- [ Set.idr ]
+-- Module    : Set.idr
+-- Copyright : (c) Jan de Muijnck-Hughes
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Testing Stacks using silly stupid tests
-module Test.AVL.Set
+module Data.AVL.Test.Set
 
 import Test.Generic
 import Test.Random
