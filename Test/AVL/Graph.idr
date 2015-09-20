@@ -1,7 +1,7 @@
 ||| Testing Stacks using silly stupid tests
 module Test.AVL.Graph
 
-import Test.Harness
+import Test.Generic
 import Data.AVL.Graph
 
 -- ------------------------------------------------------------ [ Construction ]
@@ -36,8 +36,8 @@ g = with List buildG towns links
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testBuild : Test (List Bool)
-testBuild = MkTest
+testBuild : IO ()
+testBuild = genericTest
     (Just "Insert")
     [ hasValue "Frankfurt" g
     , hasValue "Kassel" g
@@ -47,48 +47,48 @@ testBuild = MkTest
     (==)
 
 partial
-testSuccs : Test (List Nat)
-testSuccs = MkTest
+testSuccs : IO ()
+testSuccs = genericTest
     (Just "Succs")
     (getSuccs "Wurzburg" g)
     [2,5]
     (==)
 
 partial
-testEdges : Test (List $ List (DemiEdge Int))
-testEdges = MkTest
+testEdges : IO ()
+testEdges = genericTest
     (Just "Edges")
     ([getEdgesByID 0 g, getEdges "Kassel" g])
     ([Nil, [(0, Just 502)]])
     (==)
 
 partial
-testLeafs : Test $ List String
-testLeafs = MkTest
+testLeafs : IO ()
+testLeafs = genericTest
   (Just "Get Leaf Nodes")
   (catMaybes $ map (\x => getValueByID x g) (leafNodes g))
   ["Erfurt", "Stuttgart", "Munchen"]
   (\x,y => sort x == sort y)
 
 partial
-testRoots : Test $ List String
-testRoots = MkTest
+testRoots : IO ()
+testRoots = genericTest
   (Just "Get Root Nodes")
   (getValuesByID (rootNodes g) g)
   ["Frankfurt"]
   (\x,y => sort x == sort y)
 
 partial
-testDiscon : Test Bool
-testDiscon = MkTest
+testDiscon : IO ()
+testDiscon = genericTest
   (Just "Disconnected")
   (isDisconnected g)
   False
   (==)
 
 partial
-testDiscon2 : Test Bool
-testDiscon2 = MkTest
+testDiscon2 : IO ()
+testDiscon2 = genericTest
   (Just "Disconnected")
   (isDisconnected (addNode "Aachen" g))
   True
@@ -101,13 +101,13 @@ runTest = do
     putStrLn "Testing Graph"
     putStrLn infoLine
     runTests [
-        testRunner testBuild
-      , testRunner testSuccs
-      , testRunner testEdges
-      , testRunner testLeafs
-      , testRunner testRoots
-      , testRunner testDiscon
-      , testRunner testDiscon2
+        testBuild
+      , testSuccs
+      , testEdges
+      , testLeafs
+      , testRoots
+      , testDiscon
+      , testDiscon2
     ]
 
 -- --------------------------------------------------------------------- [ EOF ]

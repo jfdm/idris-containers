@@ -1,16 +1,16 @@
 ||| Testing Queues
 module Test.Queue
 
-import Test.Harness
+import Test.Generic
 import Data.Queue
 
 covering
-test2 : Test (Queue Nat)
-test2 = MkTest (Just "Enqueue") (pushQThings [1,2,3] mkQueue) (MkQ [3,2,1] Nil) (==)
+test2 : IO ()
+test2 = genericTest (Just "Enqueue") (pushQThings [1,2,3] mkQueue) (MkQ [3,2,1] Nil) (==)
 
 partial
-test3 : Test (Nat, Queue Nat)
-test3 = MkTest (Just "Dequeue") (popQ (pushQThings [1,2,3] mkQueue)) (1,MkQ Nil [2,3]) (==)
+test3 : IO ()
+test3 = genericTest (Just "Dequeue") (popQ (pushQThings [1,2,3] mkQueue)) (1,MkQ Nil [2,3]) (==)
 
 
 partial
@@ -19,8 +19,8 @@ runTest = do
   putStrLn "Testing Queue"
   putStrLn infoLine
   runTests [
-    testRunner test2
-  , testRunner test3
+    test2
+  , test3
   ]
 
 -- --------------------------------------------------------------------- [ EOF ]

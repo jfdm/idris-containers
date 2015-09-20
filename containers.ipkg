@@ -1,6 +1,6 @@
 package containers
 
-opts = "-p effects --warnreach"
+opts = "-p effects -p test --warnreach"
 
 modules = Data.AVL.Tree
         , Data.AVL.Dict
@@ -18,8 +18,6 @@ modules = Data.AVL.Tree
         , Data.Sigma.DList.Eff
         , Data.Sigma.DVect
 
-        , Test.Harness
-        , Test.Random
         , Test.Stack
         , Test.Queue
 

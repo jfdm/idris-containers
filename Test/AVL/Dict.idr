@@ -1,17 +1,17 @@
 ||| Testing Queues
 module Test.AVL.Dict
 
-import Test.Harness
+import Test.Generic
 import Test.Random
 import Data.AVL.Dict
 
 kvlist1 : List (Integer, Integer)
-kvlist1 = genRndKVListU 123456789 (0,100) 20
+kvlist1 = rndListIntKVU 123456789 (0,100) 20
 
 -- ------------------------------------------------------------ [ Construction ]
 
-testBuilding : Test (Nat)
-testBuilding = MkTest
+testBuilding : IO ()
+testBuilding = genericTest
     (Just "List, Building" )
     (Dict.size $ Dict.fromList kvlist1)
     20
@@ -20,16 +20,16 @@ testBuilding = MkTest
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testUpdate : Test (List (Int, Int))
-testUpdate = MkTest
+testUpdate : IO ()
+testUpdate = genericTest
     (Just "Update")
     (Dict.toList $ Dict.update 2 (*2) $ Dict.fromList [(1,2), (2,3), (3,4), (5,3)])
     [(1,2), (2,6), (3,4), (5,3)]
     (==)
 
 partial
-testHas : Test (Bool)
-testHas = MkTest
+testHas : IO ()
+testHas = genericTest
    (Just "Has value")
    (hasValue 6 $ Dict.fromList [(1,2), (2,6), (3,4)])
    (True)
@@ -37,16 +37,16 @@ testHas = MkTest
 
 -- ----------------------------------------------------------------- [ Queries ]
 partial
-testLookup : Test (Maybe Int)
-testLookup = MkTest
+testLookup : IO ()
+testLookup = genericTest
     (Just "Lookup")
     (Dict.lookup 1 $ Dict.fromList [(1,2), (2,3), (3,4)])
     (Just 2)
     (==)
 
 partial
-testKVs : Test (List Int, List Int)
-testKVs = MkTest
+testKVs : IO ()
+testKVs = genericTest
     (Just "KV Pair Extraction")
     (keys given, values given)
     ([1,2,3], [5,6,7])
@@ -61,11 +61,11 @@ runTest = do
   putStrLn "Testing Dict"
   putStrLn infoLine
   runTests [
-      testRunner testBuilding
-    , testRunner testLookup
-    , testRunner testUpdate
-    , testRunner testHas
-    , testRunner testKVs
+      testBuilding
+    , testLookup
+    , testUpdate
+    , testHas
+    , testKVs
   ]
 
 -- --------------------------------------------------------------------- [ EOF ]

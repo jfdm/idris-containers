@@ -1,22 +1,22 @@
 ||| Testing Stacks using silly stupid tests
 module Test.RedBlack.Tree
 
-import Test.Harness
+import Test.Generic
 import Test.Random
 
 import Data.RedBlack.Tree
 
 
 list1 : List Integer
-list1 = genRndListU 123456789 (0,100) 30
+list1 = rndListIntU 123456789 (0,100) 30
 
 list2 : List Integer
-list2 = genRndListU 987654321 (0,100) 30
+list2 = rndListIntU 987654321 (0,100) 30
 
 -- ------------------------------------------------------------ [ Construction ]
 partial
-testBuilding : Test Nat
-testBuilding = MkTest
+testBuilding : IO ()
+testBuilding = genericTest
     (Just "List, Building" )
     (Tree.size $ Tree.fromList (list1 ++ list1))
     30
@@ -25,16 +25,16 @@ testBuilding = MkTest
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testUpdate : Test Nat
-testUpdate = MkTest
+testUpdate : IO ()
+testUpdate = genericTest
     (Just "Insert")
     (Tree.size $ insert 1 $ Tree.fromList list2)
     31
     (==)
 
 partial
-testContains : Test Bool
-testContains = MkTest
+testContains : IO ()
+testContains = genericTest
     (Just "Contains")
     (Tree.contains 4 $ Tree.fromList [1,2,3,4])
     (True)
@@ -46,9 +46,9 @@ runTest = do
     putStrLn "Testing RedBlack Tree"
     putStrLn infoLine
     runTests [
-        testRunner testBuilding
-      , testRunner testUpdate
-      , testRunner testContains
+        testBuilding
+      , testUpdate
+      , testContains
     ]
 
 -- --------------------------------------------------------------------- [ EOF ]
