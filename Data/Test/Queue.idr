@@ -9,13 +9,15 @@ module Data.Test.Queue
 import Test.Generic
 import Data.Queue
 
+%access export
+
 covering
 test2 : IO ()
-test2 = genericTest (Just "Enqueue") (pushQThings [1,2,3] mkQueue) (MkQ [3,2,1] Nil) (==)
+test2 = genericTest (Just "Enqueue") (pushQThings [1,2,3] mkQueue) (pushQ 3 $ pushQ 2 $ pushQ 1 mkQueue) (==)
 
 partial
 test3 : IO ()
-test3 = genericTest (Just "Dequeue") (popQ (pushQThings [1,2,3] mkQueue)) (1,MkQ Nil [2,3]) (==)
+test3 = genericTest (Just "Dequeue") (popQ' (pushQThings [1,2,3] mkQueue)) (Just (1, pushQThings [2,3] mkQueue)) (==)
 
 
 partial

@@ -10,17 +10,20 @@ import Data.AVL.Set
 
 import public Data.AVL.Dict
 
-%access public
+%access export
 
 ||| Node Identifier
+public export
 NodeID : Type
 NodeID = Nat
 
 ||| A labelled edge between two nodes using NodeID
+public export
 Edge : Type -> Type
 Edge b = (NodeID, NodeID, Maybe b)
 
 ||| A demi labeld Edge
+public export
 DemiEdge : Type -> Type
 DemiEdge b = (NodeID, Maybe b)
 
@@ -29,11 +32,12 @@ DemiEdge b = (NodeID, Maybe b)
 |||
 ||| Note:: Should probably c0hange this to a dict with a list of edges,
 ||| but that is too much work at the momemt.
+public export
 AList : Type -> Type
 AList b = List (NodeID, Maybe b)
 
 -- ------------------------------------------------------------------- [ Types ]
-
+public export
 GraphRep : (vTy : Type) -> (eTy : Type) -> Type
 GraphRep vTy eTy = Dict NodeID (vTy, AList eTy)
 
@@ -65,17 +69,19 @@ GraphRep vTy eTy = Dict NodeID (vTy, AList eTy)
 |||
 ||| @vTy The type of the value associated with the vertex.
 ||| @eTy The type of the label used on edges.
+public export
 record Graph (vTy : Type) (eTy : Type) where
   constructor MkGraph
   counter : NodeID
   legend  : List (vTy, NodeID)
   graph   : GraphRep vTy eTy
 
+public export
 Legend : Type -> Type
 Legend vTy = List (vTy, NodeID)
 
 
-instance (Show v, Show e) => Show (Graph v e) where
+implementation (Show v, Show e) => Show (Graph v e) where
   show (MkGraph _ _ g)          = show g
 
 -- ---------------------------------------------------------- [ Legend Utility ]

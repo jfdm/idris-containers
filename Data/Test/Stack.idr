@@ -4,6 +4,8 @@ module Data.Test.Stack
 import Test.Generic
 import Data.Stack
 
+%access export
+
 covering
 test2 : IO ()
 test2 = genericTest (Just "Pushing") (pushSThings [1,2,3] mkStack) [1,2,3] (==)

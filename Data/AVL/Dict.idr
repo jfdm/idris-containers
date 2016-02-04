@@ -11,6 +11,7 @@ module Data.AVL.Dict
 import Data.AVL.Tree
 
 %default total
+%access export
 
 data Dict : (k : Type) -> Type -> Type where
   MkDict : AVLTree h k v -> Dict k v
@@ -70,12 +71,12 @@ findKey pred (MkDict d) = Tree.findKey pred d
 findKeyOf : (Eq v) => v -> Dict k v -> Maybe k
 findKeyOf v (MkDict d) = Tree.findKeyOf v d
 
-instance (Eq k, Eq v) => Eq (Dict k v) where
+implementation (Eq k, Eq v) => Eq (Dict k v) where
    (==) (MkDict {h = h} x) (MkDict {h = h'} y) with (decEq h h')
      (==) (MkDict {h = h} x) (MkDict {h = h} y)  | Yes Refl = x == y
      (==) (MkDict {h = h} x) (MkDict {h = h'} y) | No _     = False
 
-instance (Show k, Show v) => Show (Dict k v) where
+implementation (Show k, Show v) => Show (Dict k v) where
   show (MkDict d) = show d
 
 -- --------------------------------------------------------------------- [ EOF ]

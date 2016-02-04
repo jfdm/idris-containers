@@ -8,7 +8,7 @@ module Data.Queue
 -- TODO Make popQ and peekQ 'safe' using the magic of proofs
 -- TODO Make popQ total
 
-%access public
+%access export
 %default total
 
 ||| A Queue of items of type `ty`.
@@ -82,9 +82,9 @@ peekQ' (MkQ inq Nil)       = head' (reverse inq)
 clearQ : Queue a -> Queue a
 clearQ _ = mkQueue
 
-instance Eq ty => Eq (Queue ty) where
+implementation Eq ty => Eq (Queue ty) where
   (==) (MkQ inx outx) (MkQ iny outy) = inx == iny && outx == outy
 
-instance Show ty => Show (Queue ty) where
+implementation Show ty => Show (Queue ty) where
   show (MkQ inq outq) = unwords ["[Q", show inq, show outq, "]"]
 -- --------------------------------------------------------------------- [ EOF ]

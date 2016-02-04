@@ -4,9 +4,9 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.Sigma.DList
+module Data.DList
 
-%access public
+%access export
 --%default total
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
@@ -16,6 +16,7 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
   ||| @aTy    The type of the value contained within the list element type.
   ||| @elemTy The type of the elements within the list
   ||| @as     The List used to contain the different values within the type.
+  public export
   data DList : (aTy : Type)
                 -> (elemTy : aTy -> Type)
                 -> (as : List aTy)

@@ -10,6 +10,8 @@ import Test.Generic
 import Test.Random
 import Data.AVL.Dict
 
+%access export
+
 kvlist1 : List (Integer, Integer)
 kvlist1 = rndListIntKVU 123456789 (0,100) 20
 

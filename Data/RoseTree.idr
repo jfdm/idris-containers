@@ -8,7 +8,7 @@
 module Data.RoseTree
 
 %default total
-%access public
+%access export
 
 ||| A RTree.
 data RTree : Type -> Type where

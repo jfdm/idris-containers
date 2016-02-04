@@ -4,9 +4,11 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.Sigma.DVect
+module Data.DVect
 
 import Data.Vect
+
+%access export
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
@@ -16,6 +18,7 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
   ||| @len    The length of the list.
   ||| @elemTy The type of the elements within the list
   ||| @as     The List used to contain the different values within the type.
+  public export
   data DVect : (aTy : Type)
                 -> (len : Nat)
                 -> (elemTy : aTy -> Type)

@@ -6,6 +6,7 @@ import Test.Random
 
 import Data.RedBlack.Tree
 
+%access export
 
 list1 : List Integer
 list1 = rndListIntU 123456789 (0,100) 30

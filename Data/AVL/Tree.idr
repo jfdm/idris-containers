@@ -9,6 +9,7 @@
 module Data.AVL.Tree
 
 %default total
+%access export
 
 -- ------------------------------------------------------------- [ Definitions ]
 data Balance : Nat -> Nat -> Type where
@@ -28,6 +29,7 @@ height b = S (height' b)
     height' (RHeavy {n}) = S n
     height' {n} (Balanced {n}) = n
 
+public export
 data Tree : (k : Type) -> Type -> Type where
   Empty : Tree k v
   Node : (key : k)
@@ -38,12 +40,14 @@ data Tree : (k : Type) -> Type -> Type where
 
 %name Tree t, tree
 
+public export
 data AVLInvariant : Nat -> Tree k v -> Type where
   AVLEmpty : AVLInvariant 0 Empty
   AVLNode  : AVLInvariant n l -> AVLInvariant m r -> (b : Balance n m) -> AVLInvariant (height b) (Node k v l r)
 
 %name AVLInvariant inv
 
+public export
 AVLTree : (n : Nat) -> (k : Type) -> (v : Type) ->  Type
 AVLTree n k v = Subset (Tree k v) (AVLInvariant n)
 
@@ -219,17 +223,21 @@ eqTree (Node xk xv xl xr) (Node yk yv yl yr) =
   eqTree xr yr
 eqTree _ _                                   = False
 
-instance (Eq k, Eq v) => Eq (Tree k v) where
+public export
+implementation (Eq k, Eq v) => Eq (Tree k v) where
   (==) x y = eqTree x y
 
-instance (Eq k, Eq v) => Eq (AVLTree h k v) where
+public export
+implementation (Eq k, Eq v) => Eq (AVLTree h k v) where
   (==) (Element t _) (Element t' _) = t == t'
 
-instance (Show k, Show v) => Show (Tree k v) where
+public export
+implementation (Show k, Show v) => Show (Tree k v) where
   show Empty              = ""
   show (Node k v l r)     = unwords ["{", show l, "(", show k, ":", show v, "),", show r, "}"]
 
-instance (Show k, Show v) => Show (AVLTree h k v) where
+public export
+implementation (Show k, Show v) => Show (AVLTree h k v) where
   show (Element t _) = show t
 
 -- --------------------------------------------------------------------- [ EOF ]

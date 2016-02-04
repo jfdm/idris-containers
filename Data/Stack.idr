@@ -8,12 +8,13 @@ module Data.Stack
 
 -- TODO Make popS and peekS 'safe' using the magic of proofs
 
-%access public
+%access export
 %default total
 
 ||| A Stack containing items of type `ty`.
 |||
 ||| @ty The type of elements in the stack.
+public export
 Stack : (ty : Type) -> Type
 Stack ty = List ty
 

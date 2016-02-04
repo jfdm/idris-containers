@@ -9,6 +9,7 @@ module Data.AVL.Test.Graph
 import Test.Generic
 import Data.AVL.Graph
 
+%access export
 -- ------------------------------------------------------------ [ Construction ]
 
 towns : List String

@@ -4,11 +4,13 @@
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 
-module Data.Sigma.DList.Eff
+module Data.DList.Eff
 
 import Effects
 
-import Data.Sigma.DList
+import Data.DList
+
+%access export
 
 mapDListE : ({a : aTy} -> elemTy a -> {xs} EffM m b)
          -> DList aTy elemTy as

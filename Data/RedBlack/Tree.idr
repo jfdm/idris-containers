@@ -1,7 +1,7 @@
 -- http://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs
 module Data.RedBlack.Tree
 
-%access public
+%access export
 
 private
 data Colour = R | B

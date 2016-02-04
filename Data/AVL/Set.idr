@@ -3,6 +3,8 @@ module Data.AVL.Set
 
 import Data.AVL.Tree
 
+%access export
+
 data Set : (a : Type) -> Type where
   MkSet : {a : Type} -> AVLTree n a Unit -> Set a
 
@@ -47,12 +49,12 @@ toList (MkSet m) = map fst $ Tree.toList m
 fromList : (Ord a) => List a -> Set a
 fromList xs = (foldl (\t,k => Set.insert k t) empty xs)
 
-instance Foldable Set where
+implementation Foldable Set where
   foldr f i (MkSet m) = foldr (\x,_,p => f x p) i m
 
-instance Eq a => Eq (Set a) where
+implementation Eq a => Eq (Set a) where
   (==) (MkSet (Element t _)) (MkSet (Element t' _)) = t == t'
 
-instance Show a => Show (Set a) where
+implementation Show a => Show (Set a) where
   show s = "{ " ++ (unwords . intersperse "," . map show . Set.toList $ s) ++ " }"
 -- --------------------------------------------------------------------- [ EOF ]
