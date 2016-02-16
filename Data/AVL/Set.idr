@@ -14,7 +14,7 @@ empty = MkSet (Element Empty AVLEmpty)
 
 ||| Insert an element into a set.
 insert : (Ord a) => a -> Set a -> Set a
-insert a (MkSet m) = MkSet (Sigma.getProof $ runInsertRes (Tree.insert a () m))
+insert a (MkSet m) = MkSet (snd $ runInsertRes (Tree.insert a () m))
 
 ||| Does the set contain the given element.
 contains : (Ord a) => a -> Set a -> Bool
@@ -22,9 +22,9 @@ contains a (MkSet m) = isJust (lookup a m)
 
 ||| Construct a set that contains all elements in both of the input sets.
 union : (Ord a) => Set a -> Set a -> Set a
-union (MkSet m1) (MkSet m2) = MkSet (Sigma.getProof $ Tree.foldr insertElement (_ ** m1) m2)
+union (MkSet m1) (MkSet m2) = MkSet (snd $ Tree.foldr insertElement (_ ** m1) m2)
   where insertElement : (Ord a) => a -> Unit -> (h : Nat ** AVLTree h a Unit) -> (h' : Nat ** AVLTree h' a Unit)
-        insertElement k v m' = runInsertRes (Tree.insert k v (Sigma.getProof m'))
+        insertElement k v m' = runInsertRes (Tree.insert k v (snd m'))
 
 size : Set a -> Nat
 size (MkSet m) = Tree.size m

@@ -172,7 +172,7 @@ foldr step init (Element t _) = foldr' step init t
 
 fromList : (Ord k) => List (k, v) -> (n : Nat ** AVLTree n k v)
 fromList [] = (0 ** Element Empty AVLEmpty)
-fromList ((k, v) :: xs) with (insert k v (getProof (fromList xs)))
+fromList ((k, v) :: xs) with (insert k v (snd (fromList xs)))
   fromList ((k, v) :: xs) | (Same x) = (_ ** x)
   fromList ((k, v) :: xs) | (Grew x) = (_ ** x)
 

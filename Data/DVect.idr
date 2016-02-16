@@ -62,12 +62,12 @@ index _     Nil     Refl   impossible
 
 index : (n : Nat)
      -> (l : DVect aTy l eTy as)
-     -> Maybe $ Sigma aTy eTy
+     -> Maybe $ DPair aTy eTy
 index Z     (x::xs) = Just (_ ** x)
 index (S n) (x::xs) = index n xs
 index _     Nil     = Nothing
 
-head : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+head : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> DPair aTy eTy
 head Nil     {ok=Refl}   impossible
 head (x::xs) {ok=p}    = (_ ** x)
 
@@ -78,7 +78,7 @@ tail Nil     {ok=Refl}   impossible
 tail (x::xs) {ok=p}    = xs
 
 
-last : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> Sigma aTy eTy
+last : (l : DVect aTy n eTy as) -> {auto ok : isCons l = True} -> DPair aTy eTy
 last Nil        {ok=Refl}   impossible
 last [x]        {ok=p}    = (_ ** x)
 last (x::y::ys) {ok=p}    = last (y::ys) {ok=Refl}

@@ -51,14 +51,14 @@ length (x::xs) = (S Z) + length xs
 
 index : (n : Nat)
      -> (l : DList aTy eTy as)
-     -> Maybe $ Sigma aTy eTy
+     -> Maybe $ DPair aTy eTy
 index Z     (x::xs) = Just (_ ** x)
 index (S n) (x::xs) = index n xs
 index _     Nil     = Nothing
 
 head : (l : DList aTy eTy as)
     -> {auto ok : isCons l = True}
-    -> Sigma aTy eTy
+    -> DPair aTy eTy
 head Nil     {ok=Refl}   impossible
 head (x::xs) {ok=p}    = (_ ** x)
 
@@ -71,7 +71,7 @@ tail (x::xs) {ok=p}    = xs
 
 last : (l : DList aTy eTy as)
     -> {auto ok : isCons l = True}
-    -> Sigma aTy eTy
+    -> DPair aTy eTy
 last Nil           {ok=Refl}  impossible
 last [x]           {ok=p}     = (_ ** x)
 last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
@@ -95,7 +95,7 @@ replicate : {a : aTy}
          -> (as : List aTy ** DList aTy elemTy as)
 replicate Z     x = (_ ** Nil)
 replicate (S Z) x = (_ ** DList.(::) x Nil)
-replicate (S n) x = (_ ** DList.(::) x (getProof (replicate n x)))
+replicate (S n) x = (_ ** DList.(::) x (snd (replicate n x)))
 
 -- ---------------------------------------------------------------- [ SubLists ]
 
@@ -104,7 +104,7 @@ take : Nat
     -> (bs : List aTy ** DList aTy elemTy bs)
 take Z     xs      = (_ ** Nil)
 take (S n) Nil     = (_ ** Nil)
-take (S n) (x::xs) = (_ ** DList.(::) x (getProof (take n xs)))
+take (S n) (x::xs) = (_ ** DList.(::) x (snd (take n xs)))
 
 takeWhile : ({a : aTy} -> elemTy a -> Bool)
          -> DList aTy elemTy as
@@ -112,7 +112,7 @@ takeWhile : ({a : aTy} -> elemTy a -> Bool)
 takeWhile p Nil     = (_ ** Nil)
 takeWhile p (x::xs) =
     if p x
-      then (_ ** DList.(::) x (getProof (takeWhile p xs)))
+      then (_ ** DList.(::) x (snd (takeWhile p xs)))
       else (_ ** Nil)
 
 drop : Nat
@@ -120,7 +120,7 @@ drop : Nat
     -> (bs : List aTy ** DList aTy elemTy bs)
 drop Z     xs      = (_ ** Nil)
 drop (S n) Nil     = (_ ** Nil)
-drop (S n) (x::xs) = (_ ** getProof (drop n xs))
+drop (S n) (x::xs) = (_ ** snd (drop n xs))
 
 dropWhile : ({a : aTy} -> elemTy a -> Bool)
          -> DList aTy elemTy as
@@ -201,7 +201,7 @@ mapMaybe f (x::xs) =
 fromLDP : List (x : aTy ** eTy x)
        -> (as ** DList aTy eTy as)
 fromLDP Nil     = (_ ** DList.Nil)
-fromLDP (x::xs) = (_ ** DList.(++) [getProof x] (getProof $ fromLDP xs))
+fromLDP (x::xs) = (_ ** DList.(++) [snd x] (snd $ fromLDP xs))
 
 -- ---------------------------------------------- [ To List of Dependent Pairs ]
 
@@ -218,7 +218,7 @@ fromList : {ty : Type}
         -> List (e x)
         -> (es : List ty ** DList ty e es)
 fromList Nil     = (_ ** DList.Nil)
-fromList (x::xs) = (_ ** DList.(::) x (getProof (fromList xs)))
+fromList (x::xs) = (_ ** DList.(::) x (snd (fromList xs)))
 
 toLDP' : {ty : Type} -> {x : ty} -> {e : ty -> Type}
       -> List (e x) -> List (x : ty ** e x)
@@ -269,7 +269,7 @@ hasAnyBy p es  (x::xs) =
 
 find : ({a : aTy} -> elemTy a -> Bool)
     -> DList aTy elemTy as
-    -> Maybe $ Sigma aTy elemTy
+    -> Maybe $ DPair aTy elemTy
 find p Nil     = Nothing
 find p (x::xs) =
   if p x

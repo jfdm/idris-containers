@@ -21,7 +21,7 @@ empty : (Ord k) => Dict k v
 empty = MkDict (Element Empty AVLEmpty)
 
 insert : (Ord k) => k -> v -> Dict k v -> Dict k v
-insert key val (MkDict d) = MkDict $ Sigma.getProof (runInsertRes $ Tree.insert key val d)
+insert key val (MkDict d) = MkDict $ snd (runInsertRes $ Tree.insert key val d)
 
 ||| Update the value for the given key.
 update : (Ord k) => k -> (v -> v) -> Dict k v -> Dict k v
@@ -33,7 +33,7 @@ toList : Dict k v -> List (k,v)
 toList (MkDict d) = Tree.toList d
 
 fromList : Ord k => List (k,v) -> Dict k v
-fromList kvs = MkDict $ Sigma.getProof $ Tree.fromList kvs
+fromList kvs = MkDict $ snd $ Tree.fromList kvs
 
 
 -- ----------------------------------------------------------------- [ Queries ]
