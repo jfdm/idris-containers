@@ -16,7 +16,10 @@ modules = Data.AVL.Tree
 
         , Data.DList
         , Data.DList.Eff
+
         , Data.DVect
+
+        , Data.PList
 
         , Data.Test.Stack
         , Data.Test.Queue
