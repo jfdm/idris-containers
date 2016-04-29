@@ -29,6 +29,7 @@ modules = Data.AVL.Tree
         , Data.AVL.Test.Set
         , Data.AVL.Test.Graph
 
+	, Data.DeBruijn
 
 tests = Data.Test.Stack.runTest
       , Data.Test.Queue.runTest
