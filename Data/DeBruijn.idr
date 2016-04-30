@@ -33,7 +33,7 @@ data Index : (T : Type)
 ||| @ctxt The typing context.
 public export
 Env : (t : Type) -> (obj : t -> Type) -> (ctxt : List t) -> Type
-Env = DList
+Env ty obj ctxt = DList ty (\x => obj x) ctxt
 
 ||| Read an object from our typing environment.
 |||
