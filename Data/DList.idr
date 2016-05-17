@@ -18,9 +18,9 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
   ||| @as     The List used to contain the different values within the type.
   public export
   data DList : (aTy : Type)
-                -> (elemTy : aTy -> Type)
-                -> (as : List aTy)
-                -> Type where
+            -> (elemTy : aTy -> Type)
+            -> (as : List aTy)
+            -> Type where
     ||| Create an empty List
     Nil  : DList aTy elemTy Nil
     ||| Cons
