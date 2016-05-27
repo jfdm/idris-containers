@@ -1,3 +1,8 @@
+-- --------------------------------------------------------------- [ Queue.idr ]
+-- Module    : Queue.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| A simple Queue made from two instances of `Stack`.
 |||
 ||| An interesting exercise will be to redfine the Queue using two

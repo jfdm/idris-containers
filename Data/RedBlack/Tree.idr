@@ -1,3 +1,7 @@
+-- ------------------------------------------------------ [ Tree.idr<RedBlack> ]
+-- Module    : Tree.idr
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 -- http://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs
 module Data.RedBlack.Tree
 

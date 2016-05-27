@@ -1,3 +1,8 @@
+-- ----------------------------------------------------------------- [ Set.idr ]
+-- Module    : Set.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Implementation of a Set using an AVL Binary Search Tree.
 module Data.AVL.Set
 
@@ -5,6 +10,8 @@ import Data.AVL.Tree
 
 %access export
 
+-- ------------------------------------------------------------- [ Definitions ]
+||| An ordered set.
 data Set : (a : Type) -> Type where
   MkSet : {a : Type} -> AVLTree n a Unit -> Set a
 
@@ -14,7 +21,7 @@ empty = MkSet (Element Empty AVLEmpty)
 
 ||| Insert an element into a set.
 insert : (Ord a) => a -> Set a -> Set a
-insert a (MkSet m) = MkSet (snd $ runInsertRes (Tree.insert a () m))
+insert a (MkSet m) = MkSet (snd $ Tree.insert a () m)
 
 ||| Does the set contain the given element.
 contains : (Ord a) => a -> Set a -> Bool
@@ -23,9 +30,14 @@ contains a (MkSet m) = isJust (lookup a m)
 ||| Construct a set that contains all elements in both of the input sets.
 union : (Ord a) => Set a -> Set a -> Set a
 union (MkSet m1) (MkSet m2) = MkSet (snd $ Tree.foldr insertElement (_ ** m1) m2)
-  where insertElement : (Ord a) => a -> Unit -> (h : Nat ** AVLTree h a Unit) -> (h' : Nat ** AVLTree h' a Unit)
-        insertElement k v m' = runInsertRes (Tree.insert k v (snd m'))
+  where
+    insertElement : (Ord a) => a
+                            -> Unit
+                            -> (h : Nat ** AVLTree h a Unit)
+                            -> (h' : Nat ** AVLTree h' a Unit)
+    insertElement k v m' = Tree.insert k v (snd m')
 
+||| Return the size of the Dictionary.
 size : Set a -> Nat
 size (MkSet m) = Tree.size m
 
@@ -49,12 +61,13 @@ toList (MkSet m) = map fst $ Tree.toList m
 fromList : (Ord a) => List a -> Set a
 fromList xs = (foldl (\t,k => Set.insert k t) empty xs)
 
-implementation Foldable Set where
+-- --------------------------------------------------------- [ Implementations ]
+Foldable Set where
   foldr f i (MkSet m) = foldr (\x,_,p => f x p) i m
 
-implementation Eq a => Eq (Set a) where
+Eq a => Eq (Set a) where
   (==) (MkSet (Element t _)) (MkSet (Element t' _)) = t == t'
 
-implementation Show a => Show (Set a) where
+Show a => Show (Set a) where
   show s = "{ " ++ (unwords . intersperse "," . map show . Set.toList $ s) ++ " }"
 -- --------------------------------------------------------------------- [ EOF ]

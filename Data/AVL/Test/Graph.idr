@@ -1,6 +1,6 @@
 -- --------------------------------------------------------------- [ Graph.idr ]
 -- Module    : Graph.idr
--- Copyright : (c) Jan de Muijnck-Hughes
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 ||| Testing Stacks using silly stupid tests

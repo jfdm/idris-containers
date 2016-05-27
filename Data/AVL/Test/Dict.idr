@@ -1,6 +1,6 @@
 -- ---------------------------------------------------------------- [ Dict.idr ]
 -- Module    : Dict.idr
--- Copyright : (c) Jan de Muijnck-Hughes
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 

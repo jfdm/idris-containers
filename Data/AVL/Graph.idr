@@ -1,3 +1,8 @@
+-- --------------------------------------------------------------- [ Graph.idr ]
+-- Module    : Graph.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| A Graph implementation based on Adjacency Lists.
 |||
 ||| The underlying implementation is that of an AVL-based Dictionary
@@ -82,7 +87,7 @@ Legend vTy = List (vTy, NodeID)
 
 
 implementation (Show v, Show e) => Show (Graph v e) where
-  show (MkGraph _ _ g)          = show g
+  show (MkGraph _ _ g) = show g
 
 -- ---------------------------------------------------------- [ Legend Utility ]
 private

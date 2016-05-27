@@ -1,11 +1,9 @@
-||| A Dependently Typed Implementation of an AVL Tree optimised for
-||| Dictionaries.
-|||
-||| This code is dervied from an original design by David
-||| Christiansen.
-|||
-||| *Note* When using this Data Structure, the design is such that the
-||| tree does not factor in unbalanced trees and so removal of items is not permited.
+-- ---------------------------------------------------------------- [ Dict.idr ]
+-- Module    : Dict.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+||| A Dictionary based upon an AVL Key-Value Tree.
 module Data.AVL.Dict
 
 import Data.AVL.Tree
@@ -21,7 +19,7 @@ empty : (Ord k) => Dict k v
 empty = MkDict (Element Empty AVLEmpty)
 
 insert : (Ord k) => k -> v -> Dict k v -> Dict k v
-insert key val (MkDict d) = MkDict $ snd (runInsertRes $ Tree.insert key val d)
+insert key val (MkDict d) = MkDict $ snd (Tree.insert key val d)
 
 ||| Update the value for the given key.
 update : (Ord k) => k -> (v -> v) -> Dict k v -> Dict k v
@@ -34,7 +32,6 @@ toList (MkDict d) = Tree.toList d
 
 fromList : Ord k => List (k,v) -> Dict k v
 fromList kvs = MkDict $ snd $ Tree.fromList kvs
-
 
 -- ----------------------------------------------------------------- [ Queries ]
 
@@ -71,12 +68,14 @@ findKey pred (MkDict d) = Tree.findKey pred d
 findKeyOf : (Eq v) => v -> Dict k v -> Maybe k
 findKeyOf v (MkDict d) = Tree.findKeyOf v d
 
-implementation (Eq k, Eq v) => Eq (Dict k v) where
+-- --------------------------------------------------------- [ Implementations ]
+
+(Eq k, Eq v) => Eq (Dict k v) where
    (==) (MkDict {h = h} x) (MkDict {h = h'} y) with (decEq h h')
      (==) (MkDict {h = h} x) (MkDict {h = h} y)  | Yes Refl = x == y
      (==) (MkDict {h = h} x) (MkDict {h = h'} y) | No _     = False
 
-implementation (Show k, Show v) => Show (Dict k v) where
+(Show k, Show v) => Show (Dict k v) where
   show (MkDict d) = show d
 
 -- --------------------------------------------------------------------- [ EOF ]

@@ -1,3 +1,8 @@
+-- --------------------------------------------------------------- [ Stack.idr ]
+-- Module    : Stack.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Testing Stacks using silly stupid tests
 module Data.Test.Stack
 

@@ -1,3 +1,8 @@
+-- ------------------------------------------------------------ [ DeBruijn.idr ]
+-- Module    : DeBruijn.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Data structure to compute de Bruijn indices.
 |||
 ||| Thanks to christiansen's Galois tutorials for the accessor and

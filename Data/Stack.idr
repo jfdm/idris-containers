@@ -1,3 +1,8 @@
+-- --------------------------------------------------------------- [ Stack.idr ]
+-- Module    : Stack.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
 ||| Helper functions to treat lists like a stack.
 |||
 ||| A collection of aliases so that working on `List` which is used

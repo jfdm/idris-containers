@@ -1,3 +1,9 @@
+-- --------------------------------------------------------------- [ DList.idr ]
+-- Module    : DList.idr
+-- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- License   : see LICENSE
+-- --------------------------------------------------------------------- [ EOH ]
+
 ||| A `list` construct to create lists of dependent types.
 |||
 ||| One of the problems with using dependent types is that types
@@ -7,7 +13,6 @@
 module Data.DList
 
 %access export
---%default total
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
 
