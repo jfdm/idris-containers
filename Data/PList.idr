@@ -15,6 +15,7 @@ module Data.PList
 import public Data.DList
 
 %access export
+%default total
 
 ||| A list construct for predicated lists.
 |||
@@ -68,6 +69,49 @@ toDList (x::xs) = DList.(::) x (toDList xs)
 -- TODO fromLDP
 -- TODO toLDP
 -- TODO fromList
+
+data PListView : (aTy : Type)
+              -> {a : aTy}
+              -> {pTy : aTy -> Type}
+              -> {eTy : aTy -> Type}
+              -> (pTy a)
+              -> List (eTy a)
+              -> Type
+    where
+      PVNil : PListView aTy p Nil
+      PVOne : PListView aTy p [x]
+      PVRec :  {aTy : Type}
+            -> {a : aTy}
+            -> {pTy : aTy -> Type}
+            -> {eTy : aTy -> Type}
+            -> (e : eTy a)
+            -> (p : pTy a)
+            -> {es : List (eTy a)}
+            -> (rest : Lazy $ PListView aTy p es)
+            -> PListView aTy p (e :: es)
+
+pListView : {aTy : Type}
+         -> {a : aTy}
+         -> {pTy : aTy -> Type}
+         -> {eTy : aTy -> Type}
+         -> (p : pTy a)
+         -> (es : List (eTy a))
+         -> PListView aTy p es
+pListView p Nil     = PVNil
+pListView p [x]     = PVOne
+pListView p (x::xs) = PVRec x p (pListView p xs)
+
+fromList : (p : pTy a)
+        -> List (eTy a)
+        -> (as : List aTy
+           ** prfs : DList aTy pTy as
+           ** PList aTy eTy pTy prfs as)
+fromList p xs {aTy} with (pListView {aTy} p xs)
+  fromList p Nil     | PVNil = (_ ** _ ** PList.Nil)
+  fromList p [x]     | PVOne = (_ ** _ ** PList.(::) {prf=p} x PList.Nil)
+  fromList p (x::xs) | PVRec x p ps =
+      let (as' ** prfs' ** rest) = fromList {aTy} p xs
+       in (_ ** _ ** PList.(::) {prf=p} x rest)
 
 
 -- ---------------------------------------------------------------- [ Indexing ]
