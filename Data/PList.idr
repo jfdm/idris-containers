@@ -12,6 +12,7 @@
 ||| predicate.
 module Data.PList
 
+import Data.List.Quantifiers
 import public Data.DList
 
 %access export
@@ -69,6 +70,7 @@ toDList (x::xs) = DList.(::) x (toDList xs)
 -- TODO fromLDP
 -- TODO toLDP
 -- TODO fromList
+-- TODO fromDList
 
 fromList : (p : pTy a)
         -> List (eTy a)
