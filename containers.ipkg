@@ -35,6 +35,9 @@ modules = Data.AVL.Tree
 
         , Data.DeBruijn
 
+        , Data.List.Predicates
+
+
 tests = Data.Test.Stack.runTest
       , Data.Test.Queue.runTest
       , Data.Test.RedBlack.runTest
