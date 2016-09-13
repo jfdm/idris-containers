@@ -327,7 +327,6 @@ findKey pred = foldr (\k,v,p => if pred v then Just k else p) Nothing
 findKeyOf : (Eq v) => v -> AVLTree h k v -> Maybe k
 findKeyOf value = findKey (== value)
 
-
 -- --------------------------------------------------------- [ Implementations ]
 private
 eqTree : (Eq k, Eq v) => Tree k v -> Tree k v -> Bool
@@ -358,5 +357,48 @@ eqTree _ _                                   = False
 
 (Show k, Show v) => Show (AVLTree h k v) where
   show (Element t _) = show t
+-- --------------------------------------------------------------------- [ Key ]
+
+||| A proof that some key is found in a Tree
+public export
+data Key : k -> Tree k v -> Type where
+  Here : Key key (Node key _ _ _)
+  InRight : (later : Key key r) -> Key key (Node _ _ _ r)
+  InLeft : (later : Key key l) -> Key key (Node _ _ l _)
+
+||| A wrapper to be used with AVLTree
+public export
+AVLKey : k -> AVLTree h k v -> Type
+AVLKey key avl = Key key (getWitness avl)
+
+||| An empty tree has no key
+noEmptyKey : {key : k} -> Key key Empty -> Void
+noEmptyKey Here impossible
+noEmptyKey (InRight _) impossible
+noEmptyKey (InLeft _) impossible
+
+Uninhabited (Key key Empty) where
+  uninhabited = noEmptyKey
+
+||| An item that is not in the root, not in the left child and not in the
+||| right child is not in the Tree at all
+noKeyFound : {key : k} -> {val : v}
+          -> {key' : k} -> {l : Tree k v} -> {r : Tree k v}
+          -> Not (key = key') -> Not (Key key l) -> Not (Key key r) 
+          -> Not (Key key (Node key' val l r))
+noKeyFound notHere notInLeft notInRight Here = notHere Refl
+noKeyFound notHere notInLeft notInRight (InLeft later) = notInLeft later
+noKeyFound notHere notInLeft notInRight (InRight later) = notInRight later
+
+||| A decision procedure for Key
+isKey : DecEq k => (key : k) -> (tree : Tree k v) -> Dec (Key key tree)
+isKey key Empty = No noEmptyKey
+isKey key (Node key' _ l r) with (decEq key key')
+  isKey key (Node key  _ l r) | (Yes Refl) = Yes Here
+  isKey key (Node key' _ l r) | (No notHere) with (isKey key l)
+    isKey key (Node key' _ l r) | (No notHere) | (Yes inLeft) = Yes (InLeft inLeft)
+    isKey key (Node key' _ l r) | (No notHere) | (No notInLeft) with (isKey key r)
+      isKey key (Node key' _ l r) | (No notHere) | (No notInLeft) | (Yes inRight) = Yes (InRight inRight)
+      isKey key (Node key' _ l r) | (No notHere) | (No notInLeft) | (No notInRight) = No (noKeyFound notHere notInLeft notInRight)
 
 -- --------------------------------------------------------------------- [ EOF ]
