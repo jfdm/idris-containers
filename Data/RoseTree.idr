@@ -37,7 +37,7 @@ noValueEmpty DoesHaveValue impossible
 ||| Insert into a Rose RTree
 |||
 ||| //TODO Make total
-%assert_total
+partial
 insert : Eq a => (value : a) -> (parent : Maybe a) -> (tree : RTree a) -> RTree a
 insert x Nothing  (Empty)      = Node x Nil
 insert x Nothing  (Node y xs)  = Node y (Node x Nil:: xs)
