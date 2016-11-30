@@ -42,7 +42,7 @@ g = with List buildG towns links
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testBuild : IO ()
+testBuild : IO Bool
 testBuild = genericTest
     (Just "Insert")
     [ hasValue "Frankfurt" g
@@ -53,7 +53,7 @@ testBuild = genericTest
     (==)
 
 partial
-testSuccs : IO ()
+testSuccs : IO Bool
 testSuccs = genericTest
     (Just "Succs")
     (getSuccs "Wurzburg" g)
@@ -61,7 +61,7 @@ testSuccs = genericTest
     (==)
 
 partial
-testEdges : IO ()
+testEdges : IO Bool
 testEdges = genericTest
     (Just "Edges")
     ([getEdgesByID 0 g, getEdges "Kassel" g])
@@ -69,7 +69,7 @@ testEdges = genericTest
     (==)
 
 partial
-testLeafs : IO ()
+testLeafs : IO Bool
 testLeafs = genericTest
   (Just "Get Leaf Nodes")
   (catMaybes $ map (\x => getValueByID x g) (leafNodes g))
@@ -77,7 +77,7 @@ testLeafs = genericTest
   (\x,y => sort x == sort y)
 
 partial
-testRoots : IO ()
+testRoots : IO Bool
 testRoots = genericTest
   (Just "Get Root Nodes")
   (getValuesByID (rootNodes g) g)
@@ -85,7 +85,7 @@ testRoots = genericTest
   (\x,y => sort x == sort y)
 
 partial
-testDiscon : IO ()
+testDiscon : IO Bool
 testDiscon = genericTest
   (Just "Disconnected")
   (isDisconnected g)
@@ -93,7 +93,7 @@ testDiscon = genericTest
   (==)
 
 partial
-testDiscon2 : IO ()
+testDiscon2 : IO Bool
 testDiscon2 = genericTest
   (Just "Disconnected")
   (isDisconnected (addNode "Aachen" g))
@@ -106,7 +106,7 @@ runTest : IO ()
 runTest = do
     putStrLn "Testing Graph"
     putStrLn infoLine
-    runTests [
+    NonReporting.runTests [
         testBuild
       , testSuccs
       , testEdges

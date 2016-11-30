@@ -21,7 +21,7 @@ list2 = rndListIntU 987654321 (0,100) 30
 
 -- ------------------------------------------------------------ [ Construction ]
 partial
-testBuilding : IO ()
+testBuilding : IO Bool
 testBuilding = genericTest
     (Just "List, Building" )
     (Tree.size $ Tree.fromList (list1 ++ list1))
@@ -31,7 +31,7 @@ testBuilding = genericTest
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testUpdate : IO ()
+testUpdate : IO Bool
 testUpdate = genericTest
     (Just "Insert")
     (Tree.size $ insert 1 $ Tree.fromList list2)
@@ -39,7 +39,7 @@ testUpdate = genericTest
     (==)
 
 partial
-testContains : IO ()
+testContains : IO Bool
 testContains = genericTest
     (Just "Contains")
     (Tree.contains 4 $ Tree.fromList [1,2,3,4])
@@ -51,7 +51,7 @@ runTest : IO ()
 runTest = do
     putStrLn "Testing RedBlack Tree"
     putStrLn infoLine
-    runTests [
+    NonReporting.runTests [
         testBuilding
       , testUpdate
       , testContains

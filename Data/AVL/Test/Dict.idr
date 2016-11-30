@@ -17,7 +17,7 @@ kvlist1 = rndListIntKVU 123456789 (0,100) 20
 
 -- ------------------------------------------------------------ [ Construction ]
 
-testBuilding : IO ()
+testBuilding : IO Bool
 testBuilding = genericTest
     (Just "List, Building" )
     (Dict.size $ Dict.fromList kvlist1)
@@ -27,7 +27,7 @@ testBuilding = genericTest
 
 -- ---------------------------------------------------------------- [ Updating ]
 partial
-testUpdate : IO ()
+testUpdate : IO Bool
 testUpdate = genericTest
     (Just "Update")
     (Dict.toList $ Dict.update 2 (*2) $ Dict.fromList [(1,2), (2,3), (3,4), (5,3)])
@@ -35,7 +35,7 @@ testUpdate = genericTest
     (==)
 
 partial
-testHas : IO ()
+testHas : IO Bool
 testHas = genericTest
    (Just "Has value")
    (hasValue 6 $ Dict.fromList [(1,2), (2,6), (3,4)])
@@ -44,7 +44,7 @@ testHas = genericTest
 
 -- ----------------------------------------------------------------- [ Queries ]
 partial
-testLookup : IO ()
+testLookup : IO Bool
 testLookup = genericTest
     (Just "Lookup")
     (Dict.lookup 1 $ Dict.fromList [(1,2), (2,3), (3,4)])
@@ -52,7 +52,7 @@ testLookup = genericTest
     (==)
 
 partial
-testKVs : IO ()
+testKVs : IO Bool
 testKVs = genericTest
     (Just "KV Pair Extraction")
     (keys given, values given)
@@ -67,7 +67,7 @@ runTest : IO ()
 runTest = do
   putStrLn "Testing Dict"
   putStrLn infoLine
-  runTests [
+  NonReporting.runTests [
       testBuilding
     , testLookup
     , testUpdate

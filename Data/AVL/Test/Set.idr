@@ -32,7 +32,7 @@ set2 = Set.fromList list2
 
 -- ------------------------------------------------------------ [ Construction ]
 partial
-testBuilding : IO ()
+testBuilding : IO Bool
 testBuilding = genericTest
     (Just "List, Building" )
     (Set.size set1 == 30 && (sorted $ Set.toList $ Set.fromList list1))
@@ -42,7 +42,7 @@ testBuilding = genericTest
 -- ---------------------------------------------------------------- [ Updating ]
 
 partial
-testUpdate : IO ()
+testUpdate : IO Bool
 testUpdate = genericTest
     (Just "Insert")
     (Set.size set1' == 31 && Set.size set1 == 30)
@@ -51,7 +51,7 @@ testUpdate = genericTest
 
 
 partial
-testMerge : IO ()
+testMerge : IO Bool
 testMerge = genericTest
     (Just "Union")
     (Set.size $ Set.union set1 set2)
@@ -59,7 +59,7 @@ testMerge = genericTest
     (==)
 
 partial
-testDiff : IO ()
+testDiff : IO Bool
 testDiff = genericTest
    (Just "Difference")
    (Set.toList $ Set.difference (Set.fromList [1,2,3]) (Set.fromList [2,3,4]))
@@ -67,7 +67,7 @@ testDiff = genericTest
    (==)
 
 partial
-testIntersection : IO ()
+testIntersection : IO Bool
 testIntersection = genericTest
     (Just "Intersection")
     (Set.size $ Set.intersection set1 set1)
@@ -75,7 +75,7 @@ testIntersection = genericTest
     (==)
 
 partial
-testContains : IO ()
+testContains : IO Bool
 testContains = genericTest
     (Just "Contains")
     (Set.contains 102 $ set1)
@@ -87,7 +87,7 @@ runTest : IO ()
 runTest = do
     putStrLn "Testing Set"
     putStrLn infoLine
-    runTests [
+    NonReporting.runTests [
         testBuilding
       , testUpdate
       , testMerge
