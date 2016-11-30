@@ -1,5 +1,14 @@
 package containers
 
+author     = Jan de Muijnck-Hughes
+maintainer = Jan de Muijnck-Hughes
+license    = BSD3 but see LICENSE for more information
+brief      = "Containers."
+readme     = README.md
+
+sourceloc  = git://git@github.com:jfdm/idris-containers.git
+bugtracker = http://www.github.com/jfdm/idris-containers/issues
+
 pkgs = effects
      , test
 
