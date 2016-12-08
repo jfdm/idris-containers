@@ -449,7 +449,7 @@ Uninhabited (DElem iTy elemTy a Nil prf) where
 ||| @a   The element to remove.
 ||| @as  The list to remove the element from.
 ||| @idx Proof that the index of `a` is in the type of `as`.
-||| @prf Proof that the element's index is in the lust in the same positino as the element itself.
+||| @prf Proof that the element's index is in the list in the same positino as the element itself.
 delete' : (a    : elemTy i)
        -> (as   : DList iTy elemTy is)
        -> (idx  : Elem i is)
@@ -462,10 +462,23 @@ delete' a (a' :: rest) (There later) (Er komst) = a' :: delete' a rest later kom
 |||
 ||| @a   The element to remove.
 ||| @as  The list to remove the element from.
-delete : (a    : elemTy i)
-      -> (as   : DList iTy elemTy is)
-      -> {auto idx  : Elem i is}
-      -> {auto prf  : DElem iTy elemTy a as idx}
+delete : (a        : elemTy i)
+      -> (as       : DList iTy elemTy is)
+      -> {auto idx : Elem i is}
+      -> {auto prf : DElem iTy elemTy a as idx}
       -> DList iTy elemTy (dropElem is idx)
 delete x xs {idx} {prf} = delete' x xs idx prf
+
+||| Remove an element from the list given proof of its, and its
+||| index's, location in the list.
+|||
+||| @as  The list to remove the element from.
+||| @prf Proof that the element's index is in the list in the same
+|||      position as the element itself.
+dropElem : (as  : DList iTy elemTy is)
+        -> (prf : DElem iTy elemTy a as idx)
+        -> DList iTy elemTy (dropElem is idx)
+dropElem (a  :: rest) Hier       = rest
+dropElem (a' :: rest) (Er komst) = a' :: dropElem rest komst
+
 -- --------------------------------------------------------------------- [ EOF ]
