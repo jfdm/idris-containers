@@ -12,6 +12,8 @@
 ||| be used as it requires all elements to have the same type.
 module Data.DList
 
+import Data.List
+
 %access export
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
@@ -35,6 +37,8 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
     (::) : (elem : elemTy x)
         -> (rest : DList aTy elemTy xs)
         -> DList aTy elemTy (x::xs)
+
+%name DList rest
 
 -- -------------------------------------------------------------- [ Form Tests ]
 isNil : DList aTy eTy as -> Bool
@@ -201,22 +205,21 @@ mapMaybe f (x::xs) =
 -- TODO mapMaybe from one DList to another
 
 -- --------------------------------------------------------- [ Transformations ]
--- TODO
 
+||| From list of Dependent Pairs.
 fromLDP : List (x : aTy ** eTy x)
        -> (as ** DList aTy eTy as)
 fromLDP Nil     = (_ ** DList.Nil)
 fromLDP (x::xs) = (_ ** DList.(++) [snd x] (snd $ fromLDP xs))
 
--- ---------------------------------------------- [ To List of Dependent Pairs ]
 
+||| To List of Dependent Pairs
 toLDP : DList aTy eTy as
      -> List (x : aTy ** eTy x)
 toLDP Nil     = Nil
 toLDP (x::xs) = (_**x) :: toLDP xs
 
--- ----------------------------------------------------------- [ List to DList ]
-
+||| List to DList
 fromList : {ty : Type}
         -> {e : ty -> Type}
         -> {x : ty}
@@ -410,4 +413,57 @@ showDList : (showFunc : {a : aTy} -> elemTy a -> String)
          -> String
 showDList f xs = "[" ++ unwords (intersperse "," (doDListShow f xs)) ++ "]"
 
+
+-- -------------------------------------------------------------- [ Predicates ]
+||| Proof that some element is found in a `DList`.
+|||
+||| @iTy     The type of the element's index.
+||| @elemTy  The type of the list element.
+||| @x       An element in the list.
+||| @xs      The list itself.
+||| @prf     Proof that the element's index is in the list in the same position as the element itself.
+public export
+data DElem : (iTy    : Type)
+          -> (elemTy : iTy -> Type)
+          -> (x      : elemTy i)
+          -> (xs     : DList iTy elemTy is)
+          -> (prf    : Elem i is)
+          -> Type
+    where
+      ||| Proof that the element is at the front of the list.
+      Hier : DElem ity elemTy x (x :: xs) Here
+
+      ||| Proof that the element is found later in the list.
+      Er : (komst : DElem iTy elemTy x xs xs') -> DElem iTy elemTy x (x' ::xs) (There xs')
+
+Uninhabited (DElem iTy elemTy a Nil prf) where
+    uninhabited Hier impossible
+    uninhabited (Er _) impossible
+
+%name DElem komst
+
+||| Analgous to `delete` for normal Lists, however, we require explicit proof that the element, and its index, are in the list.
+|||
+||| @a   The element to remove.
+||| @as  The list to remove the element from.
+||| @idx Proof that the index of `a` is in the type of `as`.
+||| @prf Proof that the element's index is in the lust in the same positino as the element itself.
+delete' : (a    : elemTy i)
+       -> (as   : DList iTy elemTy is)
+       -> (idx  : Elem i is)
+       -> (prf  : DElem iTy elemTy a as idx)
+       -> DList iTy elemTy (dropElem is idx)
+delete' a (a  :: rest) Here          Hier       = rest
+delete' a (a' :: rest) (There later) (Er komst) = a' :: delete' a rest later komst
+
+||| Analgous to `delete` for normal Lists, however, we must first calculate proof that the element, and its index, are in the list.
+|||
+||| @a   The element to remove.
+||| @as  The list to remove the element from.
+delete : (a    : elemTy i)
+      -> (as   : DList iTy elemTy is)
+      -> {auto idx  : Elem i is}
+      -> {auto prf  : DElem iTy elemTy a as idx}
+      -> DList iTy elemTy (dropElem is idx)
+delete x xs {idx} {prf} = delete' x xs idx prf
 -- --------------------------------------------------------------------- [ EOF ]
