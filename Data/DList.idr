@@ -205,6 +205,7 @@ mapMaybe f (x::xs) =
 -- TODO mapMaybe from one DList to another
 
 -- --------------------------------------------------------- [ Transformations ]
+-- TODO
 
 ||| From list of Dependent Pairs.
 fromLDP : List (x : aTy ** eTy x)
@@ -212,6 +213,7 @@ fromLDP : List (x : aTy ** eTy x)
 fromLDP Nil     = (_ ** DList.Nil)
 fromLDP (x::xs) = (_ ** DList.(++) [snd x] (snd $ fromLDP xs))
 
+-- ---------------------------------------------- [ To List of Dependent Pairs ]
 
 ||| To List of Dependent Pairs
 toLDP : DList aTy eTy as
