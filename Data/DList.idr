@@ -475,6 +475,7 @@ delete x xs {idx} {prf} = delete' x xs idx prf
 ||| @as  The list to remove the element from.
 ||| @prf Proof that the element's index is in the list in the same
 |||      position as the element itself.
+public export
 dropElem : (as  : DList iTy elemTy is)
         -> (prf : DElem iTy elemTy a as idx)
         -> DList iTy elemTy (dropElem is idx)
