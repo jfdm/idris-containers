@@ -35,7 +35,7 @@ DemiEdge b = (NodeID, Maybe b)
 ||| Adjacency 'list' denoting adjacent nodes in the graph.
 ||| The list is a dict between destination `NodeID` and label.
 |||
-||| Note:: Should probably c0hange this to a dict with a list of edges,
+||| Note:: Should probably change this to a dict with a list of edges,
 ||| but that is too much work at the momemt.
 public export
 AList : Type -> Type
