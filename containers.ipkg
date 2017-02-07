@@ -53,3 +53,12 @@ tests = Data.Test.Stack.runTest
       , Data.AVL.Test.Dict.runTest
       , Data.AVL.Test.Set.runTest
       , Data.AVL.Test.Graph.runTest
+
+brief = "Containers not defined in Idris base, prelude, or contrib."
+readme = README.org
+license = BSD-3
+author = "Jan de Muijnck-Hughes"
+
+homepage = https://github.com/jfdm/idris-containers
+sourceloc = https://github.com/jfdm/idris-containers
+bugtracker = https://github.com/jfdm/idris-containers/issues
