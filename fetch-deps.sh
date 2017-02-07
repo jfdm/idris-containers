@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo "Creating Dir"
-mkdir -p dependancies/
-cd dependancies/
+mkdir -p dependencies/
+cd dependencies/
 
 echo "Fetching Deps for Containers"
 
