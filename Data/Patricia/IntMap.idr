@@ -46,19 +46,47 @@ data IntBitMap : (bits : Nat) -> (valTy : Type) -> Type where
     |||
     ||| *Invariant:* `Empty` is never found as a child of `Bin`. TODO: encode this
     |||
-    ||| @n     Number of bits in key.
-    ||| @pref  The common high-order bits that all elements share to the left of the `brBit` bit.
-    |||        Bit at `brBit` is set to `0` and all the lesser bits to `1`.
-    ||| @brBit The largest bit position in `pref` at which two elements of the set differ.
-    ||| @left  The left child of the Binary Node.
-    ||| @right The right child of the Binary Node.
-    Bin : (pref  : Bits (S n))
+    ||| @n        Number of bits in key.
+--    ||| @leftPrf  Proof that left  subtree is not `Empty`
+--    ||| @rightPrf Proof that right subtree is not `Empty`
+    ||| @pref     The common high-order bits that all elements share to the left of
+    |||           the `brBit` bit. Bit at `brBit` is set to `0` and all the lesser bits to `1`.
+    ||| @brBit    The largest bit position in `pref` at which two elements of the set differ.
+    ||| @left     The left child of the Binary Node.
+    ||| @right    The right child of the Binary Node.
+    Bin : -- {auto leftPrf  : NonEmptyPatricia left}
+          -- {auto rightPrf : NonEmptyPatricia right}
+          (pref  : Bits (S n))
        -> (brBit : Fin (S n))
        -> (left  : IntBitMap (S n) v)
        -> (right : IntBitMap (S n) v)
        -> IntBitMap (S n) v
 
+--    ||| Invariant for `IntBitMap` that it's not empty.
+--    |||
+--    ||| @tree Tree for which invariant holds.
+--    data NonEmptyPatricia : (tree : IntBitMap n v) -> Type where
+--        ||| Invariant for `Leaf` constructor.
+--        NonEmptyLeaf : NonEmptyPatricia (Leaf key val)
+--
+--        ||| Invariant for `Bin` constructor.
+--        |||
+--        ||| @left     Implicit param for left subtree.
+--        ||| @right    Implicit param for right subtree.
+--        ||| @leftPrf  Proof that @left subtree is not empty.
+--        ||| @rightPrf Proof that @right subtree is not empty.
+--        NonEmptyBin  : {left  : IntBitMap (S n) v}
+--                    -> {right : IntBitMap (S n) v}
+--                    -> (leftPrf  : NonEmptyPatricia left)
+--                    -> (rightPrf : NonEmptyPatricia right)
+--                    -> NonEmptyPatricia (Bin pref bit left right)
+
 %name IntBitMap t, tree
+
+-- TODO: not total?
+-- Uninhabited (NonEmptyPatricia Empty) where
+--     uninhabited NonEmptyLeaf impossible
+--     uninhabited (NonEmptyBin _ _) impossible
 
 Functor (IntBitMap (S n)) where
     map f = mapGo where
