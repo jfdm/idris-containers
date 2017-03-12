@@ -108,6 +108,7 @@ Int32Map : (valTy : Type) -> Type
 Int32Map v = IntBitMap 32 v
 
 ||| `O(n)`. Number of elements in `IntBitMap`.
+public export
 size : IntBitMap (S n) v -> Nat
 size Empty = 0
 size (Leaf _ _) = 1
@@ -151,6 +152,7 @@ joinNodes {n} t1 t2 = let bBit     = branchingBit pref1 pref2
 ||| `O(min(n,W))`. Insert a new `(key,value)` pair in the `IntBitMap`.
 ||| If the key is already present in the map, the associated value is
 ||| replaced with the supplied value.
+public export
 insert : Integer -> v -> IntBitMap (S n) v -> IntBitMap (S n) v
 insert {n} key val t with (intToBits {n=S n} key)
   insert {n} key val t | bitKey = go t where
@@ -183,6 +185,7 @@ insert {n} key val t with (intToBits {n=S n} key)
 
 ||| `O(min(n,W))`. Delete `key` with corresponding `value` from `IntBitMap`.
 ||| If the key is not present in the map, the tree isn't changed.
+public export
 delete : Integer -> IntBitMap (S n) v -> IntBitMap (S n) v
 delete {n} key t with (intToBits {n=S n} key)
   delete {n} key t | bitKey = go t where
@@ -196,3 +199,14 @@ delete {n} key t with (intToBits {n=S n} key)
        else case go right of
            Empty => left
            tree  => joinNodes left tree
+
+||| Create `IntBitMap` from list of `(key, value)`.
+public export
+fromList : List (Integer, v) -> IntBitMap (S n) v
+fromList = foldl insertKeyValPair Empty where
+  insertKeyValPair : IntBitMap (S n) v -> (Integer, v) -> IntBitMap (S n) v
+  insertKeyValPair tree (key, val) = insert key val tree
+
+values : IntBitMap (S n) v -> List v
+values = toList
+-- --------------------------------------------------------------------- [ EOF ]

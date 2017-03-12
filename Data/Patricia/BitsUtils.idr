@@ -70,3 +70,5 @@ highestOneBit {n} b = bitsToFin $ shiftGo iterations b oneBit where
 
 branchingBit : Bits (S n) -> Bits (S n) -> Fin (S n)
 branchingBit p0 p1 = highestOneBit $ xor p0 p1
+
+-- --------------------------------------------------------------------- [ EOF ]
