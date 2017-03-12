@@ -180,3 +180,19 @@ insert {n} key val t with (intToBits {n=S n} key)
 -- Can't find implementation for Foldable Int32Map
 -- λΠ> toList $ the (IntBitMap 32 String) $ insert 2 "c" $ insert 4 "b" $ insert 3 "a" Empty
 -- ["c", "a", "b"] : List String
+
+||| `O(min(n,W))`. Delete `key` with corresponding `value` from `IntBitMap`.
+||| If the key is not present in the map, the tree isn't changed.
+delete : Integer -> IntBitMap (S n) v -> IntBitMap (S n) v
+delete {n} key t with (intToBits {n=S n} key)
+  delete {n} key t | bitKey = go t where
+    go : IntBitMap (S n) v -> IntBitMap (S n) v
+    go Empty = Empty
+    go lf@(Leaf oldKey val) = if oldKey == bitKey then Empty else lf
+    go (Bin pref _ left right) =
+       if bitKey <= pref then case go left of
+           Empty => right
+           tree  => joinNodes tree right
+       else case go right of
+           Empty => left
+           tree  => joinNodes left tree
