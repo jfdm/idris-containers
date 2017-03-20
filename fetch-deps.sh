@@ -7,9 +7,9 @@ cd dependencies/
 echo "Fetching Deps for Containers"
 
 echo "Fetching testing"
-git clone git@github.com:jfdm/idris-testing.git testing
+git clone https://github.com/jfdm/idris-testing.git testing
 cd testing/
-idris --install test.ipkg
+idris --build test.ipkg
 cd ../
 
 cd ../

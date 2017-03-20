@@ -1,2 +1,2 @@
 language: nix
-script: nix-shell -A idris-containers --command "bash fetch-deps.sh && idris --testpkg containers.ipkg"
+script: nix-shell -A idris-containers --command "bash fetch-deps.sh && idris --testpkg containers.ipkg --idrispath dependencies/testing"
