@@ -1,5 +1,7 @@
 #+TITLE: Containers for Idris
 
+[[https://travis-ci.org/jfdm/idris-containers][https://travis-ci.org/jfdm/idris-containers.svg?branch=master]]
+
 This packages provides containers not defined in Idris `base`, `prelude`, or `contrib` and are for use in Idris programmes. They are built:
 
 #+BEGIN_QUOTE
