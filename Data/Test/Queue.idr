@@ -17,7 +17,7 @@ test2 = genericTest (Just "Enqueue") (pushQThings [1,2,3] mkQueue) (pushQ 3 $ pu
 
 partial
 test3 : IO Bool
-test3 = genericTest (Just "Dequeue") (popQ' (pushQThings [1,2,3] mkQueue)) (Just (1, pushQThings [2,3] mkQueue)) (==)
+test3 = genericTest (Just "Dequeue") (popQ' (pushQThings [1,2,3] mkQueue)) (Just (1, setQueue Nil [2,3])) (==)
 
 
 partial
