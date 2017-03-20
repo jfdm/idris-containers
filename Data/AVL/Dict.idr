@@ -77,5 +77,12 @@ findKeyOf v (MkDict d) = Tree.findKeyOf v d
 
 (Show k, Show v) => Show (Dict k v) where
   show (MkDict d) = show d
+  
+Ord a => Functor (Dict a) where 
+  map func x = fromList $ (\(a, b) => (a, func b)) <$> toList x
+Ord a => Foldable (Dict a) where   
+  foldr func = foldr $ const func
+Ord a => Traversable (Dict a) where 
+  traverse f x = fromList <$> (traverse (\(a, b) => (MkPair a) <$> f b) $ Data.AVL.Dict.toList x)
 
 -- --------------------------------------------------------------------- [ EOF ]
