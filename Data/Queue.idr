@@ -22,6 +22,9 @@ module Data.Queue
 data Queue : (ty : Type) -> Type where
   MkQ : List a -> List a -> Queue a
 
+setQueue : List a -> List a -> Queue a
+setQueue inq outq = MkQ inq outq
+
 ||| Create an empty queue
 mkQueue : Queue ty
 mkQueue = MkQ Nil Nil
