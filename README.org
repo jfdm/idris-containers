@@ -5,7 +5,7 @@
 This packages provides containers not defined in Idris `base`, `prelude`, or `contrib` and are for use in Idris programmes. They are built:
 
 #+BEGIN_QUOTE
- primarily with existence in mind rather than a dependently typed construction. The latter /may/ will come later.
+ primarily with existence in mind rather than a dependently typed construction. The latter of which /may/ come later.
 #+END_QUOTE
 
 If you would like to contribute please see [[CONTRIBUTING.md]] that offers some guidance. At the moment I am doing some work in the =dev= branch and =master= is the stable version.
