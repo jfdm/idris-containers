@@ -62,6 +62,24 @@ testKVs = genericTest
     given : Dict Int Int
     given = Dict.fromList [(1,5), (2,6), (3,7)]
 
+-- --------------------------------------------------------- [ Implementations ]
+
+partial
+testFunctorWorksOnValues : IO Bool
+testFunctorWorksOnValues = genericTest
+    (Just "Functor works on values")
+    (Dict.toList $ (* 2) <$> Dict.fromList [("a", 1), ("b", 2)])
+    [("a", 2), ("b", 4)]
+    (==)
+    
+partial
+testTraversableTraversesOnValues : IO Bool
+testTraversableTraversesOnValues = genericTest
+    (Just "Traversable works on values")
+    (traverse Just $ Dict.fromList [("a", 1), ("b", 2)])
+    (Just $ Dict.fromList [("a", 1), ("b", 2)])
+    (==)
+    
 partial
 runTest : IO ()
 runTest = do
@@ -73,6 +91,8 @@ runTest = do
     , testUpdate
     , testHas
     , testKVs
+    , testFunctorWorksOnValues
+    , testTraversableTraversesOnValues
   ]
 
 -- --------------------------------------------------------------------- [ EOF ]
