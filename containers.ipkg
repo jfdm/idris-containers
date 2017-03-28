@@ -20,6 +20,9 @@ modules = Data.AVL.Tree
         , Data.AVL.Set
         , Data.AVL.Graph
 
+        , Data.Patricia.BitsUtils
+        , Data.Patricia.IntMap
+
         , Data.RedBlack.Tree
 
         , Data.RoseTree
@@ -34,9 +37,10 @@ modules = Data.AVL.Tree
 
         , Data.PList
 
-        , Data.Test.Stack
+        , Data.Test.Patricia
         , Data.Test.Queue
         , Data.Test.RedBlack
+        , Data.Test.Stack
 
         , Data.AVL.Test.Dict
         , Data.AVL.Test.Set
@@ -47,9 +51,10 @@ modules = Data.AVL.Tree
         , Data.List.Predicates
 
 
-tests = Data.Test.Stack.runTest
+tests = Data.Test.Patricia.runTest
       , Data.Test.Queue.runTest
       , Data.Test.RedBlack.runTest
+      , Data.Test.Stack.runTest
       , Data.AVL.Test.Dict.runTest
       , Data.AVL.Test.Set.runTest
       , Data.AVL.Test.Graph.runTest
