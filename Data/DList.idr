@@ -1,6 +1,6 @@
 -- --------------------------------------------------------------- [ DList.idr ]
 -- Module    : DList.idr
--- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
+-- Copyright : (c) 2015,2016,2017 See CONTRIBUTORS.md
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 
@@ -48,6 +48,42 @@ isNil (x::xs) = False
 isCons : DList aTy eTy as -> Bool
 isCons l = isNil l == False
 
+-- ------------------------------------------- [ Predicates that are Decidable ]
+
+data NonEmpty : (xs : DList aTy eTy as) -> Type where
+  IsNonEmpty : DList.NonEmpty (x::xs)
+
+Uninhabited (DList.NonEmpty Nil) where
+  uninhabited IsNonEmpty impossible
+
+nonEmpty : (xs : DList aTy eTy as) -> Dec (NonEmpty xs)
+nonEmpty Nil            = No absurd
+nonEmpty (elem :: rest) = Yes IsNonEmpty
+
+data InBounds : (idx : Nat)
+             -> (xs  : DList aTy eTy as)
+             -> Type
+  where
+    InFirst : DList.InBounds Z (x::rest)
+    InLater : (later : DList.InBounds idx rest)
+           -> DList.InBounds (S idx) (x :: rest)
+
+Uninhabited (DList.InBounds idx []) where
+  uninhabited InFirst impossible
+  uninhabited (InLater _) impossible
+
+inBounds : (idx : Nat)
+        -> (xs  : DList aTy eTy as)
+        -> Dec (InBounds idx xs)
+inBounds idx Nil = No uninhabited
+inBounds Z (elem :: rest) = Yes InFirst
+inBounds (S k) (elem :: rest) with (inBounds k rest)
+  inBounds (S k) (elem :: rest) | (Yes prf) = Yes $ InLater prf
+  inBounds (S k) (elem :: rest) | (No contra) =
+      No (\p => case p of
+                   InLater y => contra y)
+
+
 -- ------------------------------------------------------------------ [ Length ]
 
 length : DList aTy eTy as -> Nat
@@ -58,35 +94,42 @@ length (x::xs) = (S Z) + length xs
 
 -- TODO Safely Index the List
 
-index : (n : Nat)
+index : (idx : Nat)
+     -> (xs  : DList aTy eTy as)
+     -> {auto ok : InBounds idx xs}
+     -> DPair aTy eTy
+index Z (y :: rest) {ok = InFirst} = (_ ** y)
+index (S k) (y :: rest) {ok = (InLater later)} = index k rest
+
+index' : (n : Nat)
      -> (l : DList aTy eTy as)
      -> Maybe $ DPair aTy eTy
-index Z     (x::xs) = Just (_ ** x)
-index (S n) (x::xs) = index n xs
-index _     Nil     = Nothing
+index' Z     (x::xs) = Just (_ ** x)
+index' (S n) (x::xs) = index' n xs
+index' _     Nil     = Nothing
 
-head : (l : DList aTy eTy as)
-    -> {auto ok : isCons l = True}
+head : (xs : DList aTy eTy as)
+    -> {auto ok : NonEmpty xs}
     -> DPair aTy eTy
-head Nil     {ok=Refl}   impossible
-head (x::xs) {ok=p}    = (_ ** x)
+head (y :: rest) {ok = IsNonEmpty} = (_ ** y)
 
-tail : (l : DList aTy eTy (a :: as))
-    -> {auto ok : isCons l = True}
+tail : (xs : DList aTy eTy (a :: as))
+    -> {auto ok : NonEmpty xs}
     -> (DList aTy eTy as)
-tail Nil     {ok=Refl}   impossible
-tail (x::xs) {ok=p}    = xs
+tail (x :: rest) {ok = IsNonEmpty} = rest
 
 
-last : (l : DList aTy eTy as)
-    -> {auto ok : isCons l = True}
+last : (xs : DList aTy eTy as)
+    -> {auto ok : NonEmpty xs}
     -> DPair aTy eTy
-last Nil           {ok=Refl}  impossible
-last [x]           {ok=p}     = (_ ** x)
-last xs@(x::y::ys) {ok=p}     = last (assert_smaller xs (y::ys)) {ok=Refl}
+last (y :: []) {ok = IsNonEmpty} = (_ ** y)
+last (y :: (elem :: rest)) {ok = IsNonEmpty} = last (elem::rest) {ok=IsNonEmpty}
 
--- TODO Safely init the list
--- TODO Unsafely init the list.
+init : (xs : DList aTy eTy (a::as))
+    -> {auto ok : NonEmpty xs}
+    -> DList aTy eTy (init (a::as))
+init (x :: []) {ok = IsNonEmpty} = Nil
+init (x :: (elem :: rest)) {ok = IsNonEmpty} = x :: init (elem::rest) {ok=IsNonEmpty}
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
