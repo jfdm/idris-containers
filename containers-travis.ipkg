@@ -1,0 +1,54 @@
+package "containers-travis"
+
+author     = Jan de Muijnck-Hughes
+maintainer = Jan de Muijnck-Hughes
+license    = BSD3 but see LICENSE for more information
+brief      = "Containers."
+readme     = README.md
+
+sourceloc  = git://git@github.com:jfdm/idris-containers.git
+bugtracker = http://www.github.com/jfdm/idris-containers/issues
+
+pkgs = effects
+
+opts = "--warnreach"
+
+modules = Data.AVL.Tree
+        , Data.AVL.BTree
+        , Data.AVL.Dict
+        , Data.AVL.Set
+        , Data.AVL.Graph
+
+        , Data.RedBlack.Tree
+
+        , Data.RoseTree
+
+        , Data.Stack
+        , Data.Queue
+
+        , Data.DList
+        , Data.DList.Eff
+
+        , Data.DVect
+
+        , Data.PList
+
+        , Data.Test.Stack
+        , Data.Test.Queue
+        , Data.Test.RedBlack
+
+        , Data.AVL.Test.Dict
+        , Data.AVL.Test.Set
+        , Data.AVL.Test.Graph
+
+        , Data.DeBruijn
+
+        , Data.List.Predicates
+
+
+tests = Data.Test.Stack.runTest
+      , Data.Test.Queue.runTest
+      , Data.Test.RedBlack.runTest
+      , Data.AVL.Test.Dict.runTest
+      , Data.AVL.Test.Set.runTest
+      , Data.AVL.Test.Graph.runTest

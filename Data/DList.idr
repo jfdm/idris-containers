@@ -50,10 +50,11 @@ isCons l = isNil l == False
 
 -- ------------------------------------------- [ Predicates that are Decidable ]
 
+public export
 data NonEmpty : (xs : DList aTy eTy as) -> Type where
-  IsNonEmpty : DList.NonEmpty (x::xs)
+  IsNonEmpty : DList.NonEmpty (x::rest)
 
-Uninhabited (DList.NonEmpty Nil) where
+Uninhabited (DList.NonEmpty []) where
   uninhabited IsNonEmpty impossible
 
 nonEmpty : (xs : DList aTy eTy as) -> Dec (NonEmpty xs)
