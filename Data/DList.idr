@@ -84,7 +84,6 @@ inBounds (S k) (elem :: rest) with (inBounds k rest)
       No (\p => case p of
                    InLater y => contra y)
 
-
 -- ------------------------------------------------------------------ [ Length ]
 
 length : DList aTy eTy as -> Nat
@@ -98,21 +97,23 @@ length (x::xs) = (S Z) + length xs
 index : (idx : Nat)
      -> (xs  : DList aTy eTy as)
      -> {auto ok : InBounds idx xs}
-     -> DPair aTy eTy
-index Z (y :: rest) {ok = InFirst} = (_ ** y)
-index (S k) (y :: rest) {ok = (InLater later)} = index k rest
+     -> {auto ok' : List.InBounds idx as}
+     -> eTy (index idx as)
+index Z (y :: rest) {ok = InFirst} = y
+index (S k) (y :: rest) {ok = (InLater later)} {ok' = (InLater x)} = index k rest
 
 index' : (n : Nat)
-     -> (l : DList aTy eTy as)
-     -> Maybe $ DPair aTy eTy
+      -> (l : DList aTy eTy as)
+      -> Maybe $ DPair aTy eTy
 index' Z     (x::xs) = Just (_ ** x)
 index' (S n) (x::xs) = index' n xs
 index' _     Nil     = Nothing
 
-head : (xs : DList aTy eTy as)
+head : (xs : DList aTy eTy (a::as))
     -> {auto ok : NonEmpty xs}
-    -> DPair aTy eTy
-head (y :: rest) {ok = IsNonEmpty} = (_ ** y)
+    -> {auto ok' : NonEmpty as}
+    -> eTy a
+head (y :: rest) {ok = IsNonEmpty} {ok' = IsNonEmpty} = y
 
 tail : (xs : DList aTy eTy (a :: as))
     -> {auto ok : NonEmpty xs}
@@ -122,15 +123,19 @@ tail (x :: rest) {ok = IsNonEmpty} = rest
 
 last : (xs : DList aTy eTy as)
     -> {auto ok : NonEmpty xs}
-    -> DPair aTy eTy
-last (y :: []) {ok = IsNonEmpty} = (_ ** y)
-last (y :: (elem :: rest)) {ok = IsNonEmpty} = last (elem::rest) {ok=IsNonEmpty}
+    -> {auto ok' : NonEmpty as}
+    -> eTy (last as)
+last [] {ok = IsNonEmpty} {ok' = _} impossible
+last (elem :: []) {ok = ok} {ok' = ok'} = elem
+last (elem :: (y :: rest)) {ok = ok} {ok' = ok'} = last (y::rest)
 
-init : (xs : DList aTy eTy (a::as))
-    -> {auto ok : NonEmpty xs}
-    -> DList aTy eTy (init (a::as))
-init (x :: []) {ok = IsNonEmpty} = Nil
-init (x :: (elem :: rest)) {ok = IsNonEmpty} = x :: init (elem::rest) {ok=IsNonEmpty}
+init : (xs : DList aTy eTy as)
+    -> {auto ok  : NonEmpty xs}
+    -> {auto ok' : NonEmpty as}
+    -> DList aTy eTy (init as)
+init [] {ok = IsNonEmpty} {ok' = _} impossible
+init (elem :: []) {ok = ok} {ok' = ok'} = []
+init (elem :: (y :: rest)) {ok = ok} {ok' = ok'} = elem :: init (y::rest)
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
@@ -143,21 +148,21 @@ init (x :: (elem :: rest)) {ok = IsNonEmpty} = x :: init (elem::rest) {ok=IsNonE
 -- TODO replicate
 
 replicate : {a : aTy}
-         -> Nat
+         -> (n : Nat)
          -> elemTy a
-         -> (as : List aTy ** DList aTy elemTy as)
-replicate Z     x = (_ ** Nil)
-replicate (S Z) x = (_ ** DList.(::) x Nil)
-replicate (S n) x = (_ ** DList.(::) x (snd (replicate n x)))
+         -> DList aTy elemTy (replicate n a)
+replicate Z x = Nil
+replicate (S Z) x = [x]
+replicate (S k) x = x :: replicate k x
 
 -- ---------------------------------------------------------------- [ SubLists ]
 
-take : Nat
+take : (n : Nat)
     -> DList aTy elemTy as
-    -> (bs : List aTy ** DList aTy elemTy bs)
-take Z     xs      = (_ ** Nil)
-take (S n) Nil     = (_ ** Nil)
-take (S n) (x::xs) = (_ ** DList.(::) x (snd (take n xs)))
+    -> DList aTy elemTy (take n as)
+take Z rest = Nil
+take (S k) [] = []
+take (S k) (elem :: rest) = elem :: take k rest
 
 takeWhile : ({a : aTy} -> elemTy a -> Bool)
          -> DList aTy elemTy as
@@ -168,12 +173,12 @@ takeWhile p (x::xs) =
       then (_ ** DList.(::) x (snd (takeWhile p xs)))
       else (_ ** Nil)
 
-drop : Nat
+drop : (n : Nat)
     -> DList aTy elemTy as
-    -> (bs : List aTy ** DList aTy elemTy bs)
-drop Z     xs      = (_ ** Nil)
-drop (S n) Nil     = (_ ** Nil)
-drop (S n) (x::xs) = (_ ** snd (drop n xs))
+    -> DList aTy elemTy (drop n as)
+drop Z     rest = rest
+drop (S k) [] = []
+drop (S k) (elem :: rest) = drop k rest
 
 dropWhile : ({a : aTy} -> elemTy a -> Bool)
          -> DList aTy elemTy as
@@ -217,13 +222,15 @@ cmpDList eq cmp (x::xs) (y::ys) =
 
 foldr : ({a : aTy} -> elemTy a -> p -> p)
      -> p
-     -> DList aTy elemTy as -> p
+     -> DList aTy elemTy as
+     -> p
 foldr f init Nil     = init
 foldr f init (x::xs) = f x (DList.foldr f init xs)
 
 foldl : ({a : aTy} -> p -> elemTy a -> p)
       -> p
-      -> DList aTy elemTy as -> p
+      -> DList aTy elemTy as
+      -> p
 foldl f init Nil = init
 foldl f init (x::xs) = DList.foldl f (f init x) xs
 
@@ -269,22 +276,10 @@ toLDP (x::xs) = (_**x) :: toLDP xs
 fromList : {ty : Type}
         -> {e : ty -> Type}
         -> {x : ty}
-        -> List (e x)
-        -> (es : List ty ** DList ty e es)
-fromList Nil     = (_ ** DList.Nil)
-fromList (x::xs) = (_ ** DList.(::) x (snd (fromList xs)))
-
-toLDP' : {ty : Type} -> {x : ty} -> {e : ty -> Type}
-      -> List (e x) -> List (x : ty ** e x)
-toLDP' Nil     = Nil
-toLDP' (x::xs) = (_ ** x) :: toLDP' xs
-
-fromList' : {ty : Type}
-       -> {e : ty -> Type}
-       -> {x : ty}
-       -> List (e x)
-       -> (es : List ty ** DList ty e es)
-fromList' xs = fromLDP $ toLDP' xs
+        -> (es : List (e x))
+        -> DList ty e (replicate (length es) x)
+fromList [] = Nil
+fromList (x :: xs) = x :: fromList xs
 
 -- -------------------------------------------------------- [ Membership Tests ]
 
