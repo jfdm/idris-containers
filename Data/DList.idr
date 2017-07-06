@@ -61,6 +61,7 @@ nonEmpty : (xs : DList aTy eTy as) -> Dec (NonEmpty xs)
 nonEmpty Nil            = No absurd
 nonEmpty (elem :: rest) = Yes IsNonEmpty
 
+public export
 data InBounds : (idx : Nat)
              -> (xs  : DList aTy eTy as)
              -> Type
@@ -86,14 +87,14 @@ inBounds (S k) (elem :: rest) with (inBounds k rest)
 
 -- ------------------------------------------------------------------ [ Length ]
 
+public export
 length : DList aTy eTy as -> Nat
 length Nil     = Z
 length (x::xs) = (S Z) + length xs
 
 -- ---------------------------------------------------------------- [ Indexing ]
 
--- TODO Safely Index the List
-
+public export
 index : (idx : Nat)
      -> (xs  : DList aTy eTy as)
      -> {auto ok : InBounds idx xs}
@@ -102,25 +103,21 @@ index : (idx : Nat)
 index Z (y :: rest) {ok = InFirst} = y
 index (S k) (y :: rest) {ok = (InLater later)} {ok' = (InLater x)} = index k rest
 
-index' : (n : Nat)
-      -> (l : DList aTy eTy as)
-      -> Maybe $ DPair aTy eTy
-index' Z     (x::xs) = Just (_ ** x)
-index' (S n) (x::xs) = index' n xs
-index' _     Nil     = Nothing
-
+public export
 head : (xs : DList aTy eTy (a::as))
     -> {auto ok : NonEmpty xs}
-    -> {auto ok' : NonEmpty as}
+    -> {auto ok' : NonEmpty (a::as)}
     -> eTy a
 head (y :: rest) {ok = IsNonEmpty} {ok' = IsNonEmpty} = y
 
+public export
 tail : (xs : DList aTy eTy (a :: as))
     -> {auto ok : NonEmpty xs}
     -> (DList aTy eTy as)
 tail (x :: rest) {ok = IsNonEmpty} = rest
 
 
+public export
 last : (xs : DList aTy eTy as)
     -> {auto ok : NonEmpty xs}
     -> {auto ok' : NonEmpty as}
@@ -129,6 +126,7 @@ last [] {ok = IsNonEmpty} {ok' = _} impossible
 last (elem :: []) {ok = ok} {ok' = ok'} = elem
 last (elem :: (y :: rest)) {ok = ok} {ok' = ok'} = last (y::rest)
 
+public export
 init : (xs : DList aTy eTy as)
     -> {auto ok  : NonEmpty xs}
     -> {auto ok' : NonEmpty as}
@@ -139,24 +137,23 @@ init (elem :: (y :: rest)) {ok = ok} {ok' = ok'} = elem :: init (y::rest)
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
+public export
 (++) : DList aTy eTy xs
     -> DList aTy eTy ys
     -> DList aTy eTy (xs ++ ys)
 (++) Nil     ys = ys
 (++) (x::xs) ys = x :: (xs ++ ys)
 
--- TODO replicate
-
-replicate : {a : aTy}
-         -> (n : Nat)
+public export
+replicate : (n : Nat)
          -> elemTy a
          -> DList aTy elemTy (replicate n a)
 replicate Z x = Nil
-replicate (S Z) x = [x]
 replicate (S k) x = x :: replicate k x
 
 -- ---------------------------------------------------------------- [ SubLists ]
 
+public export
 take : (n : Nat)
     -> DList aTy elemTy as
     -> DList aTy elemTy (take n as)
@@ -173,6 +170,7 @@ takeWhile p (x::xs) =
       then (_ ** DList.(::) x (snd (takeWhile p xs)))
       else (_ ** Nil)
 
+public export
 drop : (n : Nat)
     -> DList aTy elemTy as
     -> DList aTy elemTy (drop n as)
