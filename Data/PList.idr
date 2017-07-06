@@ -12,85 +12,161 @@
 ||| predicate.
 module Data.PList
 
-import Data.List.Quantifiers
 import public Data.DList
 
 %access export
 %default total
 
-||| A list construct for predicated lists.
-|||
-||| @aTy    The type of the value contained within the list element type.
-||| @elemTy The type of the elements within the list.
-||| @pred   The predicate that each value must satisfy.
-||| @prf    The `DList` to collect the proofs that the predicate holds.
-||| @as     The List used to contain the different values within the type.
 public export
 data PList : (aTy    : Type)
           -> (elemTy : aTy -> Type)
-          -> (pred   : aTy -> Type)
-          -> (prf    : DList aTy pred ps)
+          -> (predTy : aTy -> Type)
           -> (as     : List aTy)
-          -> Type where
-  ||| Create an empty List
-  Nil  : PList aTy elemTy p DList.Nil List.Nil
-  ||| Cons
-  |||
-  ||| @elem The element to add
-  ||| @rest The list for `elem` to be added to.
-  ||| @prf  The proof.
-  (::) : {x : aTy}
-      -> (elem : elemTy x)
-      -> (rest : PList aTy elemTy p prfs xs)
-      -> {auto prf  : p x}
-      -> PList aTy elemTy p (DList.(::) prf prfs) (List.(::) x xs)
+          -> (prf    : DList aTy predTy as)
+          -> Type
+  where
+    ||| Create an empty List
+    Nil  : PList aTy elemTy predTy Nil Nil
 
+    ||| Cons
+    |||
+    ||| @elem The element to add and proof that the element's type satisfies a certain predicate.
+    ||| @rest The list for `elem` to be added to.
+    (::) : (elem : elemTy x)
+        -> {prf : predTy x}
+        -> (rest : PList aTy elemTy predTy xs prfs)
+        -> PList aTy elemTy predTy (x :: xs) (prf :: prfs)
+
+(++) : PList aTy eTy pTy as pAs
+    -> PList aTy eTy pTy bs pBs
+    -> PList aTy eTy pTy (as ++ bs) (pAs ++ pBs)
+(++) [] ys = ys
+(++) (elem :: rest) ys = elem :: rest ++ ys
+
+empty : PList aTy eTy pTy Nil Nil
+empty = Nil
+
+add  : (elem : elemTy x)
+    -> {auto prf : predTy x}
+    -> (rest : PList aTy elemTy predTy xs prfs)
+    -> PList aTy elemTy predTy (x :: xs) (prf :: prfs)
+add x {prf} rest = x :: rest
 
 -- -------------------------------------------------------------- [ Form Tests ]
-isNil : PList aTy eTy p prfs as -> Bool
-isNil Nil     = True
-isNil (x::xs) = False
+isNil : PList aTy eTy p as prfs -> Bool
+isNil [] = True
+isNil (elem :: rest) = False
 
-isCons : PList aTy eTy p prfs as -> Bool
+isCons : PList aTy eTy p as prfs -> Bool
 isCons l = isNil l == False
 
 -- ------------------------------------------------------------------ [ Length ]
 
-length : PList aTy eTy p prfs as -> Nat
+length : PList aTy eTy p as prfs -> Nat
 length Nil     = Z
 length (x::xs) = (S Z) + length xs
 
 -- ---------------------------------------------- [ List-Based Transformations ]
 
-toDList : PList aTy eTy p prfs as -> DList aTy eTy as
+toDList : PList aTy eTy p as prfs -> DList aTy eTy as
 toDList Nil     = Nil
-toDList (x::xs) = DList.(::) x (toDList xs)
+toDList (elem::xs) = elem :: toDList xs
 
--- --------------------------------------------------------- [ Transformations ]
--- TODO fromLDP
--- TODO toLDP
--- TODO fromList
--- TODO fromDList
+toList : PList aTy eTy pTy as prfs -> List (a : aTy ** prf : pTy a ** eTy a)
+toList [] = []
+toList ((::) elem {x} {prf} rest) = (x ** prf ** elem) :: toList rest
 
-fromList : (p : pTy a)
-        -> List (eTy a)
-        -> (as : List aTy
-           ** prfs : DList aTy pTy as
-           ** PList aTy eTy pTy prfs as)
-fromList p Nil = (_ ** _ ** PList.Nil)
-fromList p [x] = (_ ** _ ** PList.(::) {prf=p} x PList.Nil)
-fromList p (x::xs) =
-      let (as' ** prfs' ** rest) = fromList {aTy} p xs
-       in (_ ** _ ** PList.(::) {prf=p} x rest)
+fromDList : (xs   : DList aTy eTy as)
+         -> (prfs : DList aTy pTy as)
+         -> PList aTy eTy pTy as prfs
+fromDList [] [] = []
+fromDList (elem :: rest) (prf :: prfs) = elem :: fromDList rest prfs
+
+fromList : (prf : predTy a)
+        -> (xs  : List $ elemTy a)
+        -> PList aTy elemTy predTy (replicate (length xs) a)
+                                   (replicate (length xs) prf)
+fromList prf [] = []
+fromList prf (x :: xs) = x :: fromList prf xs
 
 -- ---------------------------------------------------------------- [ Indexing ]
 
--- TODO index
--- TODO head
--- TODO tail
--- TODO last
--- TODO Safely init the list
--- TODO Unsafely init the list.
+public export
+data NonEmpty : (xs : PList aTy eTy pTy as prfs) -> Type where
+  IsNonEmpty : PList.NonEmpty (x::rest)
+
+Uninhabited (PList.NonEmpty []) where
+  uninhabited IsNonEmpty impossible
+
+nonEmpty : (xs : PList aTy eTy pTy as prfs) -> Dec (NonEmpty xs)
+nonEmpty [] = No absurd
+nonEmpty (elem :: rest) = Yes IsNonEmpty
+
+public export
+data InBounds : (idx : Nat)
+             -> (xs : PList aTy eTy pTy as prfs)
+             -> Type
+  where
+    InFirst : PList.InBounds Z (x::rest)
+    InLater : (later : PList.InBounds idx rest)
+           -> PList.InBounds (S idx) (x::rest)
+
+Uninhabited (PList.InBounds idx []) where
+  uninhabited InFirst impossible
+  uninhabited (InLater _) impossible
+
+inBounds : (idx : Nat)
+        -> (xs  : PList aTy eTy pTy as prfs)
+        -> Dec (InBounds idx xs)
+inBounds idx Nil = No uninhabited
+inBounds Z (elem :: rest) = Yes InFirst
+inBounds (S k) (elem :: rest) with (inBounds k rest)
+  inBounds (S k) (elem :: rest) | (Yes prf) = Yes $ InLater prf
+  inBounds (S k) (elem :: rest) | (No contra) =
+      No (\p => case p of
+                   InLater y => contra y)
+
+index : (idx : Nat)
+     -> (xs : PList aTy eTy pTy as prfs)
+     -> {auto ok   : InBounds idx xs}
+     -> {auto ok'  : InBounds idx as}
+     -> {auto ok'' : InBounds idx prfs}
+     -> eTy (index idx as)
+index Z (y :: rest) {ok = InFirst} = y
+index (S k) (y :: rest) {ok = (InLater later)} {ok' = (InLater later')} {ok'' = (InLater later'')} = PList.index k rest
+
+head : (xs : PList aTy eTy pTy (a::as) prfs)
+    -> {auto ok   : NonEmpty xs}
+    -> {auto ok'  : NonEmpty (a::as)}
+    -> {auto ok'' : NonEmpty prfs}
+    -> eTy a
+head (elem :: rest) = elem
+
+tail : (xs : PList aTy eTy pTy (a::as) (p::prfs))
+    -> {auto ok   : NonEmpty xs}
+    -> {auto ok'  : NonEmpty (a::as)}
+    -> {auto ok'' : NonEmpty (p::prfs)}
+    -> PList aTy eTy pTy as prfs
+tail (elem :: rest) = rest
+
+last : (xs : PList aTy eTy pTy as prfs)
+    -> {auto ok   : NonEmpty xs}
+    -> {auto ok'  : NonEmpty as}
+    -> {auto ok'' : NonEmpty prfs}
+    -> eTy (last as)
+last [] {ok = IsNonEmpty} impossible
+last (elem :: []) {ok = ok} {ok' = ok'} {ok'' = ok''} = elem
+last (elem :: ((::) {prf} y rest)) {ok = ok} {ok' = ok'} {ok'' = ok''} = last $ (::) y rest {prf=prf}
+
+init : (xs : PList aTy eTy pTy as prfs)
+    -> {auto ok   : NonEmpty xs}
+    -> {auto ok'  : NonEmpty as}
+    -> {auto ok'' : NonEmpty prfs}
+    -> PList aTy eTy pTy (init as) (init {ok=ok''} prfs)
+init (y :: []) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = []
+init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = y :: init (elem :: rest)
+
+
 
 -- --------------------------------------------------------- [ Bob The Builder ]
 
