@@ -92,6 +92,9 @@ length : DList aTy eTy as -> Nat
 length Nil     = Z
 length (x::xs) = (S Z) + length xs
 
+Sized (DList aTy eTy as) where
+  size = length
+
 -- ---------------------------------------------------------------- [ Indexing ]
 
 public export
@@ -234,11 +237,11 @@ foldl f init (x::xs) = DList.foldl f (f init x) xs
 
 -- ----------------------------------------------------------------- [ Functor ]
 
-mapDList : ({a : aTy} -> elemTy a -> b)
+map : ({a : aTy} -> elemTy a -> b)
        -> DList aTy elemTy as
        -> List b
-mapDList f Nil     = List.Nil
-mapDList f (x::xs) = with List f x :: mapDList f xs
+map f Nil     = List.Nil
+map f (x::xs) = with List f x :: DList.map f xs
 
 -- TODO map from one DList to another.
 
@@ -251,7 +254,11 @@ mapMaybe f (x::xs) =
     Nothing => mapMaybe f xs
     Just y  => y :: mapMaybe f xs
 
--- TODO mapMaybe from one DList to another
+concatMap : Monoid m
+         => (func : {a : aTy} -> elemTy a -> m)
+         -> (xs : DList aTy elemTy as)
+         -> m
+concatMap f = foldr (\e, res => f e <+> res) neutral
 
 -- --------------------------------------------------------- [ Transformations ]
 -- TODO

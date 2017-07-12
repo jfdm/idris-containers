@@ -12,6 +12,7 @@
 ||| predicate.
 module Data.PList
 
+import public Data.List
 import public Data.DList
 
 %access export
@@ -65,6 +66,21 @@ isCons l = isNil l == False
 length : PList aTy eTy p as prfs -> Nat
 length Nil     = Z
 length (x::xs) = (S Z) + length xs
+
+Sized (PList aTy eTy pTy as prfs) where
+  size = length
+
+eqPList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+       -> PList aTy elemTy predTy as aPrfs
+       -> PList aTy elemTy predTy bs bPrfs
+       -> Bool
+eqPList _ Nil     Nil     = True
+eqPList p (x::xs) (y::ys) =
+  if p x y
+    then eqPList p xs ys
+    else False
+eqPList _ _       _       = False
+
 
 -- ---------------------------------------------- [ List-Based Transformations ]
 
@@ -166,6 +182,46 @@ init : (xs : PList aTy eTy pTy as prfs)
 init (y :: []) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = []
 init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = y :: init (elem :: rest)
 
+public export
+data Elem : (aTy    : Type)
+         -> (elemTy : aTy -> Type)
+         -> (predTy : aTy -> Type)
+         -> (a : aTy)
+         -> (x : elemTy a)
+         -> (prf : predTy a)
+         -> (xs   : PList aTy elemTy predTy as prfs)
+         -> (prfA : Elem a as)
+         -> (prfP : DElem aTy predTy prf prfs prfA)
+         -> Type
+  where
+    Hier  : PList.Elem aTy eTy pTy a x p (x::xs) Here Hier
+    Er    : (rest : PList.Elem aTy eTy pTy a x p xs prfA prfP)
+         -> PList.Elem aTy eTy pTy a x p (x'::xs) (There prfA) (DList.Er prfP)
+
+Uninhabited (PList.Elem aTy eTy pTy a x prf Nil prfA prfP) where
+  uninhabited Hier impossible
+  uninhabited (Er _) impossible
+
+dropElem : (as   : PList iTy elemTy predTy is prfs)
+        -> (idxP : Elem iTy elemTy predTy i e prf as prfA prfP)
+        -> PList iTy elemTy predTy (dropElem is prfA) (dropElem prfs prfP)
+dropElem (e :: x) Hier = x
+dropElem (x :: z) (Er rest) = x :: dropElem z rest
+
+delete' : (x  : elemTy i)
+       -> (xs : PList iTy elemTy predTy is prfs)
+       -> (idxVal : Elem i is)
+       -> (idxPrf : DElem iTy predTy prf prfs idxVal)
+       -> PList iTy elemTy predTy (dropElem is idxVal) (dropElem prfs idxPrf)
+delete' x (elem :: rest) Here Hier = rest
+delete' x (elem :: rest) (There later) (Er komst) = elem :: delete' x rest later komst
+
+delete : (x  : elemTy i)
+      -> (xs : PList iTy elemTy predTy is prfs)
+      -> {auto idxVal : Elem i is}
+      -> {auto idxPrf : DElem iTy predTy prf prfs idxVal}
+      -> PList iTy elemTy predTy (dropElem is idxVal) (dropElem prfs idxPrf)
+delete x xs {idxVal} {idxPrf} = delete' x xs idxVal idxPrf
 
 
 -- --------------------------------------------------------- [ Bob The Builder ]
@@ -187,12 +243,44 @@ init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' =
 
 -- ----------------------------------------------------------------- [ Folding ]
 -- TODO foldr and foldl
+foldr : ({a : aTy} -> elemTy a -> p -> p)
+     -> p
+     -> PList aTy elemTy predTy as prfs
+     -> p
+foldr f init Nil     = init
+foldr f init (x::xs) = f x (PList.foldr f init xs)
+
+foldl : ({a : aTy} -> p -> elemTy a -> p)
+      -> p
+      -> PList aTy elemTy predTy as prfs
+      -> p
+foldl f init Nil = init
+foldl f init (x::xs) = PList.foldl f (f init x) xs
 
 -- ----------------------------------------------------------------- [ Functor ]
--- TODO mapPList
--- TODO map from one PList to another.
--- TODO mapMaybe
--- TODO mapMaybe from one DList to another
+
+map : ({a : aTy} -> elemTy a -> b)
+   -> PList aTy elemTy predTy as prf
+   -> List b
+map f Nil     = List.Nil
+map f (x::xs) = with List f x :: map f xs
+
+
+mapMaybe : ({a : aTy} -> elemTy a -> Maybe b)
+         -> PList aTy elemTy predTy as prfs
+         -> List b
+mapMaybe f Nil     = Nil
+mapMaybe f (x::xs) =
+  case f x of
+    Nothing => mapMaybe f xs
+    Just y  => y :: mapMaybe f xs
+
+concatMap : Monoid m
+         => (func : {a : aTy} -> elemTy a -> m)
+         -> (xs : PList aTy elemTy predTy as prfs)
+         -> m
+concatMap f = foldr (\e, res => f e <+> res) neutral
+
 
 -- -------------------------------------------------------- [ Membership Tests ]
 -- TODO make deceq tests
@@ -227,5 +315,16 @@ init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' =
 
 -- -------------------------------------------------------------------- [ Show ]
 
--- TODO show
+private
+doPListShow : ({a : aTy} -> elemTy a -> String)
+           -> PList aTy elemTy predTy as prfs
+           -> List String
+doPListShow _  Nil     = Nil
+doPListShow f  (x::xs) = (f x) :: doPListShow f xs
+
+showPList : (showFunc : {a : aTy} -> elemTy a -> String)
+         -> (l : PList aTy elemTy predTy as prfs)
+         -> String
+showPList f xs = "[" ++ unwords (intersperse "," (doPListShow f xs)) ++ "]"
+
 -- --------------------------------------------------------------------- [ EOF ]
