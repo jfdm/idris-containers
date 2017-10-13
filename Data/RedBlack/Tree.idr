@@ -5,68 +5,121 @@
 -- http://www.cs.kent.ac.uk/people/staff/smk/redblack/Untyped.hs
 module Data.RedBlack.Tree
 
+%default total
 %access export
 
+-- ------------------------------------------------------------- [ Definitions ]
 private
 data Colour = R | B
 
-data Tree : Type -> Type where
-  Empty : Tree a
-  Node  : Colour -> a -> Tree a -> Tree a -> Tree a
+||| The core tree key-value data structure used to represent an
+||| Red-Black Tree.
+|||
+||| This structure doesn't encode the invariants of the tree and is
+||| *simply* a container. This structure ideally shouldn't be exposed
+||| to the user at all. This structure should be used to build other
+||| data structures.  See the modules alongside this for appropriate
+||| interfaces for using the tree.
+|||
+||| @keyTy The type associated with the key.
+||| @valTy The type associated with the value.
+data Tree : (keyTy : Type)
+         -> (valTy : Type)
+         -> Type
+  where
+    ||| An empty Tree node.
+    Empty : Tree k v
 
+    ||| A Key Value node in the Tree.
+    |||
+    ||| @key   The key.
+    ||| @val   The value associated with the key.
+    ||| @left  The left child of the Node
+    ||| @right THe right child of the Node.
+    Node : Colour
+        -> (key   : k)
+        -> (val   : v)
+        -> (left  : Tree k v)
+        -> (right : Tree k v)
+        -> Tree k v
 
-balance : a -> Tree a -> Tree a -> Tree a
-balance y (Node R x a              b) (Node R z c d) = Node R y (Node B x a b) (Node B z c d)
-balance z (Node R y (Node R x a b) c) d              = Node R y (Node B x a b) (Node B z c d)
-balance z (Node R x a                 (Node R y b c)) d = Node R y (Node B x a b) (Node B z c d)
-balance x a                           (Node R y b (Node R z c d)) = Node R y (Node B x a b) (Node B z c d)
-balance x a                           (Node R z (Node R y b c) d) = Node R y (Node B x a b) (Node B z c d)
-balance x a                           b = Node B x a b
+%name Tree t, tree
+
+-- --------------------------------------------------------------- [ Balancing ]
 
 private
-ins : Ord a => a -> Tree a -> Tree a
-ins x Empty            = Node R x Empty Empty
-ins x t@(Node B y a b) =
+balance : k -> v -> Tree k v -> Tree k v -> Tree k v
+balance y vy (Node R x vx a              b)    (Node R z vz c d)                 = Node R y vy (Node B x vx a b) (Node B z vz c d)
+balance z vz (Node R y vy (Node R x vx a b) c) d                                 = Node R y vy (Node B x vx a b) (Node B z vz c d)
+balance z vz (Node R x vx a                    (Node R y vy b c)) d              = Node R y vy (Node B x vx a b) (Node B z vz c d)
+balance x vx a                                 (Node R y vy b (Node R z vz c d)) = Node R y vy (Node B x vx a b) (Node B z vz c d)
+balance x vx a                                 (Node R z vz (Node R y vy b c) d) = Node R y vy (Node B x vx a b) (Node B z vz c d)
+balance x vx a                                 b                                 = Node B x vx a b
+
+-- --------------------------------------------------------------- [ Insertion ]
+
+private
+ins : Ord k => k -> v -> Tree k v -> Tree k v
+ins x vx Empty            = Node R x vx Empty Empty
+ins x vx t@(Node B y vy a b) =
     case compare x y of
-        LT => balance y (ins x a) b
-        GT => balance y a         (ins x b)
+        LT => balance y vy (ins x vx a) b
+        GT => balance y vy a            (ins x vx b)
         EQ => t
-ins x t@(Node R y a b) =
+ins x vx t@(Node R y vy a b) =
     case compare x y of
-        LT => Node R y (ins x a) b
-        GT => Node R y a         (ins x b)
+        LT => Node R y vy (ins x vx a) b
+        GT => Node R y vy a            (ins x vx b)
         EQ => t
 
 
-foldr : (step : a -> p -> p) -> (init : p) -> Tree a -> p
-foldr step init n = foldr' step init n
-  where
-    foldr' : (a -> p -> p) -> p -> Tree a -> p
-    foldr' step' init' Empty = init'
-    foldr' step' init' (Node _ val l r) = foldr' step' (step' val (foldr' step' init' r)) l
+-- --------------------------------------- [ Public API for working with Trees ]
 
-
-size : Tree a -> Nat
-size t = Tree.foldr (\_,res => S res) Z t
-
-contains : Ord a => a -> Tree a -> Bool
-contains x Empty = False
-contains x (Node _ y l r) =
-  case compare x y of
-    LT => contains x l
-    GT => contains x r
-    EQ => True
-
-
-empty : Tree a
+||| An empty tree
+empty : Tree k v
 empty = Empty
 
-insert : Ord a => a -> Tree a -> Tree a
-insert x s = let Node _ z l r = ins x s in Node B z l r
+||| Insert a key value pair into the tree, returning a the new tree
+||| and possibly its new height.
+insert : Ord k => k -> v -> Tree k v -> Tree k v
+insert x vx s =
+  case ins x vx s of
+      Empty => Empty  -- imposisible, but make the totallity checker happy until we add dependent types
+      Node _ z vz l r => Node B z vz l r
 
-toList : Tree a -> List a
-toList Empty = Nil
-toList (Node _ y l r) = Tree.toList l ++ [y] ++ Tree.toList r
+||| Find a value in the tree.
+lookup : (Ord k) => k -> Tree k v -> Maybe v
+lookup key t = lookup' key t
+  where
+    lookup' : (Ord k) => k -> Tree k v -> Maybe v
+    lookup' key Empty = Nothing
+    lookup' key (Node _ key' value' l r) with (compare key key')
+      lookup' key (Node _ key' value' l r) | LT = lookup' key l
+      lookup' key (Node _ key' value' l r) | EQ = Just value'
+      lookup' key (Node _ key' value' l r) | GT = lookup' key r
 
-fromList : Ord a => List a -> Tree a
-fromList xs = foldl (flip $ insert) empty xs
+||| Perform a right fold over the tree.
+foldr : (step : k -> v -> p -> p)
+     -> (init : p)
+     -> Tree k v
+     -> p
+foldr step init n = foldr' step init n
+  where
+    foldr' : (k -> v -> p -> p) -> p -> Tree k v -> p
+    foldr' step' init' Empty = init'
+    foldr' step' init' (Node _ key val l r) = foldr' step' (step' key val (foldr' step' init' r)) l
+
+||| Construct a AVL Tree from an association list.
+fromList : (Ord k) => List (k, v)
+                   -> (Tree k v)
+fromList xs = foldl (flip $ uncurry insert) Empty xs
+
+||| Flatten the tree to an association list.
+toList : Tree k v -> List (k, v)
+toList = foldr (\k,v,xs => (k, v) :: xs) []
+
+size : Tree k v -> Nat
+size t = Tree.foldr (\_,_,res => S res) Z t
+
+
+-- --------------------------------------------------------------------- [ EOF ]
