@@ -21,7 +21,7 @@ import Data.RedBlack.Tree
 ||| @ty The type of the elements in the tree.
 data BTree : (ty : Type) -> Type
     where
-      MkTree : {a : Type} -> Tree a Unit -> BTree a
+      MkTree : {a : Type} -> RBTree n B a Unit -> BTree a
 
 -- --------------------------------------------------------------------- [ API ]
 
@@ -31,7 +31,8 @@ empty = MkTree empty
 
 ||| Insert an element into the Tree.
 insert : (Ord a) => a -> BTree a -> BTree a
-insert a (MkTree t) = MkTree (Tree.insert a () t)
+insert a (MkTree t) = case Tree.insert a () t of
+  (_ ** t') => MkTree t'
 
 ||| Does the tree contain the given element?
 contains : (Ord a) => a -> BTree a -> Bool
