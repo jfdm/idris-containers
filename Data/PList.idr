@@ -230,9 +230,24 @@ delete x xs {idxVal} {idxPrf} = delete' x xs idxVal idxPrf
 -- TODO replicate
 
 -- ---------------------------------------------------------------- [ SubLists ]
--- TODO take
+
+take : (n : Nat)
+    -> (xs : PList aTy elemTy predTy as prfs)
+    -> PList aTy elemTy predTy (take n as) (take n prfs)
+take Z     xs             = Nil
+take (S k) []             = Nil
+take (S k) (elem :: rest) = elem :: take k rest
+
 -- TODO takeWhile
+
 -- TODO drop
+drop : (n : Nat)
+    -> (xs : PList aTy elemTy predTy as prfs)
+    -> PList aTy elemTy predTy (drop n as) (drop n prfs)
+drop Z     rest           = rest
+drop (S k) []             = Nil
+drop (S k) (elem :: rest) = drop k rest
+
 -- TODO dropWhile
 
 -- ---------------------------------------------------------------- [ Equality ]
