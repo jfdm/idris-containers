@@ -179,8 +179,8 @@ init : (xs : PList aTy eTy pTy as prfs)
     -> {auto ok'  : NonEmpty as}
     -> {auto ok'' : NonEmpty prfs}
     -> PList aTy eTy pTy (init as) (init {ok=ok''} prfs)
-init (y :: []) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = []
-init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty'} {ok'' = IsNonEmpty''} = y :: init (elem :: rest)
+init (y :: []) {ok = IsNonEmpty} {ok' = IsNonEmpty} {ok'' = IsNonEmpty} = []
+init (y :: ((::) {prf} elem rest)) {ok = IsNonEmpty} {ok' = IsNonEmpty} {ok'' = IsNonEmpty} = y :: init (elem :: rest)
 
 public export
 data Elem : (aTy    : Type)
