@@ -1,0 +1,22 @@
+#+TITLE: Installation Guide.
+
+Containers should work with any idris version.
+
+To install you can run the following commands:
+
+#+BEGIN_SRC bash
+  make install
+#+END_SRC
+
+There are other commands provided by the `Makefile`.
+
+Idris container's currently depends on a separate package called
+testing. I am hoping to migrate the testing code to the one I
+contributed to `contrib` a couple of moons ago. In that time you will
+need to install idris-testing.
+
+The shell script `fetch-deps.sh` should fetch the deps for you and
+build the script locally. I use this script when testing the package
+with travis. You will manually have to install testing.
+
+Sorry about that.
