@@ -1,4 +1,4 @@
-package "containers-travis"
+package containers-travis
 
 author     = Jan de Muijnck-Hughes
 maintainer = Jan de Muijnck-Hughes

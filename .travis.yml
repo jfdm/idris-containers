@@ -1,2 +1,5 @@
-language: nix
-script: nix-shell -A idris-containers --command "bash fetch-deps.sh && idris --testpkg containers-travis.ipkg --idrispath dependencies/testing"
+os: osx
+install:
+  - brew install idris
+script:
+  - bash fetch-deps.sh && idris --testpkg containers-travis.ipkg --idrispath dependencies/testing
