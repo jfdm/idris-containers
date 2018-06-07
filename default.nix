@@ -6,6 +6,6 @@ in {
   idris-containers = stdenv.mkDerivation {
     name = "idris-containers";
     src = ./.;
-    buildInputs = with pkgs; [ haskellPackages.idris gmp ];
+    buildInputs = with pkgs; [ idris gmp ];
   };
 }
