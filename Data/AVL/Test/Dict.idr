@@ -6,8 +6,9 @@
 
 module Data.AVL.Test.Dict
 
-import Test.Generic
-import Test.Random
+import Test.Unit
+import Test.Random.Values
+
 import Data.AVL.Dict
 
 %access export
@@ -71,7 +72,7 @@ testFunctorWorksOnValues = genericTest
     (Dict.toList $ (* 2) <$> Dict.fromList [("a", 1), ("b", 2)])
     [("a", 2), ("b", 4)]
     (==)
-    
+
 partial
 testTraversableTraversesOnValues : IO Bool
 testTraversableTraversesOnValues = genericTest
@@ -79,7 +80,7 @@ testTraversableTraversesOnValues = genericTest
     (traverse Just $ Dict.fromList [("a", 1), ("b", 2)])
     (Just $ Dict.fromList [("a", 1), ("b", 2)])
     (==)
-    
+
 partial
 runTest : IO ()
 runTest = do

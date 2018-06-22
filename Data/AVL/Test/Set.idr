@@ -6,8 +6,8 @@
 ||| Testing Stacks using silly stupid tests
 module Data.AVL.Test.Set
 
-import Test.Generic
-import Test.Random
+import Test.Unit
+import Test.Random.Values
 
 import Data.AVL.Set
 

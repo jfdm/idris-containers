@@ -6,7 +6,8 @@
 ||| Testing Stacks using silly stupid tests
 module Data.Test.Stack
 
-import Test.Generic
+import Test.Unit
+
 import Data.Stack
 
 %access export

@@ -6,7 +6,8 @@
 ||| Testing Queues
 module Data.Test.Queue
 
-import Test.Generic
+import Test.Unit
+
 import Data.Queue
 
 %access export

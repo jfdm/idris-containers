@@ -6,7 +6,8 @@
 ||| Testing Stacks using silly stupid tests
 module Data.AVL.Test.Graph
 
-import Test.Generic
+import Test.Unit
+
 import Data.AVL.Graph
 
 %access export
