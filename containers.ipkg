@@ -37,6 +37,8 @@ modules = Data.AVL.Tree
 
         , Data.List.Predicates
 
+        , Data.Algebraic.Graph
+
         -- Modules for testing.
         , Data.AVL.Test.Dict
         , Data.AVL.Test.Set
