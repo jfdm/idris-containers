@@ -1,7 +1,7 @@
 module Data.Algebraic.Graph
 
 %default total
-%access export
+%access public export
 
 data Graph : Type -> Type where
   Empty  : Graph type
@@ -57,3 +57,91 @@ combine = Overlay
 
 overlay : Graph a -> Graph a -> Graph a
 overlay = combine
+
+foldg : (init : type)
+     -> (whenVertex  : a -> type)
+     -> (whenOverlay : type -> type -> type)
+     -> (whenConnect : type -> type -> type)
+     -> (graph : Graph a)
+     -> type
+foldg init whenVertex whenOverlay whenConnect = go
+  where
+    go : Graph a -> type
+    go Empty = init
+    go (Vertex elem) = whenVertex elem
+    go (Overlay x y) = whenOverlay (go x) (go y)
+    go (Connect x y) = whenConnect (go x) (go y)
+
+
+overlays : List (Graph a) -> Graph a
+overlays = foldr overlay empty
+
+vertices : List a -> Graph a
+vertices = overlays . map vertex
+
+connects : List (Graph a) -> Graph a
+connects = foldr connect empty
+
+edges : List (a,a) -> Graph a
+edges = overlays . map (uncurry edge)
+
+graph : List a -> List (a,a) -> Graph a
+graph vs es = overlay (vertices vs) (edges es)
+
+data HasVertex : (elem : type) -> Graph type -> Type where
+  Here : HasVertex e (Vertex e)
+  ThereOL : HasVertex e l
+         -> HasVertex e (Overlay l r)
+  ThereOR : HasVertex e r
+         -> HasVertex e (Overlay l r)
+  ThereCL : HasVertex e l
+         -> HasVertex e (Connect l r)
+  ThereCR : HasVertex e r
+         -> HasVertex e (Connect l r)
+
+graphIsEmpty : HasVertex e Empty -> Void
+graphIsEmpty Here impossible
+graphIsEmpty (ThereOL _) impossible
+graphIsEmpty (ThereOR _) impossible
+graphIsEmpty (ThereCL _) impossible
+graphIsEmpty (ThereCR _) impossible
+
+notSameVertex : (contra : (e = x) -> Void) -> HasVertex e (Vertex x) -> Void
+notSameVertex contra Here = contra Refl
+
+notOverlay : (contra : HasVertex e x -> Void)
+         -> (f : HasVertex e y -> Void)
+         -> HasVertex e (Overlay x y)
+         -> Void
+notOverlay contra f x with (x)
+  notOverlay contra f x | (ThereOL y) = contra y
+  notOverlay contra f x | (ThereOR y) = f y
+
+
+notConnect : (contra : HasVertex e x -> Void)
+          -> (f : HasVertex e y -> Void)
+          -> HasVertex e (Connect x y)
+          -> Void
+notConnect contra f x with (x)
+  notConnect contra f x | (ThereCL y) = contra y
+  notConnect contra f x | (ThereCR y) = f y
+
+
+hasVertex : DecEq type => (elem : type) -> (graph : Graph type) -> Dec (HasVertex elem graph)
+hasVertex elem Empty = No graphIsEmpty
+hasVertex elem (Vertex x) with (decEq elem x)
+  hasVertex x (Vertex x) | (Yes Refl) = Yes Here
+  hasVertex elem (Vertex x) | (No contra) = No (notSameVertex contra)
+
+hasVertex elem (Overlay x y) with (hasVertex elem x)
+  hasVertex elem (Overlay x y) | (Yes prf) = Yes (ThereOL prf)
+  hasVertex elem (Overlay x y) | (No contra) with (hasVertex elem y)
+    hasVertex elem (Overlay x y) | (No contra) | (Yes prf) = Yes (ThereOR prf)
+    hasVertex elem (Overlay x y) | (No contra) | (No f) = No (notOverlay contra f)
+
+
+hasVertex elem (Connect x y) with (hasVertex elem x)
+  hasVertex elem (Connect x y) | (Yes prf) = Yes (ThereCL prf)
+  hasVertex elem (Connect x y) | (No contra) with (hasVertex elem y)
+    hasVertex elem (Connect x y) | (No contra) | (Yes prf) = Yes (ThereCR prf)
+    hasVertex elem (Connect x y) | (No contra) | (No f) = No (notConnect contra f)
