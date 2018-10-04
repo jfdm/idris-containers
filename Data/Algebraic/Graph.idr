@@ -127,8 +127,10 @@ namespace HasVertex
     notConnect contra f x | (ThereCL y) = contra y
     notConnect contra f x | (ThereCR y) = f y
 
-
-  hasVertex : DecEq type => (elem : type) -> (graph : Graph type) -> Dec (HasVertex elem graph)
+  hasVertex : DecEq type
+           => (elem : type)
+           -> (graph : Graph type)
+           -> Dec (HasVertex elem graph)
   hasVertex elem Empty = No graphIsEmpty
   hasVertex elem (Vertex x) with (decEq elem x)
     hasVertex x (Vertex x) | (Yes Refl) = Yes Here
@@ -154,7 +156,9 @@ namespace HasEdge
   namespace Direct
     ||| Proof that there is an explicit connection between two vertices.
     data HasDirectEdge : EdgeProof type where
-      IsDirectEdge : (a = x) -> (b = y) -> HasDirectEdge a b (Connect (Vertex x) (Vertex y))
+      IsDirectEdge : (a = x)
+                  -> (b = y)
+                  -> HasDirectEdge a b (Connect (Vertex x) (Vertex y))
       IsLeft : HasDirectEdge a b l
             -> HasDirectEdge a b (Overlay l r)
       IsRight : HasDirectEdge a b r
@@ -170,30 +174,40 @@ namespace HasEdge
     hasDirectEdgeIsVertex (IsLeft _) impossible
     hasDirectEdgeIsVertex (IsRight _) impossible
 
-    notInLeftNotInRight : (contra : HasDirectEdge a b x -> Void) -> (f : HasDirectEdge a b y -> Void) -> HasDirectEdge a b (Overlay x y) -> Void
+    notInLeftNotInRight : (contra : HasDirectEdge a b x -> Void)
+                       -> (f : HasDirectEdge a b y -> Void)
+                       -> HasDirectEdge a b (Overlay x y)
+                       -> Void
     notInLeftNotInRight contra f (IsLeft x) = contra x
     notInLeftNotInRight contra f (IsRight x) = f x
 
 
-    notRightRight : (contra : (b = z) -> Void) -> HasDirectEdge value b (Connect (Vertex value) (Vertex z)) -> Void
+    notRightRight : (contra : (b = z) -> Void)
+                 -> HasDirectEdge value b (Connect (Vertex value) (Vertex z))
+                 -> Void
     notRightRight contra (IsDirectEdge prf x) = contra x
 
-    leftIsEmpty : HasDirectEdge value b (Connect (Vertex value) Empty) -> Void
+    leftIsEmpty : HasDirectEdge value b (Connect (Vertex value) Empty)
+               -> Void
     leftIsEmpty (IsDirectEdge _ _) impossible
     leftIsEmpty (IsLeft _) impossible
     leftIsEmpty (IsRight _) impossible
 
-    leftIsOverlay : HasDirectEdge value b (Connect (Vertex value) (Overlay left right)) -> Void
+    leftIsOverlay : HasDirectEdge value b (Connect (Vertex value) (Overlay left right))
+                 -> Void
     leftIsOverlay (IsDirectEdge _ _) impossible
     leftIsOverlay (IsLeft _) impossible
     leftIsOverlay (IsRight _) impossible
 
-    leftIsConnect : HasDirectEdge value b (Connect (Vertex value) (Connect left right)) -> Void
+    leftIsConnect : HasDirectEdge value b (Connect (Vertex value) (Connect left right))
+                 -> Void
     leftIsConnect (IsDirectEdge _ _) impossible
     leftIsConnect (IsLeft _) impossible
     leftIsConnect (IsRight _) impossible
 
-    notRightLeft : (contra : (a = value) -> Void) -> HasDirectEdge a b (Connect (Vertex value) y) -> Void
+    notRightLeft : (contra : (a = value) -> Void)
+                -> HasDirectEdge a b (Connect (Vertex value) y)
+                -> Void
     notRightLeft contra (IsDirectEdge prf x) = contra prf
 
     rightIsEmpty : HasDirectEdge a b (Connect Empty y) -> Void
@@ -211,7 +225,10 @@ namespace HasEdge
     rightIsConnect (IsLeft _) impossible
     rightIsConnect (IsRight _) impossible
 
-    hasDirectEdge : DecEq type => (a,b : type) -> (graph : Graph type) -> Dec (HasDirectEdge a b graph)
+    hasDirectEdge : DecEq type
+                 => (a,b : type)
+                 -> (graph : Graph type)
+                 -> Dec (HasDirectEdge a b graph)
     hasDirectEdge a b Empty = No hasDirectEdgeIsEmpty
     hasDirectEdge a b (Vertex elem) = No hasDirectEdgeIsVertex
     hasDirectEdge a b (Overlay x y) with (hasDirectEdge a b x)
@@ -237,8 +254,6 @@ namespace HasEdge
       hasDirectEdge a b (Connect x y) | (Overlay left right) = No (rightIsOverlay)
       hasDirectEdge a b (Connect x y) | (Connect left right) = No (rightIsConnect)
 
-
-
   namespace HeirarchConnect
     ||| Proof that a Connect with a heirarchical l and r graph has a connection.
     data HasOverlayConnectEdge : EdgeProof type where
@@ -258,17 +273,27 @@ namespace HasEdge
     isVertex (IsOverlayL _) impossible
     isVertex (IsOverlayR _) impossible
 
-    notLeftNotRight : (contra : HasOverlayConnectEdge a b left -> Void) -> (f : HasOverlayConnectEdge a b right -> Void) -> HasOverlayConnectEdge a b (Overlay left right) -> Void
+    notLeftNotRight : (contra : HasOverlayConnectEdge a b left -> Void)
+                   -> (f : HasOverlayConnectEdge a b right -> Void)
+                   -> HasOverlayConnectEdge a b (Overlay left right)
+                   -> Void
     notLeftNotRight contra f (IsOverlayL x) = contra x
     notLeftNotRight contra f (IsOverlayR x) = f x
 
-    notLeft : (contra : HasVertex a left -> Void) -> HasOverlayConnectEdge a b (Connect left right) -> Void
+    notLeft : (contra : HasVertex a left -> Void)
+           -> HasOverlayConnectEdge a b (Connect left right)
+           -> Void
     notLeft contra (IsConnectEdge x y) = contra x
 
-    notRight : (contra : HasVertex b right -> Void) -> HasOverlayConnectEdge a b (Connect left right) -> Void
+    notRight : (contra : HasVertex b right -> Void)
+            -> HasOverlayConnectEdge a b (Connect left right)
+            -> Void
     notRight contra (IsConnectEdge x y) = contra y
 
-    hasOverlayConnectEdge : DecEq type => (a,b : type) -> (graph : Graph type) -> Dec (HasOverlayConnectEdge a b graph)
+    hasOverlayConnectEdge : DecEq type
+                         => (a,b : type)
+                         -> (graph : Graph type)
+                         -> Dec (HasOverlayConnectEdge a b graph)
     hasOverlayConnectEdge a b Empty = No isEmpty
     hasOverlayConnectEdge a b (Vertex value) = No isVertex
     hasOverlayConnectEdge a b (Overlay left right) with (hasOverlayConnectEdge a b left)
@@ -290,7 +315,10 @@ namespace HasEdge
     IsDirect  : HasDirectEdge a b g -> HasEdge a b g
     IsConnect : HasOverlayConnectEdge a b g -> HasEdge a b g
 
-  notDirectNorConnect : (f : HasOverlayConnectEdge a b graph -> Void) -> (contra : HasDirectEdge a b graph -> Void) -> HasEdge a b graph -> Void
+  notDirectNorConnect : (f : HasOverlayConnectEdge a b graph -> Void)
+                     -> (contra : HasDirectEdge a b graph -> Void)
+                     -> HasEdge a b graph
+                     -> Void
   notDirectNorConnect f contra (IsDirect x) = contra x
   notDirectNorConnect f contra (IsConnect x) =  f x
 
