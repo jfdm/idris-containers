@@ -9,7 +9,7 @@
 ||| wraps this up as a simple Binary tree for values i.e. keys.
 module Data.AVL.BTree
 
-import Data.AVL.Tree
+import Data.AVL
 
 %access export
 
@@ -30,19 +30,19 @@ empty = MkTree (Element Empty AVLEmpty)
 
 ||| Insert an element into the Tree.
 insert : (Ord a) => a -> BTree a -> BTree a
-insert a (MkTree t) = MkTree (snd $ Tree.insert a () t)
+insert a (MkTree t) = MkTree (snd $ AVL.API.insert a () t)
 
 ||| Does the tree contain the given element?
 contains : (Ord a) => a -> BTree a -> Bool
-contains a (MkTree t) = isJust (Tree.lookup a t)
+contains a (MkTree t) = isJust (AVL.API.lookup a t)
 
 ||| How many nodes are in the tree?
 size : BTree a -> Nat
-size (MkTree t) = Tree.size t
+size (MkTree t) = AVL.API.size t
 
 ||| Construct an ordered list containing the elements of the tree.
 toList : BTree a -> List a
-toList (MkTree t) = map fst $ Tree.toList t
+toList (MkTree t) = map fst $ AVL.API.toList t
 
 ||| Construct a tree from a list of elements.
 fromList : (Ord a) => List a -> BTree a
@@ -58,5 +58,24 @@ Eq a => Eq (BTree a) where
 
 Show a => Show (BTree a) where
   show s = "{ " ++ (unwords . intersperse "," . map show . BTree.toList $ s) ++ " }"
+
+namespace Predicate
+
+  data Elem : (value : type) -> (tree : BTree type) -> Type where
+    IsElem : (prf : HasKey value tree)
+          -> Elem value (MkTree tree)
+
+  private
+  elemNotInTree : (prfIsNotElem : HasKey value tree -> Void) -> Elem value (MkTree tree) -> Void
+  elemNotInTree prfIsNotElem (IsElem prf) = prfIsNotElem prf
+
+  export
+  isElem : DecEq type
+        => (value : type)
+        -> (tree  : BTree type)
+        -> Dec (Elem value tree)
+  isElem value (MkTree tree) with (isKey value tree)
+    isElem value (MkTree tree) | (Yes prf) = Yes (IsElem prf)
+    isElem value (MkTree tree) | (No prfIsNotElem) = No (elemNotInTree prfIsNotElem)
 
 -- --------------------------------------------------------------------- [ EOF ]

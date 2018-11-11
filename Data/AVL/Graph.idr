@@ -10,7 +10,7 @@
 ||| `(id,label)`.
 module Data.AVL.Graph
 
-import Data.AVL.Tree
+import Data.AVL
 import Data.AVL.Set
 
 import public Data.AVL.Dict

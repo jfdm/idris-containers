@@ -13,7 +13,7 @@ pkgs = contrib, effects
 
 opts = "--warnreach"
 
-modules = Data.AVL.Tree
+modules = Data.AVL
         , Data.AVL.BTree
         , Data.AVL.Dict
         , Data.AVL.Set
