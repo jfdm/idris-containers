@@ -9,7 +9,7 @@ module Data.AVL.API.Dict
 import Data.AVL
 
 %default total
-%access export
+%access public export
 
 data Dict : (k : Type) -> Type -> Type where
   MkDict : AVLTree h k v -> Dict k v
@@ -89,7 +89,6 @@ Ord a => Traversable (Dict a) where
 
 namespace Predicates
 
-  export
   data HasKey : (key  : typeKey)
              -> (dict : Dict typeKey typeValue)
              -> Type
@@ -97,7 +96,6 @@ namespace Predicates
       IsKey : (prf : HasKey key tree)
            -> HasKey key (MkDict tree)
 
-  private
   keyNotInDict : (contra : HasKey key tree -> Void)
               -> HasKey key (MkDict tree)
               -> Void
@@ -111,7 +109,6 @@ namespace Predicates
     isKey key (MkDict tree) | (Yes x) = Yes (IsKey x)
     isKey key (MkDict tree) | (No contra) = No (keyNotInDict contra)
 
-  export
   data HasValue : (value : typeValue)
                -> (dict  : Dict typeKey typeValue)
                -> Type
@@ -119,7 +116,6 @@ namespace Predicates
       IsValue : (prf : HasValue value tree)
              -> HasValue value (MkDict tree)
 
-  private
   valueNotInDict : (contra : HasValue value tree -> Void)
                 -> HasValue value (MkDict tree)
                 -> Void

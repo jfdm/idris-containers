@@ -8,10 +8,11 @@ module Data.AVL.Set
 
 import Data.AVL
 
-%access export
+%access public export
 
 -- ------------------------------------------------------------- [ Definitions ]
 ||| An ordered set.
+public export
 data Set : (a : Type) -> Type where
   MkSet : {a : Type} -> AVLTree n a Unit -> Set a
 
@@ -74,14 +75,14 @@ Show a => Show (Set a) where
 
 namespace Predicate
 
-  export
+  public export
   data Elem : (value : type) -> (set : Set type) -> Type where
-    IsElem : (prf : HasKey value tree)
-          -> Elem value (MkSet tree)
+    IsElem : (prf : HasKey value tree) -> Elem value (MkSet tree)
 
   private
   elemNotInSet : (prfIsNotElem : HasKey value tree -> Void) -> Elem value (MkSet tree) -> Void
   elemNotInSet prfIsNotElem (IsElem prf) = prfIsNotElem prf
+
 
   isElem : DecEq type
         => (value : type)
@@ -92,7 +93,7 @@ namespace Predicate
     isElem value (MkSet tree) | (No prfIsNotElem) = No (elemNotInSet prfIsNotElem)
 
 namespace Quantifier
-
+  public export
   data All : (predicate : type -> Type) -> (set : Set type) -> Type where
     Satisfies : (prf : AllKeys p tree) -> All p (MkSet tree)
 

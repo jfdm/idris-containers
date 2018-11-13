@@ -15,7 +15,7 @@
 module Data.AVL
 
 %default total
-%access export
+%access public export
 
 namespace Core
   -- ------------------------------------------------------------- [ Definitions ]
@@ -112,7 +112,6 @@ AVLTree n k v = Subset (Tree k v) (AVLInvariant n)
 namespace Modification
 
  -- --------------------------------------------------------------- [ Rotations ]
-  private
   data InsertRes : Nat -> (k : Type) -> Type -> Type where
     Same : AVLTree n k v     -> InsertRes n k v
     Grew : AVLTree (S n) k v -> InsertRes n k v
@@ -124,13 +123,11 @@ namespace Modification
   ||| height.
   |||
   ||| `InsertRes` is obtained from the result of running `Tree.insert`.
-  private
   runInsertRes : InsertRes n k v -> (n : Nat ** AVLTree n k v)
   runInsertRes (Same t) = (_ ** t)
   runInsertRes (Grew t) = (_ ** t)
 
   ||| Perform a Left roation.
-  private
   rotLeft : k
          -> v
          -> AVLTree n k v
@@ -160,7 +157,6 @@ namespace Modification
                      (AVLNode (AVLNode invl invrl Balanced) invrr Balanced)
 
   ||| Perform a Right rotation.
-  private
   rotRight : k
           -> v
           -> AVLTree (S (S n)) k v
@@ -196,7 +192,6 @@ namespace Modification
 
   ||| Perform an insertion into the tree returning the new tree wrapped
   ||| in a description describing the height change.
-  private
   doInsert : (Ord k) => k
                      -> v
                      -> AVLTree n k v
@@ -382,6 +377,7 @@ namespace Core
               -> AllKeys p (Node key _ left right)
 
     namespace OnValues
+      public export
       data AllValues : (predicate : typeValue -> Type)
                     -> (tree      : Tree typeKey typeValue)
                     -> Type
@@ -393,6 +389,7 @@ namespace Core
               -> AllValues p (Node _ value left right)
 
     namespace OnKVPairs
+       public export
        data AllKVPairs : (predicate : typeKey -> typeValue -> Type)
                       -> (tree      : Tree typeKey typeValue)
                       -> Type
@@ -411,8 +408,8 @@ namespace Core
                     -> Type
         where
           Here    : IsValueIn value (Node _ value _ _)
-          InRight : (later : IsValueIn value r) -> IsValueIn value (Node _ _ _ r)
-          InLeft  : (later : IsValueIn value l) -> IsValueIn value (Node _ _ l _)
+          InRight : (later : IsValueIn value r) -> IsValueIn value (Node _ not_value _ r)
+          InLeft  : (later : IsValueIn value l) -> IsValueIn value (Node _ not_value l _)
 
       emptyTreeHasNoValue : IsValueIn value Empty -> Void
       emptyTreeHasNoValue Here impossible
@@ -455,8 +452,8 @@ namespace Core
       public export
       data IsKeyIn : k -> Tree k v -> Type where
         Here : IsKeyIn key (Node key _ _ _)
-        InRight : (later : IsKeyIn key r) -> IsKeyIn key (Node _ not_key _ r)
-        InLeft : (later : IsKeyIn key l) -> IsKeyIn key (Node _ not_key l _)
+        InRight : (later : IsKeyIn key r) -> IsKeyIn key (Node not_key _ _ r)
+        InLeft :  (later : IsKeyIn key l) -> IsKeyIn key (Node not_key _ l _)
 
 
       ||| An empty tree has no key

@@ -11,7 +11,7 @@ module Data.AVL.BTree
 
 import Data.AVL
 
-%access export
+%access public export
 
 -- ------------------------------------------------------------- [ Definitions ]
 
@@ -70,7 +70,6 @@ namespace Predicate
     IsElem : (prf : HasKey value tree)
           -> Elem value (MkTree tree)
 
-  private
   elemNotInTree : (prfIsNotElem : HasKey value tree -> Void) -> Elem value (MkTree tree) -> Void
   elemNotInTree prfIsNotElem (IsElem prf) = prfIsNotElem prf
 
