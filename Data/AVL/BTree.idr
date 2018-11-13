@@ -59,6 +59,11 @@ Eq a => Eq (BTree a) where
 Show a => Show (BTree a) where
   show s = "{ " ++ (unwords . intersperse "," . map show . BTree.toList $ s) ++ " }"
 
+namespace Quantifier
+
+  data All : (predicate : type -> Type) -> (set : BTree type) -> Type where
+    Satisfies : (prf : AllKeys p tree) -> All p (MkTree tree)
+
 namespace Predicate
 
   data Elem : (value : type) -> (tree : BTree type) -> Type where
@@ -69,7 +74,6 @@ namespace Predicate
   elemNotInTree : (prfIsNotElem : HasKey value tree -> Void) -> Elem value (MkTree tree) -> Void
   elemNotInTree prfIsNotElem (IsElem prf) = prfIsNotElem prf
 
-  export
   isElem : DecEq type
         => (value : type)
         -> (tree  : BTree type)

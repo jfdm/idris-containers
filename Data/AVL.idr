@@ -368,6 +368,41 @@ namespace Implementation
 -- --------------------------------------------------------------------- [ Key ]
 
 namespace Core
+  namespace Quantifiers
+    namespace OnKeys
+      public export
+      data AllKeys : (predicate : typeKey -> Type)
+                  -> (tree      : Tree typeKey typeValue)
+                  -> Type
+        where
+          Leaf : AllKeys p Empty
+          Node : (prf : p key)
+              -> (leftBranch  : AllKeys p left)
+              -> (rightBranch : AllKeys p right)
+              -> AllKeys p (Node key _ left right)
+
+    namespace OnValues
+      data AllValues : (predicate : typeValue -> Type)
+                    -> (tree      : Tree typeKey typeValue)
+                    -> Type
+        where
+          Leaf : AllValues p Empty
+          Node : (prf : p value)
+              -> (leftBranch  : AllValues p left)
+              -> (rightBranch : AllValues p right)
+              -> AllValues p (Node _ value left right)
+
+    namespace OnKVPairs
+       data AllKVPairs : (predicate : typeKey -> typeValue -> Type)
+                      -> (tree      : Tree typeKey typeValue)
+                      -> Type
+        where
+          Leaf : AllKVPairs p Empty
+          Node : (prf : p key value)
+              -> (leftBranch  : AllKVPairs p left)
+              -> (rightBranch : AllKVPairs p right)
+              -> AllKVPairs p (Node key value left right)
+
   namespace Predicate
     namespace OnValues
       public export
@@ -504,4 +539,28 @@ isValue value (Element tree prf) with (isValue value tree)
   isValue value (Element tree prf) | (Yes x) = Yes (IsValue x)
   isValue value (Element tree prf) | (No contra) = No (valueNotInAVLTree contra)
 
+-- Quantifiers
+public export
+data AllKeys : (predicate : typeKey -> Type)
+            -> (tree : AVLTree h typeKey typeValue)
+            -> Type
+  where
+    AllKeysSatisfyPredicate : (prf : OnKeys.AllKeys p (Subset.getWitness avl))
+                           -> AllKeys p avl
+
+public export
+data AllValues : (predicate : typeValue -> Type)
+              -> (tree : AVLTree h typeKey typeValue)
+              -> Type
+  where
+    AllValuesSatisfyPredicate : (prf : OnValues.AllValues p (Subset.getWitness avl))
+                             -> AllValues p avl
+
+public export
+data AllKVPairs : (predicate : typeKey -> typeValue -> Type)
+               -> (tree : AVLTree k typeKey typeValue)
+               -> Type
+  where
+    AllKVPairsSatisfyPredicate : (prf : OnKVPairs.AllKVPairs p (Subset.getWitness avl))
+                              -> AllKVPairs p avl
 -- --------------------------------------------------------------------- [ EOF ]

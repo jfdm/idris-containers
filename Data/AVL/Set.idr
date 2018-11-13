@@ -83,7 +83,6 @@ namespace Predicate
   elemNotInSet : (prfIsNotElem : HasKey value tree -> Void) -> Elem value (MkSet tree) -> Void
   elemNotInSet prfIsNotElem (IsElem prf) = prfIsNotElem prf
 
-  export
   isElem : DecEq type
         => (value : type)
         -> (set   : Set type)
@@ -92,5 +91,9 @@ namespace Predicate
     isElem value (MkSet tree) | (Yes prf) = Yes (IsElem prf)
     isElem value (MkSet tree) | (No prfIsNotElem) = No (elemNotInSet prfIsNotElem)
 
+namespace Quantifier
+
+  data All : (predicate : type -> Type) -> (set : Set type) -> Type where
+    Satisfies : (prf : AllKeys p tree) -> All p (MkSet tree)
 
 -- --------------------------------------------------------------------- [ EOF ]
