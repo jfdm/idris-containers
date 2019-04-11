@@ -1,0 +1,87 @@
+[package]
+name = "jfdm/idris-containers"
+version = "0.1.0"
+description = "Containers."
+readme = "README.md"
+authors = ["Jan de Muijnck-Hughes <jan.deMuijnck-Hughes@glasgow.ac.uk>"]
+
+[dependencies]
+
+[targets.lib]
+path = "."
+mods = [
+  "Data.AVL",
+  "Data.AVL.BTree",
+  "Data.AVL.Dict",
+  "Data.AVL.Set",
+  "Data.AVL.Graph",
+
+  "Data.RedBlack.Tree",
+
+  "Data.RoseTree",
+
+  "Data.Stack",
+  "Data.Queue",
+
+  "Data.DList",
+  "Data.DList.Eff",
+
+  "Data.DVect",
+
+  "Data.PList",
+
+  "Data.DeBruijn",
+
+  "Data.List.Predicates",
+
+  "Data.Algebraic.Graph",
+
+  # Modules for testing.
+  "Data.AVL.Test.Dict",
+  "Data.AVL.Test.Set",
+  "Data.AVL.Test.Graph",
+
+  "Data.Test.Stack",
+  "Data.Test.Queue",
+  "Data.Test.RedBlack",
+
+  # Utility for generating random values
+  "Test.Random.Values",
+]
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "stack_test"
+path = "."
+main = "Data.Test.Stack.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "queue_test"
+path = "."
+main = "Data.Test.Queue.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "redblack_test"
+path = "."
+main = "Data.Test.RedBlack.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "avl_dict_test"
+path = "."
+main = "Data.AVL.Test.Dict.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "avl_set_test"
+path = "."
+main = "Data.AVL.Test.Set.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]
+
+[[targets.test]]
+name = "avl_graph_test"
+path = "."
+main = "Data.AVL.Test.Graph.runTest"
+idris_opts = ["-p", "contrib", "-p", "effects"]

@@ -30,3 +30,5 @@ tags
 TAGS
 src/Version_idris.hs
 dependencies
+target/
+elba.lock
