@@ -30,12 +30,21 @@ modules = Data.AVL
         , Data.DList.Eff
 
         , Data.DVect
-
+        , Data.BVect
         , Data.PList
+
+        , Data.LeftPad
 
         , Data.DeBruijn
 
         , Data.List.Predicates
+        , Data.List.Predicates.Interleaving
+        , Data.List.Predicates.Unique
+        , Data.List.Predicates.Pairs
+        , Data.List.Predicates.SubList
+
+        , Data.Filter
+
 
         , Data.Algebraic.Graph
 
