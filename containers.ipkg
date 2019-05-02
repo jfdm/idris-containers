@@ -41,7 +41,7 @@ modules = Data.AVL
         , Data.List.Predicates.Interleaving
         , Data.List.Predicates.Unique
         , Data.List.Predicates.Pairs
-        , Data.List.Predicates.SubList
+        , Data.List.Predicates.Thinning
 
         , Data.Filter
 
