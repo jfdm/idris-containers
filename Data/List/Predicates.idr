@@ -12,7 +12,7 @@ import public Data.List
 import public Data.List.Predicates.Unique
 import public Data.List.Predicates.Interleaving
 import public Data.List.Predicates.Pairs
-import public Data.List.Predicates.SubList
+import public Data.List.Predicates.Thinning
 
 %default total
 %access public export
