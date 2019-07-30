@@ -1,4 +1,4 @@
-module Data.LeftPad
+module Data.List.LeftPad
 
 import Data.List
 import Data.List.Predicates.Interleaving

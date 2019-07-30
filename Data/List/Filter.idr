@@ -1,4 +1,4 @@
-module Data.Filter
+module Data.List.Filter
 
 import Data.DList
 import Data.List.Predicates.Interleaving

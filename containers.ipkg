@@ -33,8 +33,6 @@ modules = Data.AVL
         , Data.BVect
         , Data.PList
 
-        , Data.LeftPad
-
         , Data.DeBruijn
 
         , Data.List.Predicates
@@ -43,7 +41,9 @@ modules = Data.AVL
         , Data.List.Predicates.Pairs
         , Data.List.Predicates.Thinning
 
-        , Data.Filter
+        , Data.List.Filter
+        , Data.List.LeftPad
+        , Data.List.Fixes
 
         , Decidable.Equality.Indexed
 
