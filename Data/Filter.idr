@@ -4,7 +4,8 @@ import Data.DList
 import Data.List.Predicates.Interleaving
 
 %default total
-%access public export
+%access export
+
 
 data Filter : (holdsFor : type -> Type)
            -> (input : List type)
@@ -25,3 +26,8 @@ filter test (x :: xs) with (filter test xs)
       MkFilter (x::kept) (LeftAdd x prfOrdering) (prf :: prfKept) prfThrown
     filter test (x :: xs) | (MkFilter kept prfOrdering prfKept prfThrown) | (No contra) =
       MkFilter kept (RightAdd x prfOrdering) prfKept (contra :: prfThrown)
+
+extract : Filter p xs
+       -> (ks ** DList type p ks)
+extract (MkFilter kept prfOrdering prfKept prfThrown) =
+  (kept ** prfKept)

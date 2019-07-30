@@ -107,17 +107,13 @@ index Z (y :: rest) {ok = InFirst} = y
 index (S k) (y :: rest) {ok = (InLater later)} {ok' = (InLater x)} = index k rest
 
 public export
-head : (xs : DList aTy eTy (a::as))
-    -> {auto ok : NonEmpty xs}
-    -> {auto ok' : NonEmpty (a::as)}
-    -> eTy a
-head (y :: rest) {ok = IsNonEmpty} {ok' = IsNonEmpty} = y
+head : (xs : DList aTy eTy (a::as)) -> eTy a
+head (y :: rest) = y
 
 public export
 tail : (xs : DList aTy eTy (a :: as))
-    -> {auto ok : NonEmpty xs}
     -> (DList aTy eTy as)
-tail (x :: rest) {ok = IsNonEmpty} = rest
+tail (x :: rest) = rest
 
 
 public export
@@ -192,31 +188,31 @@ dropWhile p (x::xs) =
 
 -- ---------------------------------------------------------------- [ Equality ]
 
-eqDList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+equals : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
        -> DList aTy elemTy as
        -> DList aTy elemTy bs
        -> Bool
-eqDList _ Nil     Nil     = True
-eqDList p (x::xs) (y::ys) =
+equals _ Nil     Nil     = True
+equals p (x::xs) (y::ys) =
   if p x y
-    then eqDList p xs ys
+    then equals p xs ys
     else False
-eqDList _ _       _       = False
+equals _ _       _       = False
 
 -- ------------------------------------------------------------------- [ Order ]
 
-cmpDList : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
+compare : ({a,b : aTy} -> elemTy a -> elemTy b -> Bool)
         -> ({a,b : aTy} -> elemTy a -> elemTy b -> Ordering)
         -> DList aTy elemTy as
         -> DList aTy elemTy bs
         -> Ordering
-cmpDList _  _   Nil     Nil     = EQ
-cmpDList _  _   Nil     _       = LT
-cmpDList _  _   _       Nil     = GT
-cmpDList eq cmp (x::xs) (y::ys) =
+compare _  _   Nil     Nil     = EQ
+compare _  _   Nil     _       = LT
+compare _  _   _       Nil     = GT
+compare eq cmp (x::xs) (y::ys) =
   if not $ eq x y
     then cmp x y
-    else cmpDList eq cmp xs ys
+    else compare eq cmp xs ys
 
 -- ----------------------------------------------------------------- [ Folding ]
 -- TODO
@@ -438,13 +434,6 @@ mergeBy cmp (x::xs) (y::ys) =
 
 
 -- -------------------------------------------------------------------- [ Show ]
--- A way of doing show, a little nasty but worth it.
-private
-doDListShow : ({a : aTy} -> elemTy a -> String)
-           -> DList aTy elemTy as
-           -> List String
-doDListShow _  Nil     = Nil
-doDListShow f  (x::xs) = (f x) :: doDListShow f xs
 
 ||| Function to show a `DList`.
 |||
@@ -457,7 +446,7 @@ doDListShow f  (x::xs) = (f x) :: doDListShow f xs
 showDList : (showFunc : {a : aTy} -> elemTy a -> String)
          -> (l : DList aTy elemTy as)
          -> String
-showDList f xs = "[" ++ unwords (intersperse "," (doDListShow f xs)) ++ "]"
+showDList f xs = "[" ++ unwords (intersperse "," (map f xs)) ++ "]"
 
 
 -- -------------------------------------------------------------- [ Predicates ]

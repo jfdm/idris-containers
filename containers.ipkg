@@ -45,6 +45,7 @@ modules = Data.AVL
 
         , Data.Filter
 
+        , Decidable.Equality.Indexed
 
         , Data.Algebraic.Graph
 
