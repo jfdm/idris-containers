@@ -2,6 +2,7 @@
 
 IDRIS := idris
 LIB   := containers
+TEST  := ${LIB}-test
 OPTS  :=
 
 .PHONY: doc test clobber check clean lib install
@@ -18,12 +19,13 @@ clean:
 
 check: clobber
 	${IDRIS} --checkpkg ${LIB}.ipkg
+	${IDRIS} --checkpkg ${TEST}.ipkg
 
 clobber : clean
 	find . -name "*.ibc" -delete
 
 test: clean
-	${IDRIS} --testpkg ${LIB}.ipkg
+	${IDRIS} --testpkg ${TEST}.ipkg
 
 doc:
 	${IDRIS} --mkdoc ${LIB}.ipkg

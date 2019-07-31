@@ -1,0 +1,33 @@
+package containers-test
+
+author     = Jan de Muijnck-Hughes
+maintainer = Jan de Muijnck-Hughes
+license    = BSD3 but see LICENSE for more information
+brief      = "Tests for containers."
+readme     = README.md
+
+sourceloc  = git://git@github.com:jfdm/idris-containers.git
+bugtracker = http://www.github.com/jfdm/idris-containers/issues
+
+pkgs = contrib, effects
+
+opts = "--warnreach"
+
+modules = Data.AVL.Test.Dict
+        , Data.AVL.Test.Set
+        , Data.AVL.Test.Graph
+
+        , Data.Test.Stack
+        , Data.Test.Queue
+        , Data.Test.RedBlack
+
+        -- Utility for generating random values
+        , Test.Random.Values
+
+tests = Data.Test.Stack.runTest
+      , Data.Test.Queue.runTest
+      , Data.Test.RedBlack.runTest
+
+      , Data.AVL.Test.Dict.runTest
+      , Data.AVL.Test.Set.runTest
+      , Data.AVL.Test.Graph.runTest
