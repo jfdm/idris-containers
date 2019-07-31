@@ -22,7 +22,7 @@ empty = MkSet (Element Empty AVLEmpty)
 
 ||| Insert an element into a set.
 insert : (Ord a) => a -> Set a -> Set a
-insert a (MkSet m) = MkSet (snd $ AVL.API.insert a () m)
+insert a (MkSet m) = MkSet (snd $ insert a () m)
 
 ||| Does the set contain the given element.
 contains : (Ord a) => a -> Set a -> Bool
@@ -30,17 +30,17 @@ contains a (MkSet m) = isJust (lookup a m)
 
 ||| Construct a set that contains all elements in both of the input sets.
 union : (Ord a) => Set a -> Set a -> Set a
-union (MkSet m1) (MkSet m2) = MkSet (snd $ AVL.API.foldr insertElement (_ ** m1) m2)
+union (MkSet m1) (MkSet m2) = MkSet (snd $ foldr insertElement (_ ** m1) m2)
   where
     insertElement : (Ord a) => a
                             -> Unit
                             -> (h : Nat ** AVLTree h a Unit)
                             -> (h' : Nat ** AVLTree h' a Unit)
-    insertElement k v m' = AVL.API.insert k v (snd m')
+    insertElement k v m' = insert k v (snd m')
 
 ||| Return the size of the Dictionary.
 size : Set a -> Nat
-size (MkSet m) = AVL.API.size m
+size (MkSet m) = size m
 
 ||| Construct a set that contains the elements from the first input
 ||| set but not the second.
@@ -48,7 +48,7 @@ size (MkSet m) = AVL.API.size m
 ||| *Note* Not an efficient operation as we are constructing a new set
 ||| instead of modifying the right one.
 difference : (Ord a) => Set a -> Set a -> Set a
-difference (MkSet m1) s2 = AVL.API.foldr (\e,_,t => if (contains e s2) then t else Set.insert e t) empty $ m1
+difference (MkSet m1) s2 = foldr (\e,_,t => if (contains e s2) then t else Set.insert e t) empty $ m1
 
 ||| Construct a set that contains common elements of the input sets.
 intersection : (Ord a) => Set a -> Set a -> Set a
@@ -56,7 +56,7 @@ intersection s1 s2 = difference s1 (difference s1 s2)
 
 ||| Construct a list using the given set.
 toList : Set a -> List a
-toList (MkSet m) = map fst $ AVL.API.toList m
+toList (MkSet m) = map fst $ toList m
 
 ||| Construct a set from the given list.
 fromList : (Ord a) => List a -> Set a
@@ -95,6 +95,6 @@ namespace Predicate
 namespace Quantifier
   public export
   data All : (predicate : type -> Type) -> (set : Set type) -> Type where
-    Satisfies : (prf : AllKeys p tree) -> All p (MkSet tree)
+    Satisfies : (prf : AVL.Keys.All p tree) -> All p (MkSet tree)
 
 -- --------------------------------------------------------------------- [ EOF ]

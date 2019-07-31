@@ -194,7 +194,7 @@ data Elem : (aTy    : Type)
          -> (prfP : DElem aTy predTy prf prfs prfA)
          -> Type
   where
-    Hier  : PList.Elem aTy eTy pTy a x p (x::xs) Here Hier
+    Hier  : PList.Elem aTy eTy pTy a x p (x::xs) Here (Hier Refl)
     Er    : (rest : PList.Elem aTy eTy pTy a x p xs prfA prfP)
          -> PList.Elem aTy eTy pTy a x p (x'::xs) (There prfA) (DList.Er prfP)
 
@@ -213,7 +213,7 @@ delete' : (x  : elemTy i)
        -> (idxVal : Elem i is)
        -> (idxPrf : DElem iTy predTy prf prfs idxVal)
        -> PList iTy elemTy predTy (dropElem is idxVal) (dropElem prfs idxPrf)
-delete' x (elem :: rest) Here Hier = rest
+delete' x (elem :: rest) Here (Hier Refl) = rest
 delete' x (elem :: rest) (There later) (Er komst) = elem :: delete' x rest later komst
 
 delete : (x  : elemTy i)

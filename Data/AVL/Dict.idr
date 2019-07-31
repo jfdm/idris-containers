@@ -19,54 +19,54 @@ empty : (Ord k) => Dict k v
 empty = MkDict (Element Empty AVLEmpty)
 
 insert : (Ord k) => k -> v -> Dict k v -> Dict k v
-insert key val (MkDict d) = MkDict $ snd (AVL.API.insert key val d)
+insert key val (MkDict d) = MkDict $ snd (insert key val d)
 
 ||| Update the value for the given key.
 update : (Ord k) => k -> (v -> v) -> Dict k v -> Dict k v
-update x ufunc (MkDict d) = MkDict $ AVL.API.update x ufunc d
+update x ufunc (MkDict d) = MkDict $ update x ufunc d
 
 -- -------------------------------------------------------------------- [ List ]
 
 toList : Dict k v -> List (k,v)
-toList (MkDict d) = AVL.API.toList d
+toList (MkDict d) = toList d
 
 fromList : Ord k => List (k,v) -> Dict k v
-fromList kvs = MkDict $ snd $ AVL.API.fromList kvs
+fromList kvs = MkDict $ snd $ fromList kvs
 
 -- ----------------------------------------------------------------- [ Queries ]
 
 isEmpty : Dict k v -> Bool
-isEmpty (MkDict d) = AVL.API.isEmpty d
+isEmpty (MkDict d) = isEmpty d
 
 foldr : (k -> v -> p -> p) -> p -> Dict k v -> p
-foldr f init (MkDict d) = AVL.API.foldr f init d
+foldr f init (MkDict d) = foldr f init d
 
 lookup : (Ord k) => k -> Dict k v -> Maybe v
-lookup k (MkDict d) = AVL.API.lookup k d
+lookup k (MkDict d) = lookup k d
 
 keys : Dict k v -> List k
-keys (MkDict d) = AVL.API.keys d
+keys (MkDict d) = keys d
 
 values : Dict k v -> List v
-values (MkDict d) = AVL.API.values d
+values (MkDict d) = values d
 
 size : Dict k v -> Nat
-size (MkDict d) = AVL.API.size d
+size (MkDict d) = size d
 
 hasKey : (Ord k) => k -> Dict k v -> Bool
-hasKey key (MkDict d) = AVL.API.hasKey key d
+hasKey key (MkDict d) = hasKey key d
 
 hasValue : (Eq v) => v -> Dict k v -> Bool
-hasValue val (MkDict d) = AVL.API.hasValue val d
+hasValue val (MkDict d) = hasValue val d
 
 hasValueUsing : (v -> Bool) -> Dict k v -> Bool
-hasValueUsing f (MkDict d) = AVL.API.any (\k,v => (f v)) d
+hasValueUsing f (MkDict d) = any (\k,v => (f v)) d
 
 findKey : (pred : v -> Bool) -> Dict k v -> Maybe k
-findKey pred (MkDict d) = AVL.API.findKey pred d
+findKey pred (MkDict d) = findKey pred d
 
 findKeyOf : (Eq v) => v -> Dict k v -> Maybe k
-findKeyOf v (MkDict d) = AVL.API.findKeyOf v d
+findKeyOf v (MkDict d) = findKeyOf v d
 
 -- --------------------------------------------------------- [ Implementations ]
 
@@ -85,7 +85,7 @@ Ord a => Foldable (Dict a) where
   foldr func = foldr $ const func
 
 Ord a => Traversable (Dict a) where
-  traverse f x = fromList <$> (traverse (\(a, b) => (MkPair a) <$> f b) $ Data.AVL.API.Dict.toList x)
+  traverse f x = fromList <$> (traverse (\(a, b) => (MkPair a) <$> f b) $ Dict.toList x)
 
 namespace Predicates
 

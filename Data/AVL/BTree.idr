@@ -30,23 +30,23 @@ empty = MkTree (Element Empty AVLEmpty)
 
 ||| Insert an element into the Tree.
 insert : (Ord a) => a -> BTree a -> BTree a
-insert a (MkTree t) = MkTree (snd $ AVL.API.insert a () t)
+insert a (MkTree t) = MkTree (snd $ insert a () t)
 
 ||| Does the tree contain the given element?
 contains : (Ord a) => a -> BTree a -> Bool
-contains a (MkTree t) = isJust (AVL.API.lookup a t)
+contains a (MkTree t) = isJust (lookup a t)
 
 ||| How many nodes are in the tree?
 size : BTree a -> Nat
-size (MkTree t) = AVL.API.size t
+size (MkTree t) = size t
 
 ||| Construct an ordered list containing the elements of the tree.
 toList : BTree a -> List a
-toList (MkTree t) = map fst $ AVL.API.toList t
+toList (MkTree t) = map fst $ toList t
 
 ||| Construct a tree from a list of elements.
 fromList : (Ord a) => List a -> BTree a
-fromList xs = (foldl (\t,k => BTree.insert k t) empty xs)
+fromList xs = (foldl (\t,k => insert k t) empty xs)
 
 -- --------------------------------------------------------------- [ Instances ]
 
@@ -62,7 +62,7 @@ Show a => Show (BTree a) where
 namespace Quantifier
 
   data All : (predicate : type -> Type) -> (set : BTree type) -> Type where
-    Satisfies : (prf : AllKeys p tree) -> All p (MkTree tree)
+    Satisfies : (prf : AVL.Keys.All p tree) -> All p (MkTree tree)
 
 namespace Predicate
 

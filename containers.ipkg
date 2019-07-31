@@ -13,7 +13,12 @@ pkgs = contrib
 
 opts = "--warnreach"
 
-modules = Data.AVL
+modules = Data.Tree
+
+        , Data.AVL.Core
+        , Data.AVL.Core.API
+        , Data.AVL.Core.Quantifiers
+
         , Data.AVL.BTree
         , Data.AVL.Dict
         , Data.AVL.Set
