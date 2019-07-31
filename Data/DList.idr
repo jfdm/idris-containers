@@ -14,6 +14,8 @@ module Data.DList
 
 import Data.List
 
+import public Decidable.Equality.Indexed
+
 %access export
 
 using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
@@ -466,16 +468,52 @@ data DElem : (iTy    : Type)
           -> Type
     where
       ||| Proof that the element is at the front of the list.
-      Hier : DElem ity elemTy x (x :: xs) Here
+      Hier : (x=y) -> DElem ity elemTy x (y :: xs) Here
 
       ||| Proof that the element is found later in the list.
       Er : (komst : DElem iTy elemTy x xs xs') -> DElem iTy elemTy x (x' ::xs) (There xs')
 
 Uninhabited (DElem iTy elemTy a Nil prf) where
-    uninhabited Hier impossible
+    uninhabited (Hier _) impossible
     uninhabited (Er _) impossible
 
 %name DElem komst
+
+
+notInList : DecEqIdx iTy eTy
+         => (contra : DElem iTy eTy ex rest later -> Void)
+         -> DElem iTy eTy ex (ey :: rest) (There later)
+         -> Void
+notInList contra (Er komst) = contra komst
+
+elemsNotEqual : DecEqIdx iTy eTy
+             => (contra : (ex = ey) -> Void)
+             -> DElem iTy eTy ex (ey :: rest) Here
+             -> Void
+elemsNotEqual contra (Hier Refl) = contra Refl
+
+isElem' : {eTy : iTy -> Type}
+       -> (DecEqIdx iTy eTy)
+       => (e : eTy i)
+       -> (es : DList iTy eTy is)
+       -> (prf : Elem i is)
+       -> Dec (DElem iTy eTy e es prf)
+isElem' ex (ey :: rest) Here with (decEq ex ey Refl)
+  isElem' ey (ey :: rest) Here | (Yes Refl) = Yes (Hier Refl)
+  isElem' ex (ey :: rest) Here | (No contra) = No (elemsNotEqual contra)
+
+isElem' ex (ey :: rest) (There later) with (isElem' ex rest later)
+  isElem' ex (ey :: rest) (There later) | (Yes prf) = Yes (Er prf)
+  isElem' ex (ey :: rest) (There later) | (No contra) =
+    No (notInList contra)
+
+isElem : {eTy : iTy -> Type}
+      -> (DecEqIdx iTy eTy)
+      => (e : eTy i)
+      -> (es : DList iTy eTy is)
+      -> {auto prf : Elem i is}
+      -> Dec (DElem iTy eTy e es prf)
+isElem e es {prf} = isElem' e es prf
 
 ||| Analgous to `delete` for normal Lists, however, we require explicit proof that the element, and its index, are in the list.
 |||
@@ -488,8 +526,8 @@ delete' : (a    : elemTy i)
        -> (idx  : Elem i is)
        -> (prf  : DElem iTy elemTy a as idx)
        -> DList iTy elemTy (dropElem is idx)
-delete' a (a  :: rest) Here          Hier       = rest
-delete' a (a' :: rest) (There later) (Er komst) = a' :: delete' a rest later komst
+delete' a (a  :: rest) Here          (Hier Refl) = rest
+delete' a (a' :: rest) (There later) (Er komst)  = a' :: delete' a rest later komst
 
 ||| Analgous to `delete` for normal Lists, however, we must first calculate proof that the element, and its index, are in the list.
 |||
@@ -512,7 +550,7 @@ public export
 dropElem : (as  : DList iTy elemTy is)
         -> (prf : DElem iTy elemTy a as idx)
         -> DList iTy elemTy (dropElem is idx)
-dropElem (a  :: rest) Hier       = rest
+dropElem (a  :: rest) (Hier Refl)       = rest
 dropElem (a' :: rest) (Er komst) = a' :: dropElem rest komst
 
 -- --------------------------------------------------------------------- [ EOF ]
