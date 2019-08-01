@@ -3,7 +3,6 @@ module Decidable.Equality.Indexed
 %default total
 %access public export
 
-
 interface DecEq iTy
        => DecEqIdx (iTy : Type)
                    (eTy : iTy -> Type) | eTy

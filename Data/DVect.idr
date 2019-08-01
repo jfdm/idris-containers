@@ -295,4 +295,19 @@ dropElem (a :: x) (Hier _) = x
 dropElem {l = (S k)} (not_x :: xs) (Er komst) =
   not_x :: dropElem xs komst
 
+
+namespace Alt
+  index : (vs  : DVect iTy eTy l is)
+       -> (idx : Elem i is)
+       -> eTy i
+  index (ex :: rest) Here = ex
+  index (ex :: rest) (There later) = index rest later
+
+  update : (vs  : DVect iTy eTy l is)
+        -> (idx : Elem i is)
+        -> (new : eTy i)
+        -> DVect iTy eTy l is
+  update (ex :: rest) Here new = new :: rest
+  update (ex :: rest) (There later) new = ex :: update rest later new
+
 -- --------------------------------------------------------------------- [ EOF ]
