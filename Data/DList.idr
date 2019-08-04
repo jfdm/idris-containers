@@ -553,4 +553,18 @@ dropElem : (as  : DList iTy elemTy is)
 dropElem (a  :: rest) (Hier Refl)       = rest
 dropElem (a' :: rest) (Er komst) = a' :: dropElem rest komst
 
+namespace Alt
+  index : (xs  : DList iTy eTy is)
+       -> (idx : Elem i is)
+       -> eTy i
+  index (ex :: rest) Here = ex
+  index (ex :: rest) (There later) = index rest later
+
+  update : (vs  : DList iTy eTy is)
+        -> (idx : Elem i is)
+        -> (new : eTy i)
+        -> DList iTy eTy is
+  update (ex :: rest) Here new = new :: rest
+  update (ex :: rest) (There later) new = ex :: update rest later new
+
 -- --------------------------------------------------------------------- [ EOF ]
