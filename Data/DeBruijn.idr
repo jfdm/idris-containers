@@ -99,5 +99,37 @@ update : (idx : Index ty ctxt t )
 update First    obj (_    :: store) = obj  :: store
 update (Next x) obj (obj' :: store) = obj' :: update x obj store
 
+namespace KV
+
+
+  indexEmpty : DecEq type => (t ** Index (String, type) [] (k, t)) -> Void
+  indexEmpty (x ** pf) with (pf)
+    indexEmpty (_ ** _) | First impossible
+    indexEmpty (_ ** _) | (Next _) impossible
+
+
+  notInIndex : DecEq type
+           => (contra : (k = a) -> Void)
+           -> (xs : List (String, type))
+           -> (f : (t : type ** Index (String, type) xs (k, t)) -> Void)
+           -> (t : type ** Index (String, type) ((a, b) :: xs) (k, t))
+           -> Void
+  notInIndex contra xs f (x ** pf) with (pf)
+    notInIndex contra xs f (b ** pf) | First = contra Refl
+    notInIndex contra xs f (x ** pf) | (Next y) = f (_ ** y)
+
+
+  isIndex : DecEq type
+         => (k : String)
+         -> (ctxt : List (String, type))
+         -> Dec (t ** Index (String, type) ctxt (k,t))
+  isIndex k [] = No KV.indexEmpty
+  isIndex k ((a, b) :: xs) with (decEq k a)
+    isIndex a ((a, b) :: xs) | (Yes Refl) = Yes (b ** First)
+    isIndex k ((a, b) :: xs) | (No contra) with (isIndex k xs)
+      isIndex k ((a, b) :: xs) | (No contra) | (Yes prf) = Yes (_ ** Next (snd prf))
+      isIndex k ((a, b) :: xs) | (No contra) | (No f) = No (KV.notInIndex contra xs f)
+
+
 
 -- --------------------------------------------------------------------- [ EOF ]

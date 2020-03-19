@@ -32,23 +32,32 @@ modules = Data.Tree
         , Data.Queue
 
         , Data.DList
+        , Data.PList
 
         , Data.DVect
         , Data.BVect
-        , Data.PList
+        , Data.PVect
 
         , Data.DeBruijn
 
-        , Data.List.Predicates
+        , Data.Pair.Predicates
+
+        , Data.List.NotElem
+
         , Data.List.Predicates.Interleaving
         , Data.List.Predicates.Unique
+        , Data.List.Predicates.Unique.Old
         , Data.List.Predicates.Pairs
+        , Data.List.Predicates.Pairs.Old
         , Data.List.Predicates.Thinning
+
+        , Data.List.Predicates
 
         , Data.List.Filter
         , Data.List.LeftPad
         , Data.List.Fixes
 
+        , Decidable.Error
         , Decidable.Equality.Indexed
 
         , Data.Algebraic.Graph

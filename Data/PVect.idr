@@ -1,5 +1,5 @@
--- --------------------------------------------------------------- [ DVect.idr ]
--- Module    : DVect.idr
+-- --------------------------------------------------------------- [ PVect.idr ]
+-- Module    : PVect.idr
 -- Copyright : (c) 2015,2016 See CONTRIBUTORS.md
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
@@ -9,9 +9,10 @@
 ||| depend on values. This affects the ability to construct lists of
 ||| values that have a dependent type. The existing `List` type cannot
 ||| be used as it requires all elements to have the same type.
-module Data.DVect
+module Data.PVect
 
 import Data.Vect
+import Data.DVect
 
 import Data.DList
 
@@ -29,84 +30,81 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
   ||| @elemTy The type of the elements within the list
   ||| @as     The List used to contain the different values within the type.
   public export
-  data DVect : (aTy : Type)
+  data PVect : (aTy : Type)
             -> (elemTy : aTy -> Type)
+            -> (predTy : aTy -> Type)
             -> (len : Nat)
             -> (as : Vect len aTy)
+            -> (ps : DVect aTy pTy len as)
             -> Type where
     ||| Create an empty List
-    Nil  : DVect aTy elemTy Z Nil
+    Nil  : PVect aTy elemTy prfTy Z Nil Nil
     ||| Cons
     |||
     ||| @ex The element to add
     ||| @rest The list for `elem` to be added to.
-    (::) : (ex : elemTy x)
-        -> (rest : DVect aTy elemTy n xs)
-        -> DVect aTy elemTy (S n) (x::xs)
+    Ext : (ex : elemTy x)
+       -> (pf : prfTy x)
+       -> (rest : PVect aTy elemTy prfTy n xs ps)
+       -> PVect aTy elemTy prfTy (S n) (x::xs) (pf::ps)
 
-public export
-(++) : DVect aTy eTy x     xs
-    -> DVect aTy eTy y     ys
-    -> DVect aTy eTy (x+y) (xs ++ ys)
-(++) Nil     ys = ys
-(++) (x::xs) ys = x :: (xs ++ ys)
+
+(++) : PVect aTy eTy pTy x     xs         xps
+    -> PVect aTy eTy pTy y     ys         yps
+    -> PVect aTy eTy pTy (x+y) (xs ++ ys) (xps ++ yps)
+(++) xs ys with (xs)
+  (++) xs ys | [] = ys
+  (++) xs ys | (Ext ex pf rest) = Ext ex pf ((++) rest ys)
 
 -- -------------------------------------------------------------- [ Form Tests ]
-isNil : DVect aTy elemTy n as -> Bool
+isNil : PVect aTy elemTy prfTy n as ps -> Bool
 isNil Nil     = True
-isNil (x::xs) = False
+isNil (Ext x pf xs) = False
 
-isCons : DVect aTy elemTy n as -> Bool
+isCons : PVect aTy elemTy prfTy n as ps -> Bool
 isCons l = isNil l == False
 
 -- ------------------------------------------------------------------ [ Length ]
 
-length : DVect aTy elemTy n as -> Nat
+length : PVect aTy elemTy prfTy n as ps -> Nat
 length {n} _ = n
 
 -- ---------------------------------------------------------------- [ Indexing ]
 
 index : (idx : Fin l)
-     -> (vs : DVect aTy elemTy l as)
+     -> (vs : PVect aTy elemTy prfTy l as ps)
      -> elemTy (index idx as)
-index FZ (ex :: rest) = ex
-index (FS x) (ex :: rest) = index x rest
+index FZ (Ext ex px rest) = ex
+index (FS x) (Ext ex px rest) = index x rest
 
-head : (vs : DVect aTy elemTy (S n) (a::as))
-    -> elemTy a
-head (ex :: rest) = ex
+head : (vs : PVect aTy elemTy prfTy (S n) (a::as) (p::ps))
+    -> (elemTy a, prfTy a)
+head (Ext x p rest) = (x,p)
 
 
-tail : (vs : DVect aTy eTy (S n) (a :: as))
-    -> (DVect aTy eTy n as)
-tail (ex :: rest) = rest
+tail : (vs : PVect aTy eTy pTy (S n) (a :: as) (p :: ps))
+    -> (PVect aTy eTy pTy n as ps)
+tail (Ext ex px rest) = rest
 
-last : (vs : DVect aTy eTy (S n) as)
-    -> eTy (last as)
-last (ex :: rest) with (rest)
-  last (ex :: rest) | [] = ex
-  last (ex :: rest) | (ey :: xs) = last (ey::xs)
+last : (vs : PVect aTy eTy pTy (S n) as ps)
+    -> (eTy (last as), pTy (last as))
+last (Ext ex px rest) with (rest)
+  last (Ext ex px rest) | [] = (ex, px)
+  last (Ext ex px rest) | (Ext ey py xs) = last (Ext ey py xs)
 
-public export
-init : (vs : DVect aTy eTy (S n) as)
-    -> DVect aTy eTy n (init as)
-init (ex :: []) = []
-init (ex :: (ey :: zs)) = ex :: init (ey::zs)
+init : (vs : PVect aTy eTy pTy (S n) as ps)
+    -> PVect aTy eTy pTy n (init as) (init ps)
+init (Ext ex px []) = []
+init (Ext ex px (Ext ey py zs)) = Ext ex px $ init (Ext ey py zs)
 
--- TODO insertAt
--- TODO deleteAt
--- TODO relaceAt
--- TODO updateAt
-
-public export
 take : (n : Nat)
-    -> (vs : DVect aTy eTy (n+m) as)
-    -> DVect aTy eTy n (take n as)
+    -> (vs : PVect aTy eTy pTy (n+m) as ps)
+    -> PVect aTy eTy pTy n (take n as) (take n ps)
 take Z vs = []
-take (S k) (ex :: rest) = ex :: take k rest
+take (S k) (Ext ex px rest) = Ext ex px $ take k rest
 
 
-
+{-
 takeWhile' : ({i : aTy} -> eTy i -> Bool)
           -> (vs : DVect aTy eTy l is)
           -> (l' : Nat ** bs : Vect l' aTy ** DVect aTy eTy l' bs)
@@ -325,20 +323,5 @@ dropElem : (as : DVect iTy eTy (S l) is)
 dropElem (a :: x) (Hier _) = x
 dropElem {l = (S k)} (not_x :: xs) (Er komst) =
   not_x :: dropElem xs komst
-
-
-namespace Alt
-  index : (vs  : DVect iTy eTy l is)
-       -> (idx : Elem i is)
-       -> eTy i
-  index (ex :: rest) Here = ex
-  index (ex :: rest) (There later) = index rest later
-
-  update : (vs  : DVect iTy eTy l is)
-        -> (idx : Elem i is)
-        -> (new : eTy i)
-        -> DVect iTy eTy l is
-  update (ex :: rest) Here new = new :: rest
-  update (ex :: rest) (There later) new = ex :: update rest later new
-
+-}
 -- --------------------------------------------------------------------- [ EOF ]

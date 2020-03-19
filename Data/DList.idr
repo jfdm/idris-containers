@@ -235,11 +235,11 @@ foldl f init (x::xs) = DList.foldl f (f init x) xs
 
 -- ----------------------------------------------------------------- [ Functor ]
 
-map : ({a : aTy} -> elemTy a -> b)
-       -> DList aTy elemTy as
-       -> List b
-map f Nil     = List.Nil
-map f (x::xs) = with List f x :: DList.map f xs
+mapToList : ({a : aTy} -> elemTy a -> b)
+         -> DList aTy elemTy as
+         -> List b
+mapToList f Nil     = List.Nil
+mapToList f (x::xs) = f x :: mapToList f xs
 
 -- TODO map from one DList to another.
 
@@ -258,6 +258,36 @@ concatMap : Monoid m
          -> m
 concatMap f = foldr (\e, res => f e <+> res) neutral
 
+namespace Clean
+  traverse : Applicative f
+          => {bTy : Type}
+          -> {elemTyB : bTy -> Type}
+          -> (funcTy : aTy -> bTy)
+          -> (func : {a : aTy} -> elemTy a -> f $ elemTyB (funcTy a))
+          -> (xs   : DList aTy elemTy as)
+          -> f (DList bTy elemTyB (map funcTy as))
+  traverse fTy func Nil     = pure Nil
+  traverse fTy func (x::xs) = [| DList.(::) (func x) (traverse fTy func xs) |]
+
+namespace ToList
+ traverseToList : Applicative f
+        => (func : {a : aTy} -> elemTy a -> f b)
+        -> (xs   : DList aTy elemTy as)
+        -> f (List b)
+ traverseToList func Nil     = pure Nil
+ traverseToList func (x::xs) = [| (::) (func x) (ToList.traverseToList func xs) |]
+
+traverseToLDP : Applicative f
+             => {bTy : Type}
+             -> {elemTyB : bTy -> Type}
+             -> (func : {a : aTy}
+                     -> elemTy a
+                     -> f (c ** elemTyB c))
+             -> (xs : DList aTy elemTy as)
+             -> f (List (b ** elemTyB b))
+traverseToLDP func [] = pure Nil
+traverseToLDP func (e :: rest) = [| List.(::) (func e) $ traverseToLDP func rest|]
+
 -- --------------------------------------------------------- [ Transformations ]
 -- TODO
 
@@ -266,6 +296,12 @@ fromLDP : List (x : aTy ** eTy x)
        -> (as ** DList aTy eTy as)
 fromLDP Nil     = (_ ** DList.Nil)
 fromLDP (x::xs) = (_ ** DList.(++) [snd x] (snd $ fromLDP xs))
+
+namespace Clean
+  fromLDP : (xs : List (x : aTy ** eTy x))
+         -> (DList aTy eTy (map DPair.fst xs))
+  fromLDP [] = Nil
+  fromLDP (x :: xs) = snd x :: Clean.fromLDP xs
 
 -- ---------------------------------------------- [ To List of Dependent Pairs ]
 
@@ -448,7 +484,7 @@ mergeBy cmp (x::xs) (y::ys) =
 showDList : (showFunc : {a : aTy} -> elemTy a -> String)
          -> (l : DList aTy elemTy as)
          -> String
-showDList f xs = "[" ++ unwords (intersperse "," (map f xs)) ++ "]"
+showDList f xs = "[" ++ unwords (intersperse "," (mapToList f xs)) ++ "]"
 
 
 -- -------------------------------------------------------------- [ Predicates ]

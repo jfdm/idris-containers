@@ -1,39 +1,44 @@
 module Data.List.Predicates.Unique
 
-import Data.List
+import public Data.List.NotElem
 
-%access public export
 %default total
+%access public export
 
-||| Proof that a list `xs` is unique.
-data Unique : (xs : List type) -> Type where
+data Unique : (prfSame : a -> a -> Type)
+            -> (ns : List a)
+            -> Type
+  where
+    Empty : Unique p Nil
+    Extend : (node : a)
+          -> (prfNotElem : NotElem p node ns)
+          -> (rest : Unique p ns)
+          -> Unique p (node :: ns)
 
-  ||| Empty lists are 'unique'
-  Empty : Unique Nil
+nodeIsFoundLater : (contra : NotElem prfSame x xs -> Void)
+                -> Unique prfSame (x :: xs)
+                -> Void
+nodeIsFoundLater contra (Extend x prfNotElem rest) = contra prfNotElem
 
-  ||| Only add an element to the list is it doesn't appear in the
-  ||| remaining lists.
-  Cons : (x : type)
-      -> (prfU : Not (Elem x xs))
-      -> (rest : Unique xs)
-      -> Unique (x::xs)
+restNotUnique : (contra : Unique prfSame xs -> Void)
+             -> (prfX : NotElem prfSame x xs)
+             -> Unique prfSame (x :: xs)
+             -> Void
+restNotUnique contra prfX (Extend x prfNotElem rest) = contra rest
 
--- ----------------------------------------------------------------- [ Helpers ]
-duplicateElement : (prf : Elem x xs) -> Unique (x :: xs) -> Void
-duplicateElement prf (Cons x f rest) = f prf
+unique : (decEq : (x,y : a) -> Dec (prfSame x y))
+     -> (xs    : List a)
+     -> Dec (Unique prfSame xs)
+unique decEq [] = Yes Empty
+unique decEq (x :: xs) with (notElem decEq x xs)
+  unique decEq (x :: xs) | (Yes prfX) with (unique decEq xs)
+    unique decEq (x :: xs) | (Yes prfX) | (Yes prfXS) = Yes (Extend x prfX prfXS)
+    unique decEq (x :: xs) | (Yes prfX) | (No contra) = No (restNotUnique contra prfX)
 
-restNotUnique : (f : Unique xs -> Void) -> (contra : Elem x xs -> Void) -> Unique (x :: xs) -> Void
-restNotUnique f contra (Cons x g rest) = f rest
+  unique decEq (x :: xs) | (No contra) = No (nodeIsFoundLater contra)
 
-||| Is the list `xs` unique?
-unique : DecEq type
-      => (xs : List type)
-      -> Dec (Unique xs)
-unique [] = Yes Empty
-unique (x :: xs) with (isElem x xs)
-  unique (x :: xs) | (Yes prf) = No (duplicateElement prf)
-  unique (x :: xs) | (No contra) with (unique xs)
-    unique (x :: xs) | (No contra) | (Yes prf) = Yes (Cons x contra prf)
-    unique (x :: xs) | (No contra) | (No f) = No (restNotUnique f contra)
+toList : {ns : List a} -> Unique prfSame ns -> List a
+toList Empty = []
+toList (Extend node prfNotElem rest) = node :: toList rest
 
 -- --------------------------------------------------------------------- [ EOF ]
