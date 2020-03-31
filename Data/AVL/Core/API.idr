@@ -1,7 +1,7 @@
 module Data.AVL.Core.API
 
-import Data.Tree
-import Data.AVL.Core
+import public Data.Tree
+import public Data.AVL.Core
 
 %default total
 %access export

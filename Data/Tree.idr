@@ -13,7 +13,6 @@ module Data.Tree
 |||
 ||| @keyTy The type associated with the key.
 ||| @valTy The type associated with the value.
-public export
 data Tree : (keyTy : Type)
          -> (valTy : Type)
          -> Type
@@ -38,7 +37,6 @@ data Tree : (keyTy : Type)
 namespace Keys
 
   ||| A proof that some key is found in a Tree
-  public export
   data IsKeyIn : k -> Tree k v -> Type where
     Here : IsKeyIn key (Node key _ _ _)
     InRight : (later : IsKeyIn key r) -> IsKeyIn key (Node not_key _ _ r)

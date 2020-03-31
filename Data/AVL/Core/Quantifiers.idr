@@ -1,8 +1,8 @@
 module Data.AVL.Core.Quantifiers
 
-import Data.Tree
-import Data.AVL.Core
-import Data.AVL.Core.API
+import public Data.Tree
+import public Data.AVL.Core
+import public Data.AVL.Core.API
 
 %default total
 %access export

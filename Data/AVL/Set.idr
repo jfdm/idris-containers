@@ -6,7 +6,10 @@
 ||| Implementation of a Set using an AVL Binary Search Tree.
 module Data.AVL.Set
 
-import Data.AVL
+import public Data.Tree
+import public Data.AVL.Core
+import public Data.AVL.Core.API
+import public Data.AVL.Core.Quantifiers
 
 %access public export
 

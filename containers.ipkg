@@ -42,6 +42,8 @@ modules = Data.Tree
 
         , Data.Pair.Predicates
 
+        , Data.Vect.Extra
+
         , Data.List.NotElem
 
         , Data.List.Predicates.Interleaving

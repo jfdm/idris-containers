@@ -10,8 +10,12 @@
 ||| `(id,label)`.
 module Data.AVL.Graph
 
-import Data.AVL
-import Data.AVL.Set
+import public Data.Tree
+import public Data.AVL.Core
+import public Data.AVL.Core.API
+import public Data.AVL.Core.Quantifiers
+
+import public Data.AVL.Set
 
 import public Data.AVL.Dict
 

@@ -9,7 +9,10 @@
 ||| wraps this up as a simple Binary tree for values i.e. keys.
 module Data.AVL.BTree
 
-import Data.AVL
+import public Data.Tree
+import public Data.AVL.Core
+import public Data.AVL.Core.API
+import public Data.AVL.Core.Quantifiers
 
 %access public export
 

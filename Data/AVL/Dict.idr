@@ -4,9 +4,12 @@
 -- License   : see LICENSE
 -- --------------------------------------------------------------------- [ EOH ]
 ||| A Dictionary based upon an AVL Key-Value AVL.API.
-module Data.AVL.API.Dict
+module Data.AVL.Dict
 
-import Data.AVL
+import public Data.Tree
+import public Data.AVL.Core
+import public Data.AVL.Core.API
+import public Data.AVL.Core.Quantifiers
 
 %default total
 %access public export
