@@ -35,7 +35,7 @@ using (aTy : Type, elemTy : (aTy -> Type), x : aTy)
             -> (predTy : aTy -> Type)
             -> (len : Nat)
             -> (as : Vect len aTy)
-            -> (ps : DVect aTy pTy len as)
+            -> (ps : DVect aTy predTy len as)
             -> Type where
     ||| Create an empty List
     Nil  : PVect aTy elemTy prfTy Z Nil Nil
