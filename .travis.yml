@@ -1,5 +1,29 @@
-os: osx
+language: C
+sudo: false
+
+branches:
+  only:
+    - master
+
+addons:
+  apt:
+    packages:
+      - cabal-install-2.0
+      - ghc-8.2.2
+    sources:
+      - hvr-ghc
+
+cache:
+  directories:
+    - $HOME/.cabal/
+    - $HOME/.ghc/
+
 install:
-  - brew install idris
+  - export PATH=$HOME/.cabal/bin:/opt/ghc/8.2.2/bin:/opt/cabal/2.0/bin:$PATH
+  - cabal update
+  - sed -i 's/^jobs:/-- jobs:/' $HOME/.cabal/config
+  - cabal install -f FFI -f LLVM -f GMP idris
+
 script:
   - idris --testpkg containers.ipkg
+  - idris --testpkg containers-test.ipkg
