@@ -9,7 +9,7 @@ module Data.Test.RedBlack
 import Test.Unit
 import Test.Random.Values
 
-import Data.RedBlack.Tree
+import Data.RedBlack.BTree
 
 %access export
 
@@ -24,7 +24,7 @@ partial
 testBuilding : IO Bool
 testBuilding = genericTest
     (Just "List, Building" )
-    (Tree.size $ Tree.fromList (list1 ++ list1))
+    (BTree.size $ BTree.fromList (list1 ++ list1))
     30
     (==)
 
@@ -34,7 +34,7 @@ partial
 testUpdate : IO Bool
 testUpdate = genericTest
     (Just "Insert")
-    (Tree.size $ insert 1 $ Tree.fromList list2)
+    (BTree.size $ insert 1 $ BTree.fromList list2)
     31
     (==)
 
@@ -42,14 +42,14 @@ partial
 testContains : IO Bool
 testContains = genericTest
     (Just "Contains")
-    (Tree.contains 4 $ Tree.fromList [1,2,3,4])
+    (BTree.contains 4 $ BTree.fromList [1,2,3,4])
     (True)
     (==)
 
 partial
 runTest : IO ()
 runTest = do
-    putStrLn "Testing RedBlack Tree"
+    putStrLn "Testing RedBlack BTree"
     putStrLn infoLine
     NonReporting.runTests [
         testBuilding
